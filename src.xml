@@ -1,4 +1,325 @@
 <db path="C:\Bernard\db1\pdb4">
+  <file path="\pdb.player\ViewModel\Commande\ImportCmd.cs">
+    <content><![CDATA[using System;
+using System.IO;
+using pdb.db;
+using pdb.db.obj;
+using pdb.db.piece.data;
+using pdb.gen.pertinence;
+using pdb.gen.Tuning;
+using pdb.player.engine;
+using pdb.util;
+using pdb.obj;
+
+namespace pdb.player.ViewModel.Commande
+{
+    class ImportCmd : CommandeBase
+    {
+        private IIhm ihm;
+        //  public static IIhm Ihm { set { ihm = value; } }
+        private IPlayerEngine player;
+        //public static IPlayerEngine Player { set { player = value; } }
+        CListPiece list;
+
+        private int nbImport;
+        private int nbFile;
+        private Import conf;
+        private DateTime dtImport;
+
+        public ImportCmd(IIhm ihm, IPlayerEngine player)
+        {
+            this.ihm = ihm;
+            this.player = player;
+        }
+        public override bool CanExecute(object parameter)
+        {
+            return true;
+        }
+
+        public override void Execute(object parameter)
+        {
+            conf = ihm.getConfImport("Import");
+            string dir = conf.dir;
+            if (string.IsNullOrEmpty(dir))
+                return;
+            if (!ihm.Confirm("Importer le contenu de " + dir + " ?", "Import"))
+                return;
+
+            dtImport = DateTime.Now;
+            list = App.Db.List;
+
+            ChronoData.refreshDate(DateTime.MinValue);
+            ChronoData.DateAuto = false;
+            nbImport = 0;
+            nbFile = 0;
+
+            DirectoryInfo root = new DirectoryInfo(dir);
+            import(root);
+            ChronoData.DateAuto = true;
+            ihm.InfoIHm(string.Format("importation de {0} terminée\r\n {1} fichier{2} importé{2} \r\n{3} fichier{4} pris en compte", dir, nbImport, (nbImport > 1 ? "s" : ""), nbFile, (nbFile > 1 ? "s" : "")), "Import");
+            App.go(true);
+        }
+
+        private void import(DirectoryInfo dir)
+        {
+            if (dir.Name == "Podcasts")
+                return;
+            if (dir.Name.StartsWith("poubelle"))
+                return;
+            if (dir.Name == "hackit")
+                return;
+            if (dir.Name == "v1")
+                return;
+            foreach (FileInfo f in dir.GetFiles())
+                import(f);
+            foreach (DirectoryInfo sub in dir.GetDirectories())
+                import(sub);
+        }
+
+
+        private void import(FileInfo f)
+        {
+            CPiece _org = null; 
+            try
+            {
+                if (f.IsMusic())
+                {
+                    _org = list.getPiece(f.FullName);
+                    if (_org != null)
+                    {
+                        if (!conf.consolid)
+                        {
+                            nbFile++;
+                            return;
+                        }
+                    }
+
+                    App.log.log("chargement de " + f.FullName);
+                    var newT = new CPiece(f.FullName);
+                    var meta = new Metadata(f.FullName);
+                    meta.Album = conf.album;
+                    meta.Artist = conf.artist;
+                    var year = conf.year;
+                    if (year != null)
+                        meta.Year = year.Value;
+                    if (conf.logical)
+                    {
+                        TrackBuilder.buildFromFile(meta, conf.bname, conf.balbum, conf.bartist, conf.btrackNumber, conf.byear);
+                    }
+                    if (!conf.Purelogical)
+                    {
+                        player.load(meta);
+                    }
+                    TrackBuilder.correction(meta);
+                    if (!string.IsNullOrEmpty(conf.album))
+                    {
+                        meta.TrackNumber = nbFile + 1;
+                    }
+                    TrackBuilder.buildFrom(newT, meta);
+
+
+                    App.log.log("chargé {0} {1} {2} {3} {4}", newT.Year, newT.Artist, newT.Album, newT.Name, newT.TrackNumber);
+
+                    var org = list.getPiece(newT);
+                    if (org != null)
+                    {
+                        //  App.log.log("référence déjà connue : {0} {1} {2} {3} {4} à l'emplacement {5}", org.Year, org.Artist, org.Album, org.Name, org.TrackNumber, org.Location);
+
+                    }
+
+
+                    list.AddOrMerge(newT, _org);
+                    if (org == null)
+                    {
+                        newT.initClassementIfEmpty("0.0");
+                        newT.setAdded(dtImport);
+                        nbImport++;
+                        App.log.log("importé {0} {1} {2} {3} {4} à l'emplacement {5}", newT.Year, newT.Artist, newT.Album, newT.Name, newT.TrackNumber, newT.Location);
+                    }
+                    nbFile++;
+                    App.Db.saveAsync();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                App.log.Error(string.Format("impossible d'importer {0} {1}", f.FullName, ex));
+            }
+        }
+    }
+}
+]]></content>
+  </file>
+  <file path="\pdb.player\Vue\ConfImport.xaml">
+    <content><![CDATA[<Window x:Class="pdb.player.Vue.ConfImport"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:userCtl="clr-namespace:pdb.player.Vue"
+        Title="Importer" Height="286" Width="500">
+    <Grid Height="206" Width="447">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+         
+        </Grid.RowDefinitions>
+        <userCtl:FolderBrowserDialog x:Name="folder" Grid.Row="0" Loaded="folder_Loaded" />
+          
+        <Grid Grid.Row="1" Height="187" Margin="0,0,-8,-31" Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="20" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Row="0" Grid.Column="0" >Artiste</Label>
+            <CheckBox Grid.Row="0" Grid.Column="1" Name="cb_artist"  VerticalAlignment="Center"/>
+            <TextBox Grid.Row="0" Grid.Column="2" Name="tb_artist" Width="200" />
+            
+            <Label Grid.Row="1" Grid.Column="0" >Album</Label>
+            <CheckBox Grid.Row="1" Grid.Column="1" Name="cb_album"  VerticalAlignment="Center"/>
+            <TextBox Grid.Row="1" Grid.Column="2" Name="tb_album" Width="200"  />
+            
+            
+            <Label Grid.Row="2" Grid.Column="0" >Année</Label>
+            <CheckBox Grid.Row="2" Grid.Column="1" Name="cb_year"  VerticalAlignment="Center"/>
+            <TextBox Grid.Row="2" Grid.Column="2" Name="tb_year" Width="200"  />
+
+            <Label Grid.Row="3" Grid.Column="0" >Nom</Label>
+            <CheckBox Grid.Row="3" Grid.Column="1" Name="cb_name"  VerticalAlignment="Center"/>
+            <TextBox Grid.Row="3" Grid.Column="2" Name="tb_name" Width="200"  />
+
+            <Label Grid.Row="4" Grid.Column="0" >Piste</Label>
+            <CheckBox Grid.Row="4" Grid.Column="1" Name="cb_tn"  VerticalAlignment="Center"/>
+
+            <Label Grid.Row="5" Grid.Column="0" >Merge</Label>
+            <CheckBox Grid.Row="5" Grid.Column="1" Name="cb_cons"  VerticalAlignment="Center"/>
+            <!--<TextBox Grid.Row="4" Grid.Column="2" Name="tb_tn" Width="200"  />-->
+
+           
+          
+
+
+
+        </Grid> 
+    </Grid>
+</Window>
+]]></content>
+  </file>
+  <file path="\pdb.player\Vue\ConfImport.xaml.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
+using pdb.gen.Tuning;
+
+namespace pdb.player.Vue
+{
+    /// <summary>
+    /// Interaction logic for ConfImport.xaml
+    /// </summary>
+    public partial class ConfImport : Window
+    {
+        private Import import;
+        public ConfImport()
+        {
+            InitializeComponent();
+        }
+
+        public ConfImport(string title, Import import)
+            : this()
+        {
+            this.Title = title;
+            this.import = import;
+            this.Loaded += new RoutedEventHandler(ConfImport_Loaded);
+            this.Closing += new System.ComponentModel.CancelEventHandler(ConfImport_Closing);
+            folder.ok += new EventHandler(folder_ok);
+            folder.cancel += new EventHandler(folder_cancel);
+            folder.Dir = import.dir;
+        }
+
+        void folder_cancel(object sender, EventArgs e)
+        {
+            import.dir = null;
+            Close();
+        }
+
+        void folder_ok(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        void ConfImport_Loaded(object sender, RoutedEventArgs e)
+        {
+            display();
+        }
+
+        void ConfImport_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            record();
+        }
+
+        void display()
+        {
+            folder.Dir = import.dir;
+            tb_album.Text = import.album;
+            tb_artist.Text = import.artist;
+            int? year = import.year;
+            if (year != null)
+                tb_year.Text = import.year.ToString();
+            cb_album.IsChecked = import.balbum;
+            cb_artist.IsChecked = import.bartist;
+            cb_name.IsChecked = import.bname;
+            cb_tn.IsChecked = import.btrackNumber;
+            cb_year.IsChecked = import.byear;
+            cb_cons.IsChecked = import.consolid; 
+
+        }
+        void record()
+        {
+            import.dir = folder.Dir;
+            import.album = tb_album.Text;
+            import.artist = tb_artist.Text;
+          
+            int? year = null;
+            if (!string.IsNullOrEmpty(tb_year.Text))
+                year = Convert.ToInt32(tb_year.Text);
+            import.year = year;
+
+            import.bartist = cb_artist.IsChecked.Value;
+            import.balbum = cb_album.IsChecked.Value;
+            import.bname = cb_name.IsChecked.Value;
+            import.btrackNumber = cb_tn.IsChecked.Value;
+            import.byear = cb_year.IsChecked.Value;
+            import.consolid = cb_cons.IsChecked.Value; 
+        }
+
+        private void folder_Loaded(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+       
+    }
+}
+]]></content>
+  </file>
   <file path="\pdb.podcast\Sort\Album.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
@@ -67,7 +388,9 @@ namespace pdb.podcast.Sort
 
                 if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
                 {
-                    track.Pub2 = currentPub2.AddMinutes(1);
+                    var aux =currentPub2.AddMinutes(1);
+                    log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux; 
                 }
 
                 currentPub = track.Pub;
@@ -86,7 +409,7 @@ namespace pdb.podcast.Sort
 
                 else if (next == null)
                 {
-                    if (track.Enabled && track.SelectedByDb)
+                    if (track.SelectedByDb || track.Pub2 >= Conf.Date0)
                     {
                         next = track;
                         indexNextSelected = i;
@@ -278,10 +601,10 @@ namespace pdb.podcast.Sort
                 {
                     var t = list[i];
 
-                    if (!t.SelectedByDb)
-                        continue;
-                    if (!t.Enabled)
-                        continue;
+                    //if (!t.SelectedByDb)
+                    //    continue;
+                    //if (!t.Enabled)
+                    //    continue;
 
                     if (t.Pub >= limitFuture)
                     {
@@ -307,7 +630,7 @@ namespace pdb.podcast.Sort
 
                 var t = list[i];
 
-                if (!t.SelectedByDb)
+                if (!t.SelectedByDb && t.Pub2 < Conf.Date0 && conf.enabled != sortMode.reset)
                     continue;
                 if (!t.Enabled)
                     continue;
@@ -389,226 +712,623 @@ namespace pdb.podcast.Sort
             }
             else
             {
-                if (dt <= track.Pub2)
+                if (dt == track.Pub2)
                 {
                     log.log("\t{0}\t{1} {2}", track.Pub, dt, track.Name);
+                    return;
+                }
+                else if (dt < track.Pub2)
+                {
+                    log.log("\t{0}\t{1}<=\t{2} {3}", track.Pub, track.Pub2, dt, track.Name);
                     return;
                 }
             }
 
             if (track.Pub2 != dt)
             {
-                nbModif++; 
+                nbModif++;
+                log.log("\t{0}\t{1}=>\t{2} {3}", track.Pub, track.Pub2, dt, track.Name);
                 track.Pub2 = dt;
             }
-            log.log("==>\t{0}\t{1} {2}", track.Pub, track.Pub2, track.Name);
+            
             track.BuildComment();
         }
     }
 }
 ]]></content>
   </file>
-  <file path="\pdb.podcast\Tuning\Sort.cs">
-    <content><![CDATA[using System.Xml;
+  <file path="\PieceDb.Consolid\Tuning\Import.cs">
+    <content><![CDATA[using System;
 using pdb.util;
-using System;
-using System.Collections.Generic;
+using System.Xml;
 
-namespace pdb.podcast.Tuning.Sort
+namespace pdb.gen.Tuning
 {
-    public enum sortMode
+    public class Import : TuningBase
     {
-        no,
-        reset,
-        once,
-        once_all,
-        all
-    }
-    public class SortItem : TuningBase
-    {
-        public string name;
-        public sortMode enabled;
-        public bool checkBefore; 
-        /// <summary>
-        /// prise en compte des longs podcasts
-        /// </summary>
-        public double dureeMin;
-        /// <summary>
-        /// intervalle max entre deux écoutes (une semaine)
-        /// </summary>
-        private double intervalle=7;
-        /// <summary>
-        /// intervalle min entre deux écoutes (un jour)
-        /// </summary>
-        private double intervalleMin=1;
-        /// <summary>
-        /// intervalle max entre deux écoutes pour un rare
-        /// </summary>
-        private double intervalleR;
-        /// <summary>
-        /// intervalle min entre deux écoutes pour un rare
-        /// </summary>
-        private double intervalleMinR=7;
-        /// <summary>
-        /// nb d'écoutes maximum dans l'intervalle (typiquement 5)
-        /// </summary>
-        private double ecouteMax;
-        /// <summary>
-        /// nb d'écoutes maximum dans l'intervalle pour un rare
-        /// </summary>
-        private double ecouteMaxR;
-        /// <summary>
-        /// durée sur laquelle on fait des stats pour calculer la fréquence d'écoute
-        /// </summary>
-        private double histo;
-        /// <summary>
-        /// durée sur laquelle on fait des stats pour calculer la fréquence d'écoute pour un rare
-        /// </summary>
-        private double histoR;
-        /// <summary>
-        /// Dans le calcul de delta entre deux à suivre : nombre minimum d'éléments à prendre en compte
-        /// </summary>
-        public int deltaNbMin;
-        /// <summary>
-        /// Dans le calcul de delta entre deux à suivre : rab d'éléments à prendre en compte
-        /// </summary>
-        public int deltaNbRab;
-        /// <summary>
-        /// Dans le calcul de delta entre deux à suivre : intervalle minimum à prendre en compte en jours
-        /// </summary>
-        public double deltaMin;
-        /// <summary>
-        /// Dans le calcul de delta entre deux à suivre : rab d'intervalle à prendre en compte
-        /// </summary>
-        public double deltaRab;
+        public string dir;
+        public string album;
+        public string artist;
+        public int? year;
+        public bool bname, balbum, bartist, btrackNumber, byear;
+        public bool logical { get { return bname || balbum || bartist || btrackNumber|| byear; } }
+        public bool Purelogical { get { return bname && balbum && bartist && btrackNumber && byear; } }
+        public bool consolid; 
 
-        /// <summary>
-        /// pas d'empilage des tracks repoussés
-        /// </summary>
-        public bool noCollision;
-        /// <summary>
-        /// recalcul peut entrainer une date plus récente
-        /// </summary>
-        public bool canGoBack;
-        /// <summary>
-        /// écart constant entre les poscasts repoussés
-        /// </summary>
-        public bool deltaConst; 
-
-        /// <summary>
-        /// Date0 lors de l'écoute du dernier podcast externe
-        /// </summary>
-        public DateTime extLast0;
-        /// <summary>
-        /// Décalage entre date du podcast supplémentaire et la date0
-        /// </summary>
-        public double extDelta;
-        /// <summary>
-        /// coefficient permettant le calcul de la prochaine date en fonction du retard entre la date0 et maintenant
-        /// </summary>
-        public double extPente;
-        /// <summary>
-        /// check de la date de dernière lecture
-        /// </summary>
-        public bool limitRead;
-
-        public SortItem()
+        public Import()
+            : base()
         {
         }
-
-        public SortItem(XmlElement parent, XmlElement node)
-            : base(parent, node)
+        public Import(XmlElement node)
+            : base(node)
         {
-
             if (node == null)
                 return;
-            builds("name", v => name = v);
-            var str = "";
-            builds("enabled", v => str = v);
-
-            if (!string.IsNullOrEmpty(str))
-                enabled = (sortMode)Enum.Parse(typeof(sortMode), str);
-
-            buildd("dureeMin", v => dureeMin = v);
-            buildd("intervalle", v => intervalle = v);
-            buildd("intervalleMin", v => intervalleMin = v);
-            buildd("intervalleR", v => intervalleR = v);
-            buildd("intervalleMinR", v => intervalleMinR = v);
-            buildd("histo", v => histo = v);
-            buildd("histoR", v => histoR = v);
-            buildd("ecouteMax", v => ecouteMax = v);
-            buildd("ecouteMaxR", v => ecouteMaxR = v);
-
-            buildDate("extLast0", v => extLast0 = v);
-            buildd("extDelta", v => extDelta = v);
-            buildd("extPente", v => extPente = v);
-
-          
-           
-
-            buildb("deltaConst", v => deltaConst = v);
-
-            buildb("noCollision", v => noCollision = v);
-            buildb("checkBefore", v => checkBefore = v);
-            buildb("limitRead", v => limitRead = v);
-            buildb("canGoBack", v => canGoBack = v);
-
-            #region lissage 
-            buildi("deltaNbMin", v => deltaNbMin = v);
-            buildi("deltaNbRab", v => deltaNbRab = v);
-
-            buildd("deltaMin", v => deltaMin = v);
-            buildd("deltaRab", v => deltaRab = v); 
-
-            #endregion
-
+            builds("dir", v => dir = v);
+            builds("album", v => album = v);
+            builds("artist", v => artist = v);
+            buildin("year", v => year = v);
+            buildb("bname", v => bname = v);
+            buildb("balbum", v => balbum = v);
+            buildb("bartist", v => bartist = v);
+            buildb("btrackNumber", v => btrackNumber = v);
+            buildb("byear", v => byear = v);
+            buildb("consolid", v => consolid = v);
 
         }
-
-        public double getIntervalle(bool rare)
-        {
-            return rare && intervalleR >0 ? intervalleR : intervalle; 
-        }
-        public double getIntervalleMin(bool rare)
-        {
-            return rare && intervalleMinR > 0 ? intervalleMinR : intervalleMin;
-        }
-        public double getHisto(bool rare)
-        {
-            return rare && histoR > 0 ? histoR : histo;
-        }
-        public double getEcouteMax(bool rare)
-        {
-            return rare && ecouteMaxR >0? ecouteMaxR : ecouteMax;
-        }
-
-
     }
-    public class Sort : SortItem
+}
+]]></content>
+  </file>
+  <file path="\PieceDb.Db\CListPiece.cs">
+    <content><![CDATA[using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Xml;
+using pdb.db.obj;
+using pdb.obj;
+using pdb.util;
+/// <summary>
+/// Liste de pieces contenues dans un fichier
+/// Liste de pieces � sauvegarder
+/// </summary>
+/// <remarks>
+/// La liste doit s'assurer de l'absence de doublons
+/// maintenir une r�f�rence unique pour un morceau
+/// 
+/// 
+/// </remarks>
+namespace pdb.db
+{
+    public interface IReference
     {
-        private List<SortItem> items = new List<SortItem>();
-        public SortItem getItem(string album)
+        void referenceChange(CPiece piece);
+    }
+
+    public class CListPiece : IData, IReference
+    {
+
+        public const string TOKEN_LISTS = "lists";
+        public const string TOKEN_LIST = "l";
+        public const string TOKEN_LIST_NAME = "n";
+        public const string TOKEN_LIST_TRACK = "t";
+
+        private System.DateTime m_date = System.DateTime.MinValue;
+
+        private DictRef<CPiece> ht = new DictRef<CPiece>();
+        private BgDict<int, CPiece> htIds = new BgDict<int, CPiece>();
+        private BgDictString<CPiece> htLoc = new BgDictString<CPiece>();
+        private CPlayList listes = new CPlayList("listes");
+        public CPlayList Listes { get { return listes; } }
+
+        private const string PIECES = "pieces";
+        #region "constructeurs"
+        /// <summary>
+        /// Création à partir d'une simple collection de Piece
+        /// </summary>
+        /// <param name="a_list"></param>
+        /// <remarks>recherche doublons - merge manuel �ventuel</remarks>
+        public CListPiece(ICollection<CPiece> a_list, System.DateTime a_date)
+            : this()
         {
-            return items.Find(a => a.name == album);
-        }
-        public Sort()
-        {
+            m_date = a_date;
+            foreach (CPiece l_file in a_list)
+            {
+                htIds[l_file.PieceId] = l_file;
+                foreach (CFile file in l_file.Files)
+                {
+                    htLoc[file.Path] = l_file;
+                }
+            }
+
+            foreach (CPiece piece in a_list)
+            {
+                int parentId = piece.PieceParentId;
+                if (parentId > 0)
+                {
+                    piece.setParent( htIds[parentId]);
+                }
+
+                //if (!piece.Exists)
+                //{
+                //    misc.log("absent: {0}", piece.PathAndRef + " " + piece.Comment);
+                //}
+            }
+
+
+
+            //DateTime maxEnabled = DateTime.MinValue;
+            foreach (CPiece l_file in a_list)
+            {
+                Add(l_file);
+                //if (l_file.Enabled)
+                //{
+                //    var t = l_file.LastModifClass;
+                //    if (t > maxEnabled)
+                //        maxEnabled = t;
+                //}
+            }
+            //misc.log("***********************************************************");
+            //misc.log("maxEnabled: {0}", maxEnabled);
+            //misc.log("***********************************************************");
         }
 
-        public Sort(XmlElement node)
-            : base(null, node)
+        public CListPiece()
         {
-            foreach (XmlNode sub in node.ChildNodes)
+
+        }
+
+        #endregion
+
+
+        public void checkId(CPiece toCheck)
+        {
+            foreach (CFile f in toCheck.Files)
             {
-                if (sub is XmlElement && sub.Name == "album")
+                if (htLoc.ContainsKey(f.Path))
                 {
-                    items.Add(new SortItem(node, sub as XmlElement));
+                    var pOrg = htLoc[f.Path];
+                    toCheck.setId(pOrg.PieceId);
+                    toCheck.PieceParentId = pOrg.PieceParentId;
                 }
             }
         }
 
+        /// <summary>
+        /// merge de la base locale et distante
+        /// </summary>
+        /// <param name="a_remote"></param>
+        /// <remarks></remarks>
+        public void Consolid(CListPiece a_remote)
+        {
+            log("ListPiece:Consolid");
+            mergePriority l_remotePriority = mergePriority.none;
+            System.DateTime l_remoteDate = a_remote.m_date;
+            if (l_remoteDate > System.DateTime.MinValue && l_remoteDate.AddSeconds(-3) > m_date)
+                l_remotePriority = mergePriority.right;
+            foreach (CPiece l_file in a_remote)
+            {
+                Consolid(l_file, l_remotePriority);
+            }
 
+        }
+
+        public void bilanNatives()
+        {
+            misc.log("Bilan Natives");
+            foreach (CPiece piece in this)
+            {
+                if (piece.HasNoNative)
+                    misc.logNoDate(piece.ToString());
+            }
+        }
+
+        private void merge(CPiece org, CPiece cand)
+        {
+            misc.log("CList:Add MERGE with key {0}: {1} // {2}", org.Key, org, cand);
+            org.merge(cand);
+        }
+
+        public void AddOrMerge(CPiece piece, CPiece org)
+        {          
+            if (org != null)
+            {              
+                org.consolid(piece, mergePriority.right); 
+            }
+            else
+            {
+                ht.set(piece, piece.Key);
+
+                piece.addReferenceObs(this);
+                CDb.checkId(piece);
+                htIds[piece.PieceId] = piece;
+                foreach (CFile file in piece.Files)
+                {
+                    htLoc[file.Path] = piece;
+                }
+
+            }
+        }
+
+
+        public void Add(CPiece piece)
+        {
+            TrackIdentity key = piece.Key;
+
+            CPiece org = null;
+
+            // recherche d'une piece avec un niveau de d�tail �gal ou inf�rieur
+            org = ht[key];
+
+
+            if (org != null)
+            {
+                misc.log("CList:Add MERGE {0}", key);
+                org.merge(piece);
+            }
+            else
+            {
+                ht.set(piece, piece.Key);
+
+                piece.addReferenceObs(this);
+                CDb.checkId(piece);
+                htIds[piece.PieceId] = piece;
+                foreach (CFile file in piece.Files)
+                {
+                    htLoc[file.Path] = piece;
+                }
+
+            }
+        }
+
+
+        public void fusion(CPiece master, CPiece toDelete)
+        {
+            if (master == null)
+                return;
+            if (toDelete == null)
+                return;
+            if (master == toDelete)
+                return;
+            misc.log("CList:Fusion  {0}  {1}", master, toDelete);
+            master.addData(toDelete);
+            ht.Remove(toDelete);
+            htIds.Remove(toDelete.PieceId);
+
+        }
+
+        public void delete(CPiece toDelete)
+        {
+            if (toDelete == null)
+                return;
+            ht.Remove(toDelete);
+            htIds.Remove(toDelete.PieceId);
+            foreach (CFile file in toDelete.Files)
+            {
+                htLoc.Remove(file.Path);
+            }
+        }
+
+        public void referenceChange(CPiece piece)
+        {
+            piece.keyGener();
+            ht.Remove(piece);
+
+            piece.keyGener();
+            ht.set(piece, piece.Key);
+
+        }
+
+
+
+
+
+
+        public bool Contains(CPiece piece)
+        {
+            var key = piece.Key;
+            return ht[key] != null;
+        }
+
+        public void Consolid(CPiece remote, mergePriority a_priority)
+        {
+            if (remote.PieceParentId > 0)
+            {
+                if (remote.Parent == null)
+                    remote.Parent = htIds[remote.PieceParentId];
+
+
+            }
+            CPiece l_pieceOrg = getPiece(remote);
+
+            if (l_pieceOrg == null)
+            {
+                if (!remote.Deleted)
+                {
+                    l_pieceOrg = new CPiece();
+                    l_pieceOrg.consolid(remote, a_priority);
+                    Add(l_pieceOrg);
+                }
+                else
+                    misc.log("remote deleted!! Pourquoi je le trouve pas ?? {0}", remote);
+            }
+            else
+            {
+                if (remote.Deleted && a_priority == mergePriority.right)
+                {
+                    l_pieceOrg.Deleted = true;
+                    return;
+                }
+                if (remote.PieceParentId > 0)
+                {
+                    var parent = htIds[remote.PieceParentId];
+                    misc.log(l_pieceOrg + " a maintenant un parent: " + parent);
+                    l_pieceOrg.PieceParentId = remote.PieceParentId;
+                    l_pieceOrg.Parent = parent;
+                }
+                //if (remote.PieceId > 0 && l_pieceOrg.PieceId < 0)
+                //    l_pieceOrg.Parent = htIds[remote.PieceParentId];
+                l_pieceOrg.consolid(remote, a_priority);
+            }
+        }
+
+        /// <summary>
+        /// synchro enrte base locale et liste native
+        /// </summary>
+        /// <param name="native"></param>
+        /// <remarks></remarks>
+        public void legacyConsolid(CPiece native)
+        {
+            CPiece l_pieceOrg = getPiece(native);
+
+            if (l_pieceOrg == null)
+            {
+                log("add from business:" + native.ToString());
+                l_pieceOrg = new CPiece(native);
+                l_pieceOrg.legacyConsolid(native);
+                Add(l_pieceOrg);
+            }
+            else
+            {
+                l_pieceOrg.legacyConsolid(native);
+            }
+
+        }
+
+        private CPiece getPiece(TrackIdentity key)
+        {
+            return ht[key];
+        }
+
+        public CPiece getPiece(ITrackMetaData a_piece)
+        {
+            TrackIdentity key = a_piece.Key;
+            return getPiece(key);
+        }
+
+        public CPiece getPiece(CPiece a_piece)
+        {
+            TrackIdentity key = a_piece.Key;
+            return getPiece(key);
+        }
+
+        public CPiece getPiece(string location)
+        {
+            return htLoc[location];
+        }
+
+        public CPiece getPiece(int id)
+        {
+            return htIds[id];
+        }
+
+        private bool exists(CPiece a_piece)
+        {
+            return getPiece(a_piece) != null;
+        }
+
+        #region IData Members
+        public void write(ITextWriter a_sw)
+        {
+            XMLTool.openBalise(a_sw, PIECES);
+            foreach (CPiece l_piece in this)
+            {
+                l_piece.write(a_sw);
+            }
+            XMLTool.closeBalise(a_sw, PIECES);
+        }
+
+        public void write(System.Xml.XmlWriter w)
+        {
+            w.WriteStartElement(PIECES);
+
+            foreach (CPiece l_piece in getList())
+            {
+                l_piece.write(w);
+            }
+            w.WriteEndElement();
+            w.WriteStartElement(TOKEN_LISTS);
+            writeList(w, listes);
+            w.WriteEndElement();
+        }
+
+        public void writeDiff(System.Xml.XmlWriter w, CListPiece lastFull)
+        {
+            w.WriteStartElement(PIECES);
+
+            foreach (CPiece l_piece in getList())
+            {
+                var org = lastFull.getPiece(l_piece.PieceId);
+                try
+                {
+                    l_piece.writeDiff(w, org);
+                }
+                catch (Exception ex)
+                {
+                    misc.log("impossible d'enregistrer les modifs de " + l_piece, ex.ToString());  
+                }
+            }
+
+            foreach (CPiece org in lastFull)
+            {
+                var newP = this.getPiece(org.PieceId);
+                if (newP == null)
+                {
+                    org.Deleted = true;
+                    org.writeDeleted(w);
+                }
+            }
+            w.WriteEndElement();
+        }
+
+        #endregion
+
+
+        public IEnumerator GetEnumerator()
+        {
+            return ht.GetEnumerator();
+        }
+
+        public int Count
+        {
+            get { return ht.Count; }
+        }
+        //public System.Collections.Generic.IEnumerator<CPiece> GetEnumerator1()
+        //{
+        //    return ht.GetEnumerator1();
+        //}
+        //System.Collections.Generic.IEnumerator<CPiece> System.Collections.Generic.IEnumerable<CPiece>.GetEnumerator()
+        //{
+        //    return GetEnumerator1();
+        //}
+
+        public List<CPiece> getList()
+        {
+            var list = new List<CPiece>(ht.Count);
+            foreach (CPiece p in ht)
+            {
+                if (!p.Deleted)
+                    list.Add(p);
+            }
+
+            list.Sort(new PieceComparer());
+
+            return list;
+        }
+
+        private class PieceComparer : IComparer<CPiece>
+        {
+            public int Compare(CPiece x, CPiece y)
+            {
+                int cmp = x.MasterId.CompareTo(y.MasterId);
+                if (cmp != 0)
+                    return cmp;
+                cmp = x.PieceParentId.CompareTo(y.PieceParentId);
+                if (cmp != 0)
+                    return cmp;
+                return x.PieceId.CompareTo(y.PieceId);
+            }
+        }
+
+        private void log(String txt)
+        {
+            misc.log(txt);
+        }
+
+
+        #region listes
+        public void loadListes(XmlElement xml)
+        {
+            if (xml == null)
+                return;
+            buildList(xml, listes);
+        }
+
+        private void buildList(XmlElement xparent, CPlayList parent)
+        {
+            foreach (XmlElement xsub in xparent.ChildNodes)
+            {
+                var tool = new XMLTool(xsub);
+                if (xsub.Name == TOKEN_LIST)
+                {
+                    string name = tool.getAttValue(TOKEN_LIST_NAME);
+                    int id = tool.getIntAttValue("id");
+                    CPlayList sub = new CPlayList(name, parent);
+                    sub.ID = id;
+                    CDb.checkId(sub);
+                    buildList(xsub, sub);
+                }
+                else if (xsub.Name == TOKEN_LIST_TRACK)
+                {
+                    int id = tool.getIntAttValue("id");
+                    var piece = htIds[id];
+                    var tl = new TrackList(piece);
+                    parent.add(tl);
+                }
+            }
+        }
+
+        private void writeList(XmlWriter w, CPlayList parent)
+        {
+            foreach (PlComponent c in parent)
+            {
+                if (c is CPlayList)
+                {
+                    var pl = c as CPlayList;
+                    w.WriteStartElement(TOKEN_LIST);
+                    w.WriteAttributeString("id", pl.ID.ToString());
+                    w.WriteAttributeString(TOKEN_LIST_NAME, pl.Name);
+                    writeList(w, pl);
+                    w.WriteEndElement();
+                }
+                else if (c is TrackList)
+                {
+                    var t = c as TrackList;
+                    w.WriteStartElement(TOKEN_LIST_TRACK);
+                    w.WriteAttributeString("id", t.PieceId.ToString());
+                    w.WriteEndElement();
+                }
+            }
+        }
+
+        public void buildLists(CPlayList listes)
+        {
+            this.listes.DeleteChilds();
+            buildList(this.listes, listes);
+        }
+
+        private void buildList(CPlayList mine, CPlayList ext)
+        {
+            foreach (PlComponent c in ext)
+            {
+                if (c is CPlayList)
+                {
+                    var subExt = c as CPlayList;
+                    var sub = new CPlayList(subExt.Name, mine);
+                    sub.ID = subExt.ID;
+                    CDb.checkId(sub);
+                    subExt.ID = sub.ID;
+
+                    buildList(sub, subExt);
+                }
+                else
+                {
+                    var t = c as IFile;
+                    var piece = htIds[t.PieceId];
+                    mine.add(new TrackList(piece));
+                }
+            }
+        }
+        #endregion
     }
-}]]></content>
+
+}
+
+
+
+
+
+
+]]></content>
   </file>
 </db>
