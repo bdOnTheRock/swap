@@ -69,8 +69,8 @@ Sub calc(ByVal sheet As String, ByVal borneM As Integer, ByVal borneP As Integer
     setBorneX 1, borneM, sheet
     setBorneX 2, borneM, sheet
     
-     setBorneY 1, borneM, borneP, sheet, False
-    setBorneY 6, borneM, borneP, sheet, True
+    setBorneY 1, 0, borneM, borneP, sheet, False
+    setBorneY 6, 5, borneM, borneP, sheet, True
 
 End Sub
 
@@ -87,22 +87,34 @@ Sheets(sheet).SeriesCollection(index).XValues = "=_c!$H$" + CStr(borneM) + ":$H$
 
 End Sub
 
-Sub setBorneY(ByVal col As Integer, ByVal borneM As Integer, ByVal borneP As Integer, ByVal sheet As String, ByVal secondAxe As Boolean)
+Sub setBorneY(ByVal col As Integer, ByVal col2 As Integer, ByVal borneM As Integer, ByVal borneP As Integer, ByVal sheet As String, ByVal secondAxe As Boolean)
 Min = Sheets("_c").Cells(borneM, col)
 Max = Min
 
 For i = borneM To borneP
     y = Sheets("_c").Cells(i, col)
+    y2 = y
+    If col2 > 0 Then y2 = Sheets("_c").Cells(i, col2)
     If y > Max Then
-        Max = y
-    Else:
-        If y < Min Then Min = y
+            Max = y
+        Else:
+            If y < Min Then
+                Min = y
+        End If
+    End If
+    If y2 > Max Then
+            Max = y2
+        Else:
+            If y2 > 0 And y2 < Min Then
+            Min = y2
+        End If
+    
     End If
     
 Next
 
 If Min = Max Then GoTo Ex
-Delta = (Max - Min) / 8
+Delta = (Max - Min) / 7
 coeff = 1
 While Delta < 1
     Delta = Delta * 10
