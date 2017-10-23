@@ -1,2164 +1,808 @@
-<db path="C:\Bernard\db1\pdb4">
-  <file path="\pdb.player\Model\ArtWorkManager.cs">
-    <content><![CDATA[using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Media.Imaging;
-using pdb.db.obj;
-using pdb.db;
-using System.IO;
-using pdb.util.list;
+using pdb.podcast.Albums;
+using pdb.podcast.Tuning;
+using pdb.podcast.Tuning.Sort;
 using pdb.util;
-using pdb.gen;
+using pdb.iit;
 
-namespace pdb.player.model
+namespace pdb.podcast.Sort
 {
-    public class ImagePriority : IComparable<ImagePriority>
+    class Album
     {
-        public readonly string label;
-        public readonly int value;
-        private ImagePriority(string label, int value)
+        const char SEP = '|';
+        private TrackAlbum album;
+        private SortItem conf;
+        private List<TrackSort> list = new List<TrackSort>();
+        //  private static HashSet<int> lastReads = new HashSet<int>();
+        //   private int indexLastRead = -1;
+        timeSpan limit;
+        private static int nbrepeches = 0;
+        private static int nbModif = 0;
+        private static int nbRepecheForce = 0;
+        public static int NbRepeches { get { return nbrepeches; } }
+        public static int NbModif { get { return nbModif; } }
+        private bool done;
+        public static void Init()
         {
-            this.label = label;
-            this.value = value;
+            //lastReads.Clear(); 
+            nbrepeches = 0;
+            nbModif = 0;
+            nbRepecheForce = 0;
+        }
+        // public static HashSet<int> LastRead { get { return lastReads; } }
+        public static Logger log;
+
+        public Album(SortItem conf, TrackAlbum album)
+        {
+            this.conf = conf;
+            this.album = album;
+            limit = timeSpan.FromMinutes(conf.dureeMin);
+
         }
 
         public override string ToString()
         {
-            return string.Format("{0}={1}", label, value); 
+            return album.ToString();
         }
 
-        public static ImagePriority none = new ImagePriority("none", 0);
-
-        public static List<ImagePriority> Values = new List<ImagePriority> {
-            new ImagePriority("front", 1),
-            new ImagePriority("large", 1), 
-            new ImagePriority("cover", 1) , 
-            new ImagePriority("folder", 1) , 
-            new ImagePriority("small", -1) , 
-            new ImagePriority("inlay", -5) , 
-            new ImagePriority("label", -6) , 
-            new ImagePriority("inside", -7) , 
-            new ImagePriority("book", -8) , 
-            new ImagePriority("back", -10) , 
-            new ImagePriority("cd", -10) 
-        
-        };
-        //front = 1,
-        //large = 1,
-        //cover=1,
-        //folder = 1,
-
-        //none = 0,
-
-        //small = -1,
-        //inlay = -5,
-        //label = -6,
-        //inside = -7,
-        //book = -8,
-        //back = -10,
-        //cd = -20,
-
-
-        public int CompareTo(ImagePriority other)
+        public void check(TrackInfoItunes track)
         {
-            return value.CompareTo(other.value);
-        }
-    }
-    class Img : IComparable<Img>
-    {
-        public readonly long size;
-        public readonly BitmapImage img;
-        public readonly ImagePriority priority;
-        public readonly string filename;
-       
-        static Img()
-        {
-         
+            if (track.Duree >= limit)
+                list.Add(new TrackSort(track));
         }
 
-
-
-        private static ImagePriority getPriority(string filename)
-        {
-            if (!string.IsNullOrEmpty(filename))
-            {
-                var f = Path.GetFileNameWithoutExtension(filename).ToLower();
-                foreach (ImagePriority ip in ImagePriority.Values)
-                {
-                    if (f.EndsWith(ip.label))
-                    {
-                        return ip;
-                    }
-                }
-
-                foreach (ImagePriority ip in ImagePriority.Values)
-                {
-                    if (f.Contains(ip.label))
-                    {
-                        return ip;
-                    }
-                }
-            }
-
-            return ImagePriority.none;
-        }
-
-        public Img(BitmapImage img, long size, string filename)
-        {
-            this.img = img;
-            this.size = size;
-            this.filename = filename;
-            this.priority = getPriority(filename);
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0} {1} {2}", FileUtil.HumanReadableSize(size, -1), priority, filename);
-        }
-
-        //public Img(BitmapImage img, long size,ImagePriority prior)
+        //public void Build(Loader loader)
         //{
-        //    this.img = img;
-        //    this.size = size;
-        //    this.priority = prior; 
-        //}
 
-        public int CompareTo(Img other)
-        {
-            var cmp = priority.CompareTo(other.priority);
-            if (cmp != 0)
-                return cmp;
-            cmp = size.CompareTo(other.size);
-            return cmp;
-        }
-    }
-    class ArtWorkManager
-    {
-        private Dictionary<string, Img> dicttagLib = new Dictionary<string, Img>();
-        private Dictionary<string, Img> dictDir = new Dictionary<string, Img>();
-        private Dictionary<string, Img> dictAlbum = new Dictionary<string, Img>();
-        private Dictionary<int, BitmapImage> dictPiece = new Dictionary<int, BitmapImage>();
-        private static Logger log = Logger.getLogger("Img");
-
-
-        public BitmapImage get(Piece p)
-        {
-
-            var piece = p.Track as CPiece;
-            if (p == null)
-                return null;
-            if (dictPiece.ContainsKey(p.MasterId))
-            {
-                var i = dictPiece[p.MasterId];
-                log.log("récup img par id ");
-                return i;
-
-            }
-
-            dictPiece.Add(p.MasterId, null);
-            Img max = null;
-
-
-
-            foreach (CFile f in piece.Files)
-            {
-                var filename = f.Path;
-                if (dicttagLib.ContainsKey(filename))
-                {
-                    var _l = dicttagLib[filename];
-                    if (_l != null && (max == null || _l.CompareTo(max) > 0))
-                    {
-                        max = _l;
-                    }
-                    continue;
-                }
-
-                dicttagLib.Add(filename, null);
-                try
-                {
-                    if (f.exists())
-                    {
-
-                        var file = TagLib.File.Create(filename);
-
-                        foreach (var pict in file.Tag.Pictures)
-                        {
-                            try
-                            {
-                                var bin = pict.Data.Data;
-                                var name = pict.Description;
-
-                                using (var stream = new MemoryStream(bin))
-                                {
-                                    BitmapImage i = new BitmapImage();
-                                    i.BeginInit();
-                                    i.StreamSource = stream;
-                                    i.CacheOption = BitmapCacheOption.OnLoad;
-                                    i.EndInit();
-                                    i.Freeze();
-                                    var size = bin.LongLength;
-                                    var img = new Img(i, size, name);
-
-                                    if (max == null || img.CompareTo(max) > 0)
-                                    {
-
-                                        max = img;
-                                        dicttagLib[filename] = max;
-
-                                    }
-
-                                    log.log("load img from tagLib {0} {1}", filename, FileUtil.HumanReadableSize(size, -1));
-
-                                }
-                            }
-
-                            catch (Exception ex)
-                            {
-                            }
-                        }
-
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                }
-            }
-
-
-            foreach (CFile f in piece.Files)
-            {
-                var dir = Path.GetDirectoryName(f.Path);
-
-                if (dictDir.ContainsKey(dir))
-                {
-                    var _l = dictDir[dir];
-                    if (_l != null && (max == null || _l.CompareTo(max) > 0))
-                    {
-                        max = _l;
-                    }
-                    continue;
-                }
-
-                dictDir.Add(dir, null);
-                try
-                {
-                    if (f.exists())
-                    {
-                        var fdir = FileRegister.CheckDir(f.Path);
-                        foreach (FileValue fimg in fdir.imgs)
-                        {
-                            try
-                            {
-                                var bin = File.ReadAllBytes(fimg.FullName);
-
-
-                                using (var stream = new MemoryStream(bin))
-                                {
-                                    BitmapImage i = new BitmapImage();
-                                    i.BeginInit();
-                                    i.StreamSource = stream;
-                                    i.CacheOption = BitmapCacheOption.OnLoad;
-                                    i.EndInit();
-                                    i.Freeze();
-                                    var size = bin.LongLength;
-
-                                    var img = new Img(i, size, fimg.FullName);
-
-                                    if (max == null || img.CompareTo(max) > 0)
-                                    {
-                                        max = img;
-                                    }
-
-                                    var item = dictDir[dir];
-                                    if (item == null || img.CompareTo(item) > 0)
-                                    {
-                                        log.log("récup img par dir {0} {1}", dir, FileUtil.HumanReadableSize(size, -1));
-                                        dictDir[dir] = img;
-                                    }
-
-
-                                    log.log("load img from src {0} {1}", fimg.FullName, FileUtil.HumanReadableSize(size, -1));
-
-                                }
-                            }
-
-                            catch (Exception ex)
-                            {
-                            }
-                        }
-                    }
-
-
-
-                }
-
-                catch (Exception ex)
-                {
-                }
-
-            }
-            var album = p.PieceAlbum;
-            if (p.Virtual)
-                album = p.Parent.PieceAlbum;
-            if (dictAlbum.ContainsKey(album.Key))
-            {
-                var img = dictAlbum[album.Key];
-                if (max == null || img.CompareTo(max) > 0)
-                {
-                    log.log("récup img par album {0} {1}", p.PieceAlbum.Key, FileUtil.HumanReadableSize(img.size, -1));
-                    max = img;
-                }
-            }
-
-
-
-            if (max == null)
-                return null;
-
-            if (dictAlbum.ContainsKey(album.Key))
-            {
-                dictAlbum[album.Key] = max;
-            }
-            else
-                dictAlbum.Add(album.Key, max);
-
-            dictPiece[p.MasterId] = max.img;
-            return max.img;
-        }
-    }
-}
-]]></content>
-  </file>
-  <file path="\pdb.util\Medianne.cs">
-    <content><![CDATA[using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Xml;
-using System.IO;
-
-namespace pdb.util
-{
-    public class HistoValue
-    {
-        char SEP = '|';
-        public decimal coeff;
-        public decimal delta;
-        public decimal conv;
-        //private HistoValue(string line)
-        //{
-        //    var tab = line.Split(SEP);
-        //    int count = tab.GetLength(0);
-        //    if (count >= 1 && !string.IsNullOrEmpty(tab[0]))
-        //        coeff = Convert.ToDecimal(tab[0]);
-        //    if (count >= 2 && !string.IsNullOrEmpty(tab[1]))
-        //        delta = Convert.ToDecimal(tab[1]) / 1000m;
-        //    if (count >= 3 && !string.IsNullOrEmpty(tab[2]))
-        //        conv = Convert.ToDecimal(tab[2]) / 1000m;
-        //}
-
-        public HistoValue(string line, HistoValue last)
-        {
-            var tab = line.Split(SEP);
-            int count = tab.GetLength(0);
-            string str = "";
-            if (count >= 1)
-            {
-                str = tab[0];
-                if (!string.IsNullOrEmpty(str))
-                    coeff = Convert.ToDecimal(str);
-                else if (last != null)
-                    coeff = last.coeff;
-            }
-            if (count >= 2)
-            {
-                str = tab[1];
-                if (!string.IsNullOrEmpty(str))
-                    delta = Convert.ToDecimal(str) / 1000m;
-                else if (last != null)
-                    delta = last.delta;
-            }
-            if (count >= 3)
-            {
-                str = tab[2];
-                if (!string.IsNullOrEmpty(str))
-                    conv = Convert.ToDecimal(str) / 1000m;
-                else if (last != null)
-                    conv = last.conv;
-            }
-        }
-
-        public HistoValue(decimal coeff, decimal delta, decimal conv)
-        {
-            this.coeff = coeff;
-            this.delta = delta;
-            this.conv = conv;
-        }
-
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            write(sb);
-            return sb.ToString();
-        }
-
-        public void write(ITextWriter sb)
-        {
-            var v = Math.Round(coeff, 10);
-            var sc = v.ToString();
-            var v2 = Math.Round(1000m * delta, 10);
-            var sc2 = v2.ToString();
-
-            var v3 = Math.Round(1000m * conv, 10);
-            var sc3 = v3.ToString();
-
-            sb.Append(sc);
-            sb.Append(SEP);
-            sb.Append(sc2);
-            sb.Append(SEP);
-            sb.AppendLine(sc3);
-        }
-
-        private static decimal getTruncate(decimal v)
-        {
-            return Math.Round(1000m * v, 10);
-        }
-
-        public void writeDiff(ITextWriter sb, HistoValue last)
-        {
-
-
-            var v = Math.Round(coeff, 10);
-            var sc = v.ToString();
-            sb.Append(sc);
-
-            sb.Append(SEP);
-            var v2 = getTruncate(delta);
-            if (last == null || v2 != getTruncate(last.delta))
-            {
-                var sc2 = v2.ToString();
-                sb.Append(sc2);
-            }
-
-            sb.Append(SEP);
-            var v3 = getTruncate(conv);
-            if (last == null || v3 != getTruncate(last.conv))
-            {               
-                var sc3 = v3.ToString();
-                sb.Append(sc3);
-            }
-            sb.AppendLine();
-
-        }
-    }
-    public enum selectedCoeff
-    {
-        none,
-        noCoeff,
-        main,
-        min
-    }
-
-    public enum medianneMode
-    {
-        none = 0,
-        strict = 1,
-        light = 2,
-        moy = 3
-
-    }
-    public enum removeLast
-    {
-        non = 0,
-        unselected = 1,
-        virtuel = 2,
-        tous = 3
-    }
-
-    public enum modeMin
-    {
-        /// <summary>
-        /// On ne gère pas
-        /// </summary>
-        non = 0,
-        /// <summary>
-        /// Morceaux supérieurs à la limite ( pas d'influence sur le résultat)
-        /// </summary>
-        orphelin = 1,
-        /// <summary>
-        /// Morceaux cochés et notés
-        /// </summary>
-        toujours = 2
-
-    }
-
-    //public class HistoStat
-    //{
-    //    public HistoStatItem min;
-    //    public HistoStatItem max;
-
-    //    public HistoStat()
-    //    {
-    //        min = new HistoStatItem(int.MaxValue);
-    //        max = new HistoStatItem(-1);
-    //    }
-    //    public HistoStat(decimal val)
-    //    {
-    //        min = new HistoStatItem(val);
-    //        max = new HistoStatItem(val);
-    //    }
-
-    //    //private string desc(decimal d)
-    //    //{
-    //    //    if (d < 0)
-    //    //        return "";
-    //    //    if (d >= int.MaxValue)
-    //    //        return "";
-    //    //    return d.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture);
-    //    //}
-
-    //    public override string ToString()
-    //    {
-    //        //return string.Format("{0}({1}) {2}({3})", desc(min.absolute), desc(min.relative), desc(max.absolute), desc(max.relative)); 
-    //        return string.Format("{0} {1}", min, max);
-    //    }
-    //}
-
-    //public class HistoStatItem
-    //{
-    //    public decimal relative;
-    //    public decimal absolute;
-    //    public HistoStatItem()
-    //    {
-    //        relative = -1;
-    //        absolute = -1;
-    //    }
-    //    public HistoStatItem(decimal val)
-    //    {
-    //        relative = val;
-    //        absolute = val;
-    //    }
-
-    //    public static string desc(decimal d)
-    //    {
-    //        if (d < 0)
-    //            return "";
-    //        if (d >= int.MaxValue)
-    //            return "";
-    //        return d.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture);
-    //    }
-
-    //    public override string ToString()
-    //    {
-    //        var sb = new StringBuilder();
-    //        sb.Append(desc(absolute));
-    //        if (absolute != relative)
-    //        {
-    //            sb.Append("(");
-    //            sb.Append(desc(relative));
-    //            sb.Append(")");
-    //        }
-    //        return sb.ToString();
-    //    }
-
-
-    //}
-
-    [Serializable]
-    public class ConfMedianne : TuningBase
-    {
-        public medianneMode type;
-        public decimal medianne = 0.5m;
-        public bool quasi;
-
-        public bool enabled;
-
-
-
-        public bool removeFirst;
-        public bool deleteFirst;
-        public removeLast removeLast;
-
-        public decimal expEnabled = 0m;
-
-        public decimal zero = 0m;
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool removeEnabled;
-
-
-
-
-        public modeMin cmpMin;
-
-        private ConfMedianneVirt _main;
-        private ConfMedianneVirt _min;
-
-        public ConfMedianneVirt Main { get { return _main; } }
-        public ConfMedianneVirt Min { get { return _min; } }
-        public ConfMedianne()
-        {
-            _main = new ConfMedianneVirt();
-            _min = new ConfMedianneVirt();
-
-        }
-
-        public void makeIdem()
-        {
-            _min = _main;
-        }
-
-        public void duplicateMainIf()
-        {
-            if (_min == _main)
-                _min = new ConfMedianneVirt(_main);
-        }
-
-        public ConfMedianne(ConfMedianne o, bool raz)
-        {
-            type = o.type;
-            medianne = o.medianne;
-            quasi = o.quasi;
-
-            enabled = o.enabled;
-
-
-
-            removeFirst = o.removeFirst;
-            deleteFirst = o.deleteFirst;
-            removeLast = o.removeLast;
-
-            expEnabled = o.expEnabled;
-
-            zero = o.zero;
-            removeEnabled = o.removeEnabled;
-
-
-
-            cmpMin = o.cmpMin;
-
-            _main = new ConfMedianneVirt(o._main, raz);
-            _min = new ConfMedianneVirt(o._min, raz);
-
-        }
-
-        public ConfMedianne(XmlElement parent, XmlElement child)
-            : base(parent, child)
-        {
-            var strType = "";
-            builds("type", v => strType = v);
-            type = (medianneMode)Enum.Parse(typeof(medianneMode), strType, true);
-            builddec("medianne", v => medianne = v);
-            buildb("quasi", v => quasi = v);
-            buildb("enabled", v => enabled = v);
-            buildb("removeFirst", v => removeFirst = v);
-            buildb("deleteFirst", v => deleteFirst = v);
-            builddec("expEnabled", v => expEnabled = v);
-            builddec("zero", v => zero = v);
-            buildb("removeEnabled", v => removeEnabled = v);
-            string _modeMin = "";
-            builds("cmpMin", v => _modeMin = v);
-            if (!string.IsNullOrEmpty(_modeMin))
-                cmpMin = (modeMin)Enum.Parse(typeof(modeMin), _modeMin, true);
-
-            string _removeLast = null;
-            builds("removeLast", v => _removeLast = v);
-            removeLast = (removeLast)Enum.Parse(typeof(removeLast), _removeLast, true);
-
-            _main = null;
-            _min = null;
-            var subs = XMLTool.NodeLookUp(child, "virts");
-            if (subs != null)
-            {
-                foreach (XmlNode _n in subs.ChildNodes)
-                {
-                    if (_n is XmlElement)
-                    {
-                        if (_main == null)
-                        {
-                            _main = new ConfMedianneVirt(child, _n as XmlElement);
-
-                        }
-                        else if (_min == null)
-                        {
-                            _min = new ConfMedianneVirt(child, _n as XmlElement);
-                        }
-                    }
-                }
-                if (_min == null && _main != null)
-                    _min = new ConfMedianneVirt(_main);
-            }
-        }
-
-        public override void save(XmlWriter w)
-        {
-            base.save(w);
-            writeStart("cmp");
-            write("type", type);
-            write("medianne", medianne);
-            write("quasi", quasi);
-            write("enabled", enabled);
-            write("removeFirst", removeFirst);
-            write("deleteFirst", deleteFirst);
-            write("expEnabled", expEnabled);
-            write("zero", zero);
-            write("removeEnabled", removeEnabled);
-            write("cmpMin", cmpMin);
-            write("removeLast", removeLast);
-
-            writeStart("virts");
-            _main.save(w);
-            _min.save(w);
-            writeEnd();
-
-            writeEnd();
-
-
-
-        }
-
-
-        public void auto(selectedCoeff motif)
-        {
-            if (!enabled)
-                return;
-            if (motif == selectedCoeff.none)
-                return;
-            var coeffPrisEncompte = motif > selectedCoeff.noCoeff;
-            if (_min == _main || _min.coeffVirt == 1m)
-            {
-                _main.calcAuto(coeffPrisEncompte, 1);
-            }
-            else
-            {
-                if (coeffPrisEncompte)
-                {
-                    if (motif == selectedCoeff.main)
-                        _main.calcAuto(true, 1);
-                    if (motif == selectedCoeff.min)
-                        _min.calcAuto(true, 1);
-                }
-                else
-                {
-                    _main.calcAuto(false, 1);
-                    _min.calcAuto(false, 1);
-                }
-            }
-        }
-    }
-
-    [Serializable]
-    public class ConfMedianneVirt : TuningBase
-    {
-        [NonSerialized]
-        const string PATH_DYN = "..\\dynamic";
-        private string Path { get { return string.Format("{0}{1}", DIR_CONF, fdata); } }
-        private string PathDiff { get { return string.Format("{0}{1}", DIR_CONF, fdiff); } }
-        private string PathDiffTmp { get { return string.Format("{0}{1}", DIR_CONF, fdiffTmp); } }
-        // private string PathLastFull { get { return string.Format("{0}{1}", DIR_CONF, flast); } }
-        const string PATH_DYN_DIFF = "..\\dynamic_diff";
-
-        // const decimal EPSILON = 0.000001m;// 0.001m;
-        const int NB_HISTO = 1000000;
-        public int safe;
-        public decimal coeffVirt = 1m;
-
-        //private bool firstSave = true;
-        //private static bool modeDiff;
-        //public static bool ModeDiff
-        //{
-        //    get { return modeDiff; }
-        //    set
+        //    if (conf.enabled == sortMode.no)
+        //        return;
+        //    int count = list.Count;
+        //    if (count == 0)
+        //        return;
+        //    int indexLastRead = -1;
+        //    int indexNextSelected = -1;
+        //    DateTime lastPlayed = DateTime.MinValue;
+        //    TrackSort next = null;
+        //    TrackSort reallyLastRead = null;
+        //    DateTime currentPub = DateTime.MinValue;
+        //    DateTime currentPub2 = DateTime.MinValue;
+        //    TrackSort lastRead = null;
+
+
+
+        //    for (int i = 0; i < count; i++)
         //    {
-        //        modeDiff = value;
-        //    }
-        //}
-
-        public string name;
-
-
-        /// <summary>
-        /// lié au mode db
-        /// </summary>
-        public dbMode mode;
-        /// <summary>
-        /// fichier ou est consigné l'historique courant
-        /// </summary>
-        public string fdata;
-        /// <summary>
-        /// fichier ou est consigné l'incrémental de l'historique
-        /// </summary>
-        public string fdiff;
-        /// <summary>
-        /// fichier ou est consigné l'incrémental de l'historique en mode full en vue de la sauvegarfe
-        /// </summary>
-        public string fdiffTmp;
-        ///// <summary>
-        ///// fichier ou est consigné la dernière sauvegarde full de l'historique
-        ///// </summary>
-        //public string flast;
-
-        public int indexDiff = 0;
-
-        public bool virtOnlyDisabled;
-        public bool noAddEnd;
-        public bool noAddAll;
-        public bool virtAlignSelected;
-        public bool virtAlignPrec;
-        public bool coeffVirtAuto;
-        public bool coeffVirtAdjust;
-
-        public bool removeEpsilon;
-
-        public bool forceCoeffVirt;
-        public bool lissage;
-        public bool cumul;
-
-        public bool reSort;
-        public bool noAdd;
-
-
-        public bool auto;
-        public decimal dcoeffp;
-        public decimal dcoeffm;
-
-        public int serialp = 1;
-        public int serialm = 1;
-        public int serialAlt = 1;
-        public decimal serialElastique = 1m;
-        public decimal coeffElastique1 = 1m;
-        public decimal coeffElastique2 = 1m;
-        /// <summary>
-        /// atténuation progressive des coeffs
-        /// </summary>
-        public decimal dconvergence;
-        public decimal dconvergence0;
-        public decimal dconvergence01;
-
-        public decimal dconvdeltap = 1m;
-        public decimal dconvdeltam = 1m;
-
-        /// <summary>
-        /// anti atténuation
-        /// </summary>
-        public decimal danticonvergence = 1m;
-        public decimal danticonvergence0;
-        public decimal danticonvergence01;
-
-        public decimal danticonvdeltap = 1m;
-        public decimal danticonvdeltam = 1m;
-        private bool _linkconv;
-        private decimal linkProduct;
-        private List<HistoValue> histo = new List<HistoValue>();
-        //  private List<decimal> histoDiff = new List<decimal>();
-
-        public decimal coeffOld = 1m;
-        public bool oldAsZero;
-        public bool coeffOldAuto;
-        public int coeffOldAutoLevel;
-
-        public bool linkconv { get { return _linkconv; } set { _linkconv = value; calcProduct(); } }
-
-        private void calcProduct()
-        {
-            this.linkProduct = calcProduct(this.dcoeffp, this.dconvergence);
-        }
-
-        public decimal calcProduct(decimal dcoeffp, decimal dconvergence)
-        {
-            var linkProduct = this.linkProduct;
-            try
-            {
-                linkProduct = dcoeffp / dconvergence;
-                // 1 0,9 -> 10
-                // 0.1 0,99 
-            }
-            catch
-            {
-            }
-
-            return linkProduct;
-        }
-
-        private void calcConv()
-        {
-            this.dconvergence = calcConv(this.dcoeffp, this.linkProduct);
-        }
-
-        public decimal LinkProduct
-        {
-            get
-            {
-                if (linkProduct == 0m)
-                    calcProduct();
-                return linkProduct;
-            }
-            set
-            {
-                linkProduct = value;
-                calcConv();
-
-            }
-        }
-
-        public decimal calcConv(decimal dcoeffp, decimal linkProduct)
-        {
-            var dconvergence = this.dconvergence;
-            try
-            {
-                // 1- conv = coeff / prod
-                dconvergence = dcoeffp / linkProduct; //1/10
-            }
-            catch
-            {
-
-            }
-            return dconvergence;
-        }
-
-
-        private bool? lastDelta;
-        private bool? lastAutoDirection;
-        /// <summary>
-        /// nb consecutif dans le même sens pour info
-        /// </summary>
-        private int _nbSameDirection;
-        /// <summary>
-        /// nb même sens borné pour calcul
-        /// </summary>
-        private int _nbSameDirectionBox;
-        /// <summary>
-        /// nb allez/retour pour calcul
-        /// </summary>
-        private int _nbAlt;
-        /// <summary>
-        /// bilan même sens vs allez-retour. Quand trop grand on agrandit le delta, quand trop petit on diminue
-        /// </summary>
-        private decimal _nbElastique;
-
-        /// <summary>
-        /// bilan même sens vs allez-retour. Quand trop grand on agrandit le delta, quand trop petit on diminue
-        /// </summary>
-        private decimal _nbElastique2;
-        /// <summary>
-        /// nb allez/retour consécutifs pour info
-        /// </summary>
-        private int _nbAltHisto;
-
-        private decimal epsilon = 0.001m;
-
-        public ConfMedianneVirt()
-        { }
-
-        public ConfMedianneVirt(ConfMedianneVirt o, bool raz)
-            : this(o)
-        {
-            if (raz)
-            {
-                safe = 0;
-                coeffOld = 1;
-                coeffVirt = 1;
-            }
-        }
-        public ConfMedianneVirt(ConfMedianneVirt o)
-        {
-            name = o.name;
-            mode = o.mode;
-            fdata = o.fdata;
-            fdiff = o.fdiff;
-            fdiffTmp = o.fdiffTmp;
-            //  flast = o.flast;
-            safe = o.safe;
-            coeffVirt = o.coeffVirt;
-            virtOnlyDisabled = o.virtOnlyDisabled;
-            noAddEnd = o.noAddEnd;
-            noAddAll = o.noAddAll;
-            virtAlignSelected = o.virtAlignSelected;
-            virtAlignPrec = o.virtAlignPrec;
-            coeffVirtAuto = o.coeffVirtAuto;
-            coeffVirtAdjust = o.coeffVirtAdjust;
-            removeEpsilon = o.removeEpsilon;
-            forceCoeffVirt = o.forceCoeffVirt;
-            lissage = o.lissage;
-            cumul = o.cumul;
-            reSort = o.reSort;
-            noAdd = o.noAdd;
-            auto = o.auto;
-            dcoeffp = o.dcoeffp;
-            dcoeffm = o.dcoeffm;
-            dconvergence = o.dconvergence;
-            dconvdeltap = o.dconvdeltap;
-            dconvdeltam = o.dconvdeltam;
-            danticonvergence = o.danticonvergence;
-            danticonvdeltap = o.danticonvdeltap;
-            danticonvdeltam = o.danticonvdeltam;
-            _linkconv = o._linkconv;
-            serialp = o.serialp;
-            serialm = o.serialm;
-            serialAlt = o.serialAlt;
-            serialElastique = o.serialElastique;
-            coeffElastique1 = o.coeffElastique1;
-            coeffElastique2 = o.coeffElastique2;
-
-            _nbSameDirection = o._nbSameDirection;
-            _nbSameDirectionBox = o._nbSameDirectionBox;
-            _nbAlt = o._nbAlt;
-            _nbAltHisto = o._nbAltHisto;
-            _nbElastique = o._nbElastique;
-            _nbElastique2 = o._nbElastique2;
-
-            coeffOld = o.coeffOld;
-            coeffOldAuto = o.coeffOldAuto;
-            oldAsZero = o.oldAsZero;
-            coeffOldAutoLevel = o.coeffOldAutoLevel;
-            epsilon = o.epsilon;
-
-            dconvergence0 = o.dconvergence0;
-            dconvergence01 = o.dconvergence01;
-            danticonvergence0 = o.danticonvergence0;
-            danticonvergence01 = o.danticonvergence01;
-
-            lastDelta = o.lastDelta;
-            histo = new List<HistoValue>(o.histo);
-
-        }
-        public ConfMedianneVirt(XmlElement parent, XmlElement child)
-            : base(parent, child)
-        {
-            var str = "";
-            builds("mode", v => str = v);
-            if (!string.IsNullOrEmpty(str))
-                mode = (dbMode)Enum.Parse(typeof(dbMode), str);
-            builds("name", v => name = v);
-            builds("fdata", v => fdata = v);
-            builds("fdiff", v => fdiff = v);
-            builds("fdiffTmp", v => fdiffTmp = v);
-            // builds("flast", v => flast = v);
-            builddec("coeffVirt", v => coeffVirt = v);
-            buildi("safe", v => safe = v);
-
-            buildb("virtOnlyDisabled", v => virtOnlyDisabled = v);
-            buildb("noAddEnd", v => noAddEnd = v);
-            buildb("noAddAll", v => noAddAll = v);
-            buildb("virtAlignSelected", v => virtAlignSelected = v);
-            buildb("virtAlignPrec", v => virtAlignPrec = v);
-            buildb("coeffVirtAuto", v => coeffVirtAuto = v);
-            buildb("coeffVirtAdjust", v => coeffVirtAdjust = v);
-
-            buildb("removeEpsilon", v => removeEpsilon = v);
-            buildb("forceCoeffVirt", v => forceCoeffVirt = v);
-            buildb("lissage", v => lissage = v);
-            buildb("cumul", v => cumul = v);
-            buildb("reSort", v => reSort = v);
-            buildb("noAdd", v => noAdd = v);
-            buildb("auto", v => auto = v);
-            builddec("dcoeffp", v => dcoeffp = v);
-            builddec("dcoeffm", v => dcoeffm = v);
-            builddec("dconvergence", v => dconvergence = v);
-            builddec("dconvergence0", v => dconvergence0 = v);
-            builddec("dconvergence01", v => dconvergence01 = v);
-            builddec("dconvdeltap", v => dconvdeltap = v);
-            builddec("dconvdeltam", v => dconvdeltam = v);
-
-            builddec("danticonvergence", v => danticonvergence = v);
-            builddec("danticonvergence0", v => danticonvergence0 = v);
-            builddec("danticonvergence01", v => danticonvergence01 = v);
-            builddec("danticonvdeltap", v => danticonvdeltap = v);
-            builddec("danticonvdeltam", v => danticonvdeltam = v);
-            buildb("linkconv", v => _linkconv = v);
-            buildi("serialp", v => serialp = v);
-            buildi("serialm", v => serialm = v);
-            buildi("serialAlt", v => serialAlt = v);
-            buildi("elastique", v => serialElastique = v);
-            builddec("coeffElastique1", v => coeffElastique1 = v);
-            builddec("coeffElastique2", v => coeffElastique2 = v);
-            buildi("serial", v => _nbSameDirection = v);
-            buildi("serialBox", v => _nbSameDirectionBox = v);
-            buildi("serialAltC", v => _nbAlt = v);
-            buildi("serialAltH", v => _nbAltHisto = v);
-            builddec("elastiqueC", v => _nbElastique = v);
-            builddec("elastiqueC2", v => _nbElastique2 = v);
-
-
-            builddec("coeffOld", v => coeffOld = v);
-            buildb("oldAsZero", v => oldAsZero = v);
-            buildb("coeffOldAuto", v => coeffOldAuto = v);
-            buildi("coeffOldAutoLevel", v => coeffOldAutoLevel = v);
-            builddec("epsilon", v => epsilon = v);
-
-            buildbn("lastDelta", v => lastDelta = v);
-
-
-            HistoValue last = null;
-            var xhisto = XMLTool.NodeLookUp(child, "histo");
-            if (xhisto != null)
-            {
-                foreach (XmlElement sub in xhisto.ChildNodes)
-                {
-                    var _nevw = new HistoValue(sub.InnerText, last);
-                    histo.Add(_nevw);
-                    last = _nevw;
-                }
-            }
-            else
-            {
-
-                if (File.Exists(Path))
-                {
-                    foreach (var line in File.ReadAllLines(Path))
-                    {
-                        if (string.IsNullOrEmpty(line))
-                            continue;
-                        var _nevw = new HistoValue(line, last);
-                        histo.Add(_nevw);
-                        last = _nevw;
-                    }
-                    indexDiff = histo.Count;
-
-                    //if (histo.Count >0 )
-                    //    coeffVirt = getCoeff(histo[histo.Count -1]);
-
-
-                }
-
-                if (File.Exists(PathDiff))
-                {
-                    var histoDiff = new List<HistoValue>();
-
-                    foreach (var line in File.ReadAllLines(PathDiff))
-                    {
-                        if (string.IsNullOrEmpty(line))
-                            continue;
-
-                        var _nevw = new HistoValue(line, last);
-                        histoDiff.Add(_nevw);
-                        last = _nevw;
-
-                    }
-
-                    if (mode == dbMode.full)
-                    {
-                        histo.AddRange(histoDiff);
-                        indexDiff = histo.Count;
-                    }
-                    else
-                    {
-                        indexDiff = histo.Count - histoDiff.Count;
-                    }
-
-                }
-
-
-
-                if (mode == dbMode.full && File.Exists(PathDiff))
-                    File.Delete(PathDiff);
-
-                if (histo.Count > 0)
-                {
-                    int index = histo.Count - 1;
-                    decimal current = histo[index].coeff;
-                    //coeffVirt = getCoeff(current);
-                    bool? sens = null;
-
-                    int nbSerie = 0;
-                    // decimal delta = 0m;
-
-                    var rr = 0m;
-                    if (dcoeffp > 0)
-                        rr = dcoeffm / dcoeffp;
-                    if (rr > 0)
-                    {
-                        while (true)
-                        {
-                            index--;
-                            if (index < 0)
-                                break;
-                            var aux = histo[index].coeff;
-                            var _sens = current > aux;
-                            if (sens == null)
-                            {
-                                sens = _sens;
-                                lastAutoDirection = !_sens;
-
-                                // delta = current - aux;
-                            }
-
-
-                            if (sens != _sens)
-                                break;
-                            current = aux;
-                            nbSerie++;
-
-                        }
-
-                        //_nbSameDirection = nbSerie;
-                        //dcoeffp = Math.Abs(delta); dcoeffm = dcoeffp * rr;
-
-                    }
-                }
-            }
-
-            if (coeffOldAuto)
-            {
-                coeffOld = (decimal)Math.Pow(coeffVirt, coeffOldAutoLevel);
-            }
-            //if (histoDiff.Count > 0)
-            //    coeffVirt = getCoeff(histo[histo.Count - 1]); 
-
-        }
-
-        public override void save(XmlWriter w)
-        {
-            base.save(w);
-            writeStart("v");
-            write("name", name);
-            write("mode", mode);
-            write("serial", _nbSameDirection);
-            write("serialBox", _nbSameDirectionBox);
-            write("serialAltC", _nbAlt);
-            write("serialAltH", _nbAltHisto);
-            write("elastiqueC", _nbElastique);
-            write("elastiqueC2", _nbElastique2);
-            write("lastDelta", lastDelta);
-
-            write("serialAlt", serialAlt);
-            write("elastique", serialElastique);
-            write("coeffElastique1", coeffElastique1);
-            write("coeffElastique2", coeffElastique2);
-            write("fdata", fdata);
-            write("fdiff", fdiff);
-            write("fdiffTmp", fdiffTmp);
-
-            write("coeffVirt", coeffVirt);
-            write("safe", safe);
-
-            write("virtOnlyDisabled", virtOnlyDisabled);
-            write("noAddEnd", noAddEnd);
-            write("noAddAll", noAddAll);
-            write("virtAlignSelected", virtAlignSelected);
-            write("virtAlignPrec", virtAlignPrec);
-            write("coeffVirtAuto", coeffVirtAuto);
-            write("coeffVirtAdjust", coeffVirtAdjust);
-
-            write("removeEpsilon", removeEpsilon);
-            write("forceCoeffVirt", forceCoeffVirt);
-            write("lissage", lissage);
-            write("cumul", cumul);
-            write("reSort", reSort);
-            write("noAdd", noAdd);
-            write("auto", auto);
-            write("dcoeffp", dcoeffp);
-            write("dcoeffm", dcoeffm);
-            write("dconvergence", dconvergence);
-            write("dconvergence0", dconvergence0);
-            write("dconvergence01", dconvergence01);
-            write("dconvdeltap", dconvdeltap);
-            write("dconvdeltam", dconvdeltam);
-
-            write("danticonvergence", danticonvergence);
-            write("danticonvergence0", danticonvergence0);
-            write("danticonvergence01", danticonvergence01);
-            write("danticonvdeltap", danticonvdeltap);
-            write("danticonvdeltam", danticonvdeltam);
-            write("linkconv", linkconv);
-            write("serialp", serialp);
-            write("serialm", serialm);
-
-
-
-            write("coeffOld", coeffOld);
-            write("oldAsZero", oldAsZero);
-            write("coeffOldAuto", coeffOldAuto);
-
-            write("coeffOldAutoLevel", coeffOldAutoLevel);
-            write("epsilon", epsilon);
-
-
-            var sb = new StringBuilder();
-            var sbDiff = new StringBuilder();
-
-
-
-
-            //if (modeDiff)
-            //{
-            //    histoDiff = null;
-            //}
-            //else
-            //{
-            //    if (histoDiff != null)
-            //    {
-            //        histo.AddRange(histoDiff);
-            //        histoDiff = null;
-            //    }
-
-            //    if (File.Exists(PathDiff))
-            //        File.Delete(PathDiff);
-            //}
-
-            int count = histo.Count;
-            HistoValue last = null;
-            for (int i = 0; i < count; i++)
-            {
-                histo[i].write(sb);
-                //var v = Math.Round(histo[i].coeff, 10);
-                //var sc = v.ToString();
-                //var v2 = Math.Round(1000m * histo[i].delta, 10);
-                //var sc2 = v2.ToString();
-
-                //var v3 = Math.Round(1000m * histo[i].conv, 10);
-                //var sc3 = v3.ToString();
-
-                //sb.Append(sc);
-                //sb.Append("|");
-                //sb.Append(sc2);
-                //sb.Append("|");
-                //sb.AppendLine(sc3);
-
-                if (i >= indexDiff)
-                {
-                    histo[i].writeDiff(sbDiff, last);
-                    //sbDiff.Append(sc);
-                    //sbDiff.Append("|");
-                    //sbDiff.Append(sc2);
-                    //sbDiff.Append("|");
-                    //sbDiff.AppendLine(sc3);
-                }
-                last = histo[i];
-            }
-
-
-            if (!string.IsNullOrEmpty(fdata))
-            {
-                AsyncFileWriter.Instance.post(Path, sb.ToString());
-                if (mode == dbMode.diff)
-                    AsyncFileWriter.Instance.post(PathDiff, sbDiff.ToString());
-                else
-                    AsyncFileWriter.Instance.post(PathDiffTmp, sbDiff.ToString());
-
-
-                if (mode == dbMode.full && File.Exists(PathDiff))
-                    File.Delete(PathDiff);
-            }
-
-
-            writeEnd();
-        }
-        /// <summary>
-        /// nb consecutif dans le même sens pour info
-        /// </summary>
-        public int Serial { get { return _nbSameDirection; } set { _nbSameDirection = value; } }
-        /// <summary>
-        /// nb même sens borné pour calcul
-        /// </summary>
-        public int SerialBox { get { return _nbSameDirectionBox; } }
-        /// <summary>
-        /// nb allez-retours pour calcul
-        /// </summary>
-        public int Alt { get { return _nbAlt; } }
-        /// <summary>
-        /// nb allez/retour consécutifs pour info
-        /// </summary>
-        public int AltHisto { get { return _nbAltHisto; } }
-        /// <summary>
-        /// Position de l'élastique. Positif : tend à agrandir le delta. du à plusieurs séries dans le même sens. Négatif : tend à diminuer le delta. du à plusieurs allez-retours consécutifs
-        /// </summary>
-        public decimal Elastique { get { return _nbElastique; } }
-        public decimal Elastique2 { get { return _nbElastique2; } }
-        public decimal danticonvergenceMin
-        {
-            get
-            {
-                decimal ret = 1;
-                try
-                {
-                    var aux = epsilon / dcoeffp;
-                    if (aux < ret)
-                        ret = aux;
-                }
-                catch
-                {
-                }
-                return ret;
-            }
-        }
-
-        public void calcAuto(bool selectedByCoeff, int nb)
-        {
-
-
-            if (-_nbSameDirectionBox > serialm)
-                _nbSameDirectionBox = -serialm;
-            if (_nbSameDirectionBox > serialp)
-                _nbSameDirectionBox = serialp;
-
-            if (-_nbElastique > serialElastique)
-                _nbElastique = -serialElastique;
-            if (_nbElastique > serialElastique)
-                _nbElastique = serialElastique;
-
-
-            if (-_nbElastique2 > serialElastique)
-                _nbElastique2 = -serialElastique;
-            if (_nbElastique2 > serialElastique)
-                _nbElastique2 = serialElastique;
-
-
-            if (_nbAlt < 0)
-                _nbAlt = 0;
-            if (_nbAlt > serialAlt)
-                _nbAlt = serialAlt;
-
-            var ecart0 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
-
-            var last = lastAutoDirection;
-            var lastDelta_ = this.lastDelta;
-            lastAutoDirection = selectedByCoeff;
-
-            if (last.HasValue)
-            {
-                if (last != selectedByCoeff)
-                {
-                    _nbSameDirection = 0;
-                    _nbAlt++;
-                    _nbAltHisto++;
-                    _nbElastique--;
-                    _nbElastique2 -= coeffElastique2;
-                    if (_nbSameDirectionBox > 0 && selectedByCoeff)
-                        _nbSameDirectionBox--;
-                    if (_nbSameDirectionBox < 0 && !selectedByCoeff)
-                        _nbSameDirectionBox++;
-
-                }
-                else
-                {
-                    _nbAlt--;
-                    _nbAltHisto = 0;
-                    _nbElastique += coeffElastique1;
-                    _nbElastique2++;
-                    if (selectedByCoeff)
-                    {
-                        _nbSameDirectionBox--;
-                    }
-                    else
-                    {
-                        _nbSameDirectionBox++;
-                    }
-                }
-
-                if (selectedByCoeff)
-                {
-                    _nbSameDirection--;
-                }
-                else
-                {
-                    _nbSameDirection++;
-                }
-            }
-
-            if (!auto)
-                return;
-
-            var lastProduct = linkProduct;
-            var rr = 1m;
-            if (dcoeffp > 0)
-                rr = dcoeffm / dcoeffp;
-
-            var c0 = dcoeffp;
-            var rrc = 1m;
-            if (danticonvergence0 > 0)
-                rrc = dconvergence0 / danticonvergence0;
-            if (dcoeffp > 0 && dcoeffp * danticonvergence < epsilon)
-            {
-                danticonvergence = epsilon / dcoeffp;
-                dconvergence = rrc * danticonvergence;
-            }
-
-            // si le delta ne bouge pas on diminue la convergence 
-
-            /// au debut dconvergence à effet  fort 0.9 doit arriver à 0.999
-            /// // quand j'applique la convergence, je fait baisser son effet
-
-            if (last.HasValue)
-            {
-                var aux = dconvergence;
-                //if (last != selectedByCoeff)
-                if (_nbAlt > serialAlt || _nbElastique < -serialElastique || _nbElastique2 < -serialElastique)
-                {
-                    lastDelta = false;
-                    //if (selectedByCoeff)
-                    //{
-
-                    //dcoeffp *= dconvergence;
-                    //dcoeffm *= dconvergence;
-                    //if (dcoeffp < EPSILON) dcoeffp = EPSILON;
-                    //if (dcoeffm < EPSILON) dcoeffm = EPSILON;
-
-                    // la convergence est maintenant directement le % de baisse
-                    //0.1 -> 0.9  ==> 1.1
-
-                    var limit = dcoeffp - epsilon * rrc;
-
-                    if (limit < 0 && dcoeffp >= 0)
-                        limit = dcoeffp;
-                    var r = 1 + dconvergence;
-                    dcoeffp /= r;
-                    dcoeffm /= r;
-
-                    if (limit < dcoeffp)
-                    {
-                        dcoeffp = limit;
-                        //  dconvergence = epsilon / (c0 - epsilon); 
-                        if (rr > 0m) dcoeffm = rr * dcoeffp;
-                    }
-
-                    if (dcoeffp < epsilon)
-                    { dcoeffp = epsilon; if (rr > 0m) dcoeffm = rr * dcoeffp; }
-                    if (dcoeffm < epsilon)
-                    { dcoeffm = epsilon; if (rr > 0m) dcoeffp = dcoeffm / rr; }
-
-
-
-                    //   _nbSameDirection = 0;
-                    //  lastAutoDirection = null;
-
-
-
-                    if (_linkconv)
-                        calcConv();
-                    else
-                    {
-
-                        //  var delta = 1 - dconvergence; // 1- 0.9 = 0.1 // 1-0.1 = 0.9
-                        // dconvergence /= (1 + dconvdeltam); // 0.09 // 0.81
-                        //  dconvergence = 1 - delta; // 0.9 -> 0.91 // 0.1-> 0.19
-                    }
-
-
-                    // danticonvergence /= (1 + danticonvdeltam);
-                    //var delta = 1 - danticonvergence; 
-                    //delta *= (1- danticonvdeltam) ;
-                    //danticonvergence = delta - 1; 
-                    // if (danticonvergence < 1m) danticonvergence = 1;
-
-                    //delta = danticonvergence - 1; // 0.1
-                    //delta *= danticonvdeltam;  //0.09; 
-                    //    danticonvergence = 1+delta; // 1.1 -> 1.09
-                    // }
-
-
-
-                }
-                else
-                {
-                    bool applyanti = false;
-                    if (selectedByCoeff && -_nbSameDirectionBox > serialm)
-                        applyanti = true;
-                    else if (!selectedByCoeff && _nbSameDirectionBox > serialp)
-                        applyanti = true;
-                    else if (_nbElastique > serialElastique)
-                        applyanti = true;
-                    else if (_nbElastique2 > serialElastique)
-                        applyanti = true;
-                    if (applyanti)
-                    {
-                        lastDelta = true;
-                        var limit = dcoeffp + epsilon;
-                        //if (dcoeffp * danticonvergence < epsilon)
-                        //{
-                        //    danticonvergence = epsilon / dcoeffp; 
-                        //}
-                        dcoeffp *= (1 + danticonvergence);
-                        dcoeffm *= (1 + danticonvergence);
-                        //   danticonvergence *= (1 + danticonvdeltap);
-
-
-
-                        if (danticonvergence > 0 && limit > dcoeffp)
-                        {
-                            dcoeffp = limit;
-                        }
-
-                        if (rr > 0)
-                            dcoeffm = rr * dcoeffp;
-
-                    }
-                    else
-                        lastDelta = null;
-                    if (_linkconv)
-                        calcConv();
-                    else if (applyanti)
-                    {
-                        //   dconvergence *= (1 + dconvdeltap);
-                        //   var delta = 1 - dconvergence; // 1- 0.9 = 0.1 // 1-0.1 = 0.9
-                        //var delta = 1 - dconvergence; //0.1 -> 0.9  0.5->0.5
-                        //delta /= (1+ dconvdeltap); // 0.81 0.25
-                        //dconvergence = 1 - delta;  // 0.18 0.75
-                        // dconvergence *= dconvdeltap; // 0.11 // 0.99
-                        //    dconvergence = 1 - delta; // 0.9 -> 0.89 // 0.01
-                        if (dconvergence > 1 - epsilon)
-                            dconvergence = 1 - epsilon;
-                        if (dconvergence < epsilon)
-                            dconvergence = epsilon;
-                    }
-
-                }
-
-                bool onAugmente = lastDelta.HasValue && (lastDelta_ == null || lastDelta_ == lastDelta);
-
-
-                if (c0 == dcoeffp || !onAugmente)
-                {
-
-                    var ecart1 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
-                    if (ecart1 < ecart0)
-                    {
-
-                        danticonvergence /= (1 + danticonvdeltam);
-                        if (danticonvergence < danticonvergence01)
-                            danticonvergence = danticonvergence01;
-                        dconvergence /= (1 + dconvdeltam);
-                        if (dconvergence < dconvergence01)
-                            dconvergence = dconvergence01;
-                    }
-                }
-                else
-                {
-                    dconvergence *= (1 + dconvdeltap);
-                    if (dconvergence > dconvergence0)
-                        dconvergence = dconvergence0;
-                    danticonvergence *= (1 + danticonvdeltap);
-                    if (danticonvergence > danticonvergence0)
-                        danticonvergence = danticonvergence0;
-                }
-
-
-                if (dcoeffp > 0 && dcoeffp * danticonvergence < epsilon)
-                {
-                    danticonvergence = epsilon / dcoeffp;
-                    dconvergence = rrc * danticonvergence;
-                }
-
-                misc.log("convergence {0:0.##}->{1:0.######}", c0, dcoeffp);
-                misc.log("evol convergence {0:0.######}->{1:0.######}", aux, dconvergence);
-            }
-
-            if (selectedByCoeff)
-            {
-                ///
-                // 1.01 -0.2
-                if (coeffVirt - dcoeffm < 1)
-                {
-                    dcoeffm = coeffVirt - 1; // ==0.01
-                    if (rr != 0)
-                        dcoeffp = dcoeffm / rr;
-                }
-                makeDelta(false, dcoeffm, nb);
-            }
-            else
-                makeDelta(true, dcoeffp, nb);
-
-
-
-
-
-
-
-
-        }
-
-        public decimal CoeffT { get { return (decimal)Math.Pow(coeffVirt, safe); } }
-        public decimal CoeffOld { get { return (decimal)Math.Pow(coeffVirt, coeffOldAutoLevel); } }
-
-        private decimal getCoeff(decimal coeffT) { return Math.Pow(coeffT, (1.0m / safe)); }
-
-        private void makeDelta(bool sens, decimal delta, int nb)
-        {
-
-            try
-            {
-                decimal coeffT = coeffVirt; // CoeffT;
-                while (histo.Count >= NB_HISTO)
-                    histo.RemoveAt(0);
-
-
-                string montee = sens ? "up" : "down";
-                var c0 = coeffT;
-                if (sens)
-                {
-                    for (int i = 0; i < nb; i++)
-                        coeffT += delta;
-                }
-                else
-                {
-                    for (int i = 0; i < nb; i++)
-                        coeffT -= delta;
-                }
-                if (coeffT < 1)
-                {
-                    coeffT = 1;
-                }
-
-                // var coeff = getCoeff(coeffT); // (decimal)Math.Pow((double)coeffT, (1.0 / (double)safe));
-
-                misc.log("{0} {1:0.######} {2:0.######}->{3:0.######}", montee, delta, c0, coeffT);
-
-                coeffVirt = coeffT; // coeff;
-
-                if (coeffOldAuto)
-                {
-                    coeffOld = CoeffOld;
-                }
-                histo.Add(new HistoValue(coeffVirt, delta, danticonvergence));
-            }
-            catch
-            {
-            }
-
-
-
-        }
-
-        //public HistoStat calcStat(selectedCoeff motif, int nb)
-        //{
-        //    var stat = new HistoStat();
-        //    int _nb = 0;
-        //    int count = histo.Count;
-        //    for (int i = count - 1; i >= 0; i--)
-        //    {
-        //        var h = histo[i];
-
-        //        // min 
-        //        if (h < stat.min.absolute)
-        //            stat.min.absolute = h;
-        //        // calcul du plus faible qui n'a pas fonctionné
-
-        //        if (h < stat.min.relative)
+        //        var track = list[i];
+        //        if (track.Selected)
         //        {
-        //            if (i + 1 < count)
-        //            {
-        //                var suivant = histo[i + 1];
-        //                if (suivant < h)
-        //                    stat.min.relative = h;
-        //            }
-        //            else
-        //            {
-        //                if (motif > selectedCoeff.noCoeff || motif == selectedCoeff.none)
-        //                    stat.min.relative = h;
-        //            }
-        //        }
-
-        //        //max
-        //        if (h > stat.max.absolute)
-        //            stat.max.absolute = h;
-        //        // calcul du max qui fonctionne
-        //        if (h > stat.max.relative)
-        //        {
-        //            if (i + 1 < count)
-        //            {
-        //                var suivant = histo[i + 1];
-        //                if (suivant > h)
-        //                    stat.max.relative = h;
-        //            }
-        //            else
-        //            {
-        //                if (motif <= selectedCoeff.noCoeff)
-        //                    stat.max.relative = h;
-        //            }
-        //        }
-
-        //        _nb++;
-        //        if (_nb >= nb)
+        //            next = track;
+        //            indexNextSelected = i;
         //            break;
+        //        }
         //    }
 
-        //    return stat;
-        //}
+        //    if (next == null)
+        //        return;
 
-        //private decimal calcMin(int nb, bool sens)
-        //{
-        //    decimal min = CoeffT;
-        //    int _nb = 0;
-        //    int count = histo.Count;
-        //    for (int i = count - 1; i >= 0; i--)
+        //    int nbRead = 0;
+        //    int nbTotal = 0;
+
+        //    var histo = conf.getHisto(album.Rare);
+
+        //    DateTime limit = next.Pub.AddDays(-histo);
+        //    for (int i = indexNextSelected - 1; i >= 0; i--)
         //    {
-        //        var h = histo[i];
+        //        var t = list[i];
+        //        var dt = t.Pub;
+        //        if (dt < limit)
+        //            break;
 
-        //        if ((sens && h > min) || (!sens && h < min))
+        //        if (t.Played)
+        //            nbRead++;
+
+        //        if (t.Played || t.track.Enabled)
+        //            nbTotal++;
+
+        //    }
+        //    double delta = conf.getIntervalle(album.Rare);
+        //    var intervalle = conf.getIntervalle(album.Rare);
+        //    var intervalleMin = conf.getIntervalleMin(album.Rare);
+        //    if (nbRead > 0 && nbTotal > 0)
+        //    {
+        //        //  album.Rare ? conf.intervalleR : conf.intervalle;
+        //        var ecouteMax = conf.getEcouteMax(album.Rare); // album.Rare ? conf.ecouteMaxR : conf.ecouteMax;
+
+        //        delta = (intervalle * (double)nbTotal) / (ecouteMax * (double)nbRead);
+        //        var coeff = (double)nbTotal / (double)nbRead;
+
+        //        //0.1 => 10
+        //        //0.9 => 1.11
+        //        coeff -= 1; // 9  0.11
+        //        var dminmax = intervalle - intervalleMin;
+
+        //        var _delta = intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+
+        //        if (_delta < delta)
+        //            delta = _delta;
+        //        else
         //        {
-        //            // calcul du max qui fonctionne
-        //            if (sens)
+        //        }
+        //    }
+
+
+        //    var deltaLecture = (DateTime.Now - reallyLastRead.PlayedDate).TotalDays;
+
+
+
+        //    for (int j = 0; j < indexNextSelected; j++)
+        //    {
+        //        for (int i = j; i < indexNextSelected; i++)
+        //        {
+        //            var track = list[i];
+        //            if (track.Played)
         //            {
-        //                if (i + 1 < count)
-        //                {
-        //                    var suivant = histo[i + 1];
-        //                    if (suivant > h)
-        //                        min = h;
-        //                }
+        //                reallyLastRead = track;
+        //                lastRead = track;
+        //                indexLastRead = i;
+        //                lastPlayed = track.PlayedDate;
+        //                j = i;
+        //                break;
         //            }
-        //            // calcul du plus faible qui n'a pas fonctionné
-        //            else
-        //                if (i + 1 < count)
-        //                {
-        //                    var suivant = histo[i + 1];
-        //                    if (suivant < h)
-        //                        min = h;
-        //                }
+        //        }
+        //        var pub2 = lastRead.Pub2;
+
+        //        if (conf.extPente > 0)
+        //        {
+        //            var d0 = (DateTime.Now - pub2).TotalDays;
+        //            var dl = conf.extDelta;
+        //            if (dl == 0)
+        //            {
+        //                dl = d0;
+        //            }
+
+        //            delta = d0 / conf.extPente;
+        //            //01/01/2014 ->01/01/2017
+        //            //04/01/2017 -> 04/01/2014
+        //            var dateLimitEcoule = DateTime.Now.AddDays(-dl);
+
+        //            var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
+        //            log.log("{0} {1}", delta.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
+
+        //            if (deltaLimiteEcoule > delta)
+        //                delta = deltaLimiteEcoule;
+
+        //            if (delta < 1)
+        //                delta = 1;
+
+
+
         //        }
 
-        //        _nb++;
-        //        if (_nb >= nb)
-        //            break;
+        //        if (conf.limitRead && deltaLecture > intervalle)
+        //        {
+        //            //13 /10 ->7
+        //            var _old = delta;
+
+        //            delta += intervalle - deltaLecture;
+        //            log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
+        //        }
+
+        //        if (delta < intervalleMin)
+        //            delta = intervalleMin;
+
+        //        if (delta > intervalle)
+        //            delta = intervalle;
+
+
+        //        DateTime limitFuture = pub2.AddDays(delta);
+
+        //        if (limitFuture.Second > 0)
+        //        {
+        //            limitFuture = new DateTime(limitFuture.Ticks - limitFuture.Ticks % TimeSpan.TicksPerMinute + TimeSpan.TicksPerMinute);
+        //        }
+
+
+        //        DateTime nextDate = limitFuture;
+        //        int nb = 0;
+        //        int nblissage = 0;
+        //        double deltaMinute = 1;
+
+        //        if (conf.noCollision)
+        //            deltaMinute = TimeSpan.FromDays(delta).TotalMinutes;
+
+        //        if (conf.deltaConst)
+        //        {
+
+        //        }
+
+        //        else
+        //        {
+        //            var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
+        //            var _deltaRab = limitFuture.AddDays(conf.deltaRab);
+
+        //            for (int i = indexLastRead + 1; i < list.Count; i++)
+        //            {
+        //                var t = list[i];
+        //                if (t.Pub >= limitFuture)
+        //                {
+        //                    nextDate = t.Pub;
+        //                    nblissage++;
+        //                    if (t.Pub >= _deltaMin && t.Pub >= _deltaRab && nb >= conf.deltaNbMin && nblissage > conf.deltaNbRab)
+        //                        break;
+        //                }
+        //                nb++;
+        //            }
+
+        //            if (nextDate > limitFuture && nb > 0 && conf.noCollision)
+        //                deltaMinute = (nextDate - limitFuture).TotalMinutes / (double)nb;
+        //        }
+
+        //        if (deltaMinute < 1)
+        //            deltaMinute = 1;
+
+
+
+        //        nb = 0;
+        //        for (int i = indexLastRead + 1; i < count; i++)
+        //        {
+
+        //            var t = list[i];
+
+        //            if (!t.Selected && conf.enabled != sortMode.reset)
+        //                continue;
+        //            if (!t.track.Enabled)
+        //                continue;
+        //            var dt = limitFuture.AddMinutes(deltaMinute * nb);
+        //            var _delta = (dt - lastRead.Pub2).TotalDays;
+
+        //            if (t.Pub >= dt || conf.enabled == sortMode.reset)
+        //                t.increasePub(t.Pub);
+        //            else
+        //            {
+        //                t.increasePub(dt);
+        //                nb++;
+        //            }
+
+
+        //        }
         //    }
-        //    return min;
+
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        var track = list[i];
+        //        if (!track.Selected)
+        //            continue;
+        //        var pub2 = track.Pub2;
+        //        var newPub = track.getPub();
+
+        //        if (newPub != pub2)
+        //        {
+        //            writeComment(track, newPub);
+        //        }
+        //    }
+
+
+
+
+
+
+
+
+
+        //    //  log.log("{0} {1}/{2} ({3}/{4}) [{5}] {6} {7} ({8}) lecture={9} ", delta.ToString("#.##"), nbRead, nbTotal, nbReads, nbTotals, album.Album, lastRead.Name, lastRead.Pub, pub2, deltaLecture.ToString("#.##"));
+
+
+
+
+
+
+
+
+
+        //    for (int i = 0; i < list.Count; i++)
+        //    {
+        //        var track = list[i].track;
+
+        //        if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
+        //        {
+        //            var aux = currentPub2.AddMinutes(1);
+        //            log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+        //            track.Pub2 = aux;
+        //        }
+
+        //        currentPub = track.Pub;
+        //        currentPub2 = track.Pub2;
+        //    }
+
+
         //}
 
-        //public decimal coeffTMin(int nb)
-        //{
-        //    return calcMin(nb, false);
-        //}
 
-        //public decimal coeffTMax(int nb)
-        //{
-        //    return calcMin(nb, true);
-        //}
-
-
-
-    }
-    public class CalcMedianne
-    {
-
-        const decimal PRECISION = 0.0000001m;
-        const decimal EPSILON = 0.0000000000001m;
-        const decimal EPSILON_LOG = EPSILON;
-        private static int index;
-        public static int Index { get { return index; } }
-
-
-
-        public static DecimalIndex getMedianne(IList<decimal> list, decimal coeffMedianne)
+        public void init()
         {
-            return new DecimalIndex() { d = getMedianne_(list, coeffMedianne), index = index };
+            done = false;
         }
-
-
-
-        private static decimal getLn(decimal rapport)
+        public void build()
         {
-            if (rapport <= 0)
-                return 0m;
-            return Convert.ToDecimal(10 + Math.Log10(rapport));
-        }
-        private static decimal getRapport(decimal ln)
-        {
-            return Convert.ToDecimal(Math.Pow(10, ln - 10));
-        }
-
-        private static DecimalIndex calcmedianneVirt(IList<decimal> _list, decimal coeffMedianne, bool quasi)
-        {
-
-            int count = _list.Count;
-
-            DecimalIndex ret = new DecimalIndex() { d = 0m, index = 0 }; // 0m; // decimal ret = int.MinValue;
-            for (int i = 0; i < count; i++)
-            {
-                if (i > 0)
-                {
-
-                    _list.RemoveAt(count - i);
-                }
-
-                var aux = getMedianne_(_list, coeffMedianne);
-                if (aux == 0m)
-                    continue;
-                // aux = getLn(aux);
-                //decimal coeff = 1; 
-                //if (count >2)
-                //coeff = (decimal)(count - 2 - i) / (decimal)(count - 2); 
-                decimal coeff = 1 - (decimal)i / (decimal)count; // (decimal)count - i / (decimal)count;
-                if (quasi)
-                    coeff *= coeff;
-                aux = aux * coeff;
-                if (aux > ret.d)
-                {
-                    ret.d = aux;
-                    ret.index = index;
-                }
-
-                if (_list[count - i - 1] > 0m)
-                    break;
-
-
-            }
-
-            //     if (ret == int.MinValue)
-            //         return 0m;
-            return ret;
-        }
-
-
-        public static decimal getMedianneLight0(IList<decimal> list, decimal coeffMedianne, bool quasi)
-        {
-            if (list.Count == 1)
-                return getMedianne_(list, coeffMedianne);
-            decimal ret = 0m;
-            int count = list.Count;
-
-            List<decimal> _list = new List<decimal>(list);
-            // ret = getMedianne_(_list, coeffMedianne);
-            decimal nb = 0m;
-            for (int i = 0; i < count - 1; i++)
-            {
-                if (i > 0)
-                    _list.RemoveAt(count - i);
-                var aux = getMedianne_(_list, coeffMedianne);
-                decimal coeff = count - 1 - i;
-                if (quasi)
-                    coeff *= coeff;
-                ret += aux * coeff;
-                nb += coeff;
-
-
-            }
-            ret /= nb;
-
-
-            return ret;
-        }
-        private static decimal getMedianne_(IList<decimal> list, decimal coeffMedianne)
-        {
-            index = 0;
-            if (list == null)
-                throw new ArgumentException("liste nulle");
+            if (done)
+                return;
+            done = true;
+            if (conf.enabled == sortMode.no)
+                return;
             int count = list.Count;
             if (count == 0)
-                throw new ArgumentException("liste vide");
-            if (coeffMedianne < 0 || coeffMedianne > 1)
-                throw new ArgumentException("coeffMedianne doit être compris entre 0 et 1, valeur:" + coeffMedianne);
-            if (count == 1)
-                return list[0];
-            if (coeffMedianne == 0)
-                return list[0];
-            if (coeffMedianne == 1)
+                return;
+
+            if (conf.enabled == sortMode.reset)
             {
-                index = count - 1;
-                return list[count - 1];
+                foreach (var t in list)
+                {
+                    eraseSort(t, true);
+                }
+
+                return;
             }
 
-            var medianne = coeffMedianne * (count - 1);
-
-            index = (int)medianne;
-            int i1 = index + 1;
-            var val0 = list[index];
-            var val1 = list[i1];
-            if (Math.Abs(medianne - Convert.ToDecimal(index)) < PRECISION)
-                return val0;
-            if (Math.Abs(medianne - i1) < PRECISION)
+            int indexLastRead = -1;
+            int indexNextSelected = -1;
+            DateTime lastPlayed = DateTime.MinValue;
+            TrackSort next = null;
+            //  TrackSort reallyLastRead = null;
+            DateTime currentPub = DateTime.MinValue;
+            DateTime currentPub2 = DateTime.MinValue;
+            for (int i = 0; i < count; i++)
             {
-                index = i1;
-                return val1;
+                var track = list[i];
+                //if (conf.extPente > 0)
+                //{
+                //    if (!track.Played && track.Pub == track.Pub2)
+                //        track.Pub2 = Conf.Date0; 
+                //}
+
+                if (track.Pub > currentPub && track.Pub2 <= currentPub2)
+                {
+                    var aux = currentPub2.AddMinutes(1);
+                    log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux;
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+
+
+                if (track.Played) // && track.PlayedDate > lastPlayed)
+                {
+                    // ok mais quid du cas au fil de l'histoire : date dans le futur
+                    if (track.Pub2 <= Conf.Date0 || conf.extPente > 0)
+                    {
+                        if (next == null)
+                        {
+                            indexLastRead = i;
+                            lastPlayed = track.PlayedDate;
+                        }
+                    }
+                }
+
+                else if (next == null)
+                {
+                    if (track.Selected)
+                    {
+                        next = track;
+                        indexNextSelected = i;
+                        // break;
+                    }
+                }
             }
 
-            var dx = medianne - index;
+
+            if (indexLastRead < 0)
+                return;
+            if (next == null)
+                return;
+            var intervalle = conf.getIntervalle(album.Rare);
+            var intervalleMin = conf.getIntervalleMin(album.Rare);
+            var lastRead = list[indexLastRead];
+            double deltaLastRead0 = (lastRead.Pub2 - lastRead.Pub).TotalDays;
+            DateTime pub2 = lastRead.Pub2;
+
+            double delta0Corr = deltaLastRead0;
+
+            if (pub2 > lastRead.Pub && conf.elastique < 1)
+            {
+                delta0Corr = deltaLastRead0 * conf.elastique;
+                pub2 = lastRead.Pub.AddDays(delta0Corr);
+            }
 
 
-            // var ret = val0 + pente * dx;
+            var deltaLecture = (DateTime.Now - lastPlayed).TotalDays;
+
+            int nbReads = 0;
+            int nbTotals = 0;
+
+            int nbRead = 0;
+            int nbTotal = 0;
+
+            int _nbRead = 0;
+            int _nbTotal = 0;
+            double delta = conf.getIntervalle(album.Rare);
+            double delta0 = delta;
+            var _histo = conf.getHisto(album.Rare);
+            if (_histo > 0)
+            {
+                double histo = _histo;
+
+                DateTime histo0 = next.Pub;
+                if (conf.histoMode == histoMode.fix)
+                    histo0 = Conf.Date0;
+                DateTime limit = histo0.AddDays(-histo);
+
+                for (int i = indexNextSelected - 1; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotals >= conf.totalMin)
+                        break;
+
+                    if (t.Played)
+                        nbReads++;
 
 
-            // moyenne avec calcul de log
-            var log0 = Math.Log(val0 + EPSILON_LOG);
-            var log1 = Math.Log(val1 + EPSILON_LOG);
-            // pente = log1 - log0;
-            var log = log0 + (log1 - log0) * dx;
-            return Math.Exp(log) - EPSILON_LOG;
+                    nbTotals++;
+
+                }
+
+
+
+                limit = lastRead.Pub.AddDays(-histo);
+                for (int i = indexLastRead; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotal >= conf.totalMin)
+                        break;
+
+                    if (t.Played)
+                        nbRead++;
+
+
+                    nbTotal++;
+
+                }
+
+
+                if (conf.histoMode == histoMode.read)
+                {
+                    _nbRead = nbRead;
+                    _nbTotal = nbTotal;
+                }
+                else
+                {
+                    _nbRead = nbReads;
+                    _nbTotal = nbTotals;
+                }
+
+
+                if (_nbRead > 0 && _nbTotal > 0)
+                {
+                    if (_nbTotal < conf.totalMin)
+                        _nbTotal = conf.totalMin;
+                    //  album.Rare ? conf.intervalleR : conf.intervalle;
+                    var ecouteMax = conf.getEcouteMax(album.Rare); // album.Rare ? conf.ecouteMaxR : conf.ecouteMax;
+
+                    delta = (intervalle * (double)_nbTotal) / (ecouteMax * (double)_nbRead);
+                    var coeff = (double)_nbTotal / (double)_nbRead;
+
+                    //0.1 => 10
+                    //0.9 => 1.11
+                    //coeff -= 1; // 9  0.11
+                    //var dminmax = intervalle - intervalleMin;
+
+                    var _delta = borne(coeff, intervalle, intervalleMin); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+
+                    if (_delta < delta)
+                        delta = _delta;
+                    else
+                    {
+                    }
+
+                }
+
+                //misc.log("{3} {4}/{5} [{0}] {1} {2} ", name, lastRead.Name, lastRead.Pub, delta.ToString("#.##"), nbRead, nbTotal, name);
+
+
+            }
+
+
+
+            if (conf.extPente > 0)
+            {
+                var d0 = (DateTime.Now - pub2).TotalDays;
+                var dl = conf.extDelta;
+                if (dl == 0)
+                {
+                    dl = d0;
+                }
+
+                delta0 = d0 / conf.extPente;
+                delta = delta0;
+                //01/01/2014 ->01/01/2017
+                //04/01/2017 -> 04/01/2014
+                var dateLimitEcoule = DateTime.Now.AddDays(-dl);
+
+                var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
+                log.log("{0} {1}", delta.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
+
+                if (deltaLimiteEcoule > delta)
+                    delta = deltaLimiteEcoule;
+
+                if (delta < 1)
+                    delta = 1;
+
+                //if (delta > intervalle)
+                //    delta = intervalle;
+            }
+
+            if (conf.limitRead && deltaLecture > intervalle)
+            {
+                //13 /10 ->7
+                var _old = delta;
+
+                delta += intervalle - deltaLecture;
+                log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
+            }
+
+            if (delta < intervalleMin)
+                delta = intervalleMin;
+
+            if (delta > intervalle)
+                delta = intervalle;
+
+
+
+            DateTime limitFuture = pub2.AddDays(delta).truncateToMinute();
+            DateTime nextDate = limitFuture;
+
+            int nb = 0;
+            int nblissage = 0;
+            double deltaAtterrissage = intervalleMin;
+
+            if (conf.noCollision)
+                deltaAtterrissage = TimeSpan.FromDays(delta).TotalDays;
+            if (conf.extPente > 0)
+                deltaAtterrissage = TimeSpan.FromDays(delta0).TotalDays;
+
+            if (conf.deltaConst)
+            {
+            }
+
+            else
+            {
+                var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
+                var _deltaRab = limitFuture.AddDays(conf.deltaRab);
+                double deltaattAux = 0;
+                for (int i = indexLastRead + 1; i < count; i++)
+                {
+                    var t = list[i];
+
+                    if (conf.deltaCheckSelected)
+                    {
+                        if (!t.Selected)
+                            continue;
+                        if (!t.Enabled)
+                            continue;
+                    }
+
+                    if (t.Pub >= limitFuture)
+                    {
+                        nextDate = t.Pub;
+                        nblissage++;
+                        if (nextDate > limitFuture && nb > 0 && conf.noCollision)
+                        {
+                            var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
+                            if (_deltaAtt < deltaAtterrissage)
+                            {
+                                if (_deltaAtt > deltaattAux)
+                                    deltaattAux = _deltaAtt;
+                            }
+                        }
+                        if (t.Pub >= _deltaMin && t.Pub >= _deltaRab && nb >= conf.deltaNbMin && nblissage > conf.deltaNbRab)
+                            break;
+                    }
+                    nb++;
+                }
+
+                if (nextDate > limitFuture && nb > 0 && conf.noCollision)
+                {
+                    if (deltaattAux > 0)
+                        deltaAtterrissage = deltaattAux;
+                    else
+                    {
+                        var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
+                        if (_deltaAtt < deltaAtterrissage)
+                            deltaAtterrissage = _deltaAtt;
+                    }
+                   
+                    if (deltaAtterrissage > intervalleMin)
+                        deltaAtterrissage = intervalleMin;
+                }
+            }
+
+            var tsatt = timeSpan.FromDays(deltaAtterrissage);
+            if (tsatt.TotalMinute < 1)
+                tsatt = timeSpan.FromMinutes(1);
+
+            string deltas = string.Format("{0} {1} {2}->{3}", deltaLastRead0.ToString("0.##"), delta0Corr.ToString("0.##"), delta.ToString("0.##"), tsatt.TotalDay.ToString("0.##"));
+
+            log.log("{0} {1}/{2} ({3}/{4}) [{5}] {6} {7} ({8}) lecture={9} ", deltas, nbRead, nbTotal, nbReads, nbTotals, album.Album, lastRead.track.Name, lastRead.Pub, pub2, deltaLecture.ToString("#.##"));
+
+
+            nb = 0;
+            for (int i = indexLastRead + 1; i < count; i++)
+            {
+
+                var t = list[i];
+
+                if (conf.deltaCheckSelected)
+                {
+                    if (!t.Selected)
+                        continue;
+                    if (!t.Enabled)
+                        continue;
+                }
+                var dt = limitFuture.AddMinutes((int)(tsatt.TotalMinute * nb));
+                var _delta = (dt - lastRead.Pub2).TotalDays;
+                if (t.Pub >= dt || conf.enabled == sortMode.reset)
+                    eraseSort(t, false);
+                else
+                {
+                    writeComment(t, dt);
+                    nb++;
+                }
+
+
+            }
+
+
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
+                {
+                    var aux = currentPub2.AddMinutes(1);
+                    log.log("correction2 pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux;
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+            }
 
 
         }
 
-        //public static int getEquiv(IList<double> listRef, double target, int i0, int i1)
+        //private void writeComment(TrackInfoItunes track)
         //{
-        //    var val0 = listRef[i0]; 
-        //     var val1 = listRef[i1]; 
-        //    if (i1 - i0 == 1)
-        //    {
-        //        // on prend le plus proche
-        //        var delta0 = target - val0;
-        //        var delta1 = val1 - target; 
+        //    string comment = track.Pub.ToString("yyyy/MM/dd HH:mm");
+        //    if (track.Pub2 > track.Pub)
+        //        comment = string.Format("{0}|{1}", track.Pub2.ToString("yyyy/MM/dd HH:mm"), track.Pub.ToString("yyyy/MM/dd HH:mm"));
 
-        //        if (delta0 <= delta1)
-        //            return i0;
-        //        return i1; 
-        //    }
-
-        //    int imiddle = (i0 + i1) / 2;
-        //    if (imiddle == i0)
-        //        imiddle++; 
-        //    var vmiddle = listRef[imiddle];
-
-        //    if (vmiddle == target)
-        //        return imiddle;
-        //    if (Math.Abs(vmiddle - target) < PRECISION)
-        //        return imiddle;
-
-        //    if (vmiddle < target)
-        //        return getEquiv(listRef, target, imiddle, i1);
-        //    return getEquiv(listRef, target, i0, imiddle); 
-
-
+        //    if (comment != track.Comment)
+        //        track.Comment = comment;
         //}
-    }
-}]]></content>
-  </file>
-  <file path="\PieceDb.Consolid\Tuning\ConfAlbumSort.cs">
-    <content><![CDATA[using System.Collections.Generic;
-using System.Xml;
-using pdb.util;
-using System;
-using pdb.gen.albums;
 
-namespace pdb.gen.Tuning
-{
-    [Serializable]
-    /// <summary>
-    /// Configuration sort Albums
-    /// </summary>
-    public class ConfAlbumSort : TuningBase
-    {
-
-        private List<ConfMedianne> composants = new List<ConfMedianne>();
-        private List<ConfMedianne> composantsUtiles = new List<ConfMedianne>();
-        public List<ConfMedianne> Composants { get { return composants; } }
-        public List<ConfMedianne> ComposantsUtiles { get { return composantsUtiles; } }
-        // public decimal coeffEnabled = 1m;
-        public int stackSize = 0;
-        public int stackPeremption = 10;
-        public decimal stackPower = 2.0m;
-        public int stackBefore = 0;
-        public bool checkStack = false;
-        public bool stackEnabled = true;
-        public DateTime lastModif;
-        public DateTime newA;
-        public bool createCourant = true;
-        public bool createInter = true;
-        public bool createAll;
-        // public bool oldAsZero; 
-        public void Calcul()
+        private void eraseSort(TrackSort track, bool force)
         {
-            composantsUtiles = new List<ConfMedianne>();
-            foreach (var cmp in composants)
+            if (!force && !track.Selected)
+                return;
+            if (conf.canGoBack || conf.enabled == sortMode.reset)
             {
-                if (cmp.enabled)
-                    composantsUtiles.Add(cmp);
-            }
-            if (composantsUtiles.Count == 0)
-                composantsUtiles.Add(composants[0]);
-        }
-        public ConfAlbumSort()
-        {
-        }
-
-        public ConfAlbumSort(XmlElement node)
-            : base(node)
-        {
-
-            composants.Clear();
-            foreach (XmlNode sub in node.ChildNodes)
-            {
-                if (sub is XmlElement)
+                DateTime pub = track.Pub;
+                if (track.Pub2 >= Conf.Date0 && pub < Conf.Date0)
                 {
-                    var cmp = new ConfMedianne(node, sub as XmlElement);
-                    composants.Add(cmp);
+                    log.log("**********{0} pub2 erase passe en dessous de Date0 {1}->{2} ({3})", track.Name, track.Pub2, track.Pub, Conf.Date0);
+                    nbrepeches++;
+                    // track.Pub2 = TrackInfoItunes.Date0.AddSeconds(nbrepeches);
+                }
+                else if (track.Pub2 >= Conf.NewDate0 && pub < Conf.NewDate0)
+                {
+                    log.log("**********{0} pub2 erase passe en dessous de NewDate0 {1}->{2} ({3})", track.Name, track.Pub2, track.Pub, Conf.NewDate0);
+                    nbrepeches++;
+                    // track.Pub2 = TrackInfoItunes.Date0.AddSeconds(nbrepeches);
+                }
+
+                //}
+                //else
+                //{
+                if (track.Pub2 != track.Pub)
+                    nbModif++;
+                track.Pub2 = track.Pub;
+                //}
+                track.track.BuildComment();
+                // writeComment(track);
+            }
+        }
+
+        private void writeComment(TrackSort track, DateTime dt)
+        {
+            if (!track.Selected)
+                return;
+
+            if (conf.canGoBack)
+            {
+                if (track.Pub2 >= Conf.Date0 && dt < Conf.Date0)
+                {
+                    if (conf.canGoBackButForceSelected)
+                    {
+                        log.log("**********{0} pub2 set passe en dessous de Date0 MAIS repéché {1}->{2} ({3})", track.Name, track.Pub2, dt, Conf.Date0);
+                        nbRepecheForce++;
+                        dt = Conf.Date0.AddMinutes(nbRepecheForce);
+                    }
+                    else
+                    {
+                        log.log("**********{0} pub2 set passe en dessous de Date0 {1}->{2} ({3})", track.Name, track.Pub2, dt, Conf.Date0);
+                        nbrepeches++;
+                    }
+                }
+
+                else if (track.Pub2 >= Conf.NewDate0 && dt < Conf.NewDate0)
+                {
+
+                    if (conf.canGoBackButForceSelected)
+                    {
+                        log.log("**********{0} pub2 set passe en dessous de NewDate0 MAIS repéché {1}->{2} ({3})", track.Name, track.Pub2, dt, Conf.Date0);
+                        nbRepecheForce++;
+                        dt = Conf.Date0.AddMinutes(nbRepecheForce);
+                    }
+                    else
+                    {
+                        log.log("**********{0} pub2 set passe en dessous de NewDate0 {1}->{2} ({3})", track.Name, track.Pub2, dt, Conf.NewDate0);
+                        nbrepeches++;
+                    }
+
                 }
             }
-
-
-            buildi("stackSize", v => stackSize = v);
-            buildi("stackPeremption", v => stackPeremption = v);
-            buildi("stackBefore", v => stackBefore = v);
-            builddec("stackPower", v => stackPower = v);
-
-            buildb("stackEnabled", v => stackEnabled = v);
-            buildb("checkStack", v => checkStack = v);
-            buildDate("lastModif", v => lastModif = v);
-            buildDate("newA", v => newA = v);
-            buildb("createCourant", v => createCourant = v);
-            buildb("createInter", v => createInter = v);
-            buildb("createAll", v => createAll = v);
-
-
-
-            Calcul();
-
-        }
-
-        public override void save(XmlWriter w)
-        {
-            base.save(w);
-            writeStart("albumSort");
-
-            write("stackSize", stackSize);
-            write("stackPeremption", stackPeremption);
-            write("stackBefore", stackBefore);
-            write("stackPower", stackPower);
-
-            write("stackEnabled", stackEnabled);
-            write("checkStack", checkStack);
-            write("lastModif", lastModif);
-            write("newA", newA);
-            write("createCourant", createCourant);
-            write("createInter", createInter);
-            write("createAll", createAll);
-
-            foreach (var cmp in composants)
-                cmp.save(w);
-            writeEnd();
-        }
-        public bool Enabled
-        {
-            get
+            else
             {
-                foreach (var cmp in composants)
+                if (dt == track.Pub2)
                 {
-                    if (cmp.enabled)
-                        return true;
-                }
-                return false;
-            }
-        }
-
-        public void auto(Piece p)
-        {
-            try
-            {
-                if (checkStack && p.PieceAlbum != null && p.PieceAlbum.Empeached)
+                    log.log("\t{0}\t{1} {2}", track.Pub, dt, track.Name);
                     return;
-                if (p.Added > newA)
-                    return;
-                var motif = p.SelectedMotif;
-                if (p.SelectedMotif == selectedCoeff.none)
-                    return;
-                foreach (var cmp in composants)
+                }
+                else if (dt < track.Pub2)
                 {
-                    cmp.auto(motif);
+                    log.log("\t{0}\t{1}<=\t{2} {3}", track.Pub, track.Pub2, dt, track.Name);
+                    return;
                 }
             }
-            finally
+            var delta = (dt - track.Pub).TotalDays;
+            var strDelta = delta.ToString("0.0");
+
+            if (track.Pub2 != dt)
             {
-                foreach (Piece pp in p.Master)
-                {
-                    pp.Empeached = false;
-                    pp.Empeached1 = false;
-                }
+
+                nbModif++;
+                log.log("\t{0}\t{1}=>\t{2}({3}) {4}", track.Pub, track.Pub2, dt, strDelta, track.Name);
+                track.Pub2 = dt;
             }
+            else if (track.Pub2 > track.Pub)
+            {
+                log.log("\t{0}\t{1}({2}) {3}", track.Pub, track.Pub2, strDelta, track.Name);
+            }
+
+
+            track.track.BuildComment();
+        }
+
+        private static double borne(double coeff, double intervalle, double intervalleMin)
+        {
+           
+            coeff -= 1; // 9  0.11
+            var dminmax = intervalle - intervalleMin;
+
+            var _delta = intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+
+            return _delta; 
         }
     }
-
-
 }
-]]></content>
-  </file>
-</db>
