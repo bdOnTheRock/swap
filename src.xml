@@ -1,4 +1,6 @@
-using System;
+<db path="C:\Bernard\db1\pdb4">
+  <file path="\pdb.podcast\Sort\Album.cs">
+    <content><![CDATA[using System;
 using System.Collections.Generic;
 using pdb.podcast.Albums;
 using pdb.podcast.Tuning;
@@ -323,6 +325,402 @@ namespace pdb.podcast.Sort
         {
             done = false;
         }
+
+        public void buildAll()
+        {
+            if (done)
+                return;
+            done = true;
+            if (conf.enabled == sortMode.no)
+                return;
+            int count = list.Count;
+            if (count == 0)
+                return;
+
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                var dt = track.Pub2.AddSeconds(1);
+                build(dt);
+                if (dt >= Conf.Date0)
+                    return; 
+            }
+        }
+
+        private void build(DateTime date0)
+        {
+
+            int count = list.Count;
+            if (count == 0)
+                return;
+            int indexLastRead = -1;
+            int indexNextSelected = -1;
+            DateTime lastPlayed = DateTime.MinValue;
+            TrackSort next = null;
+            //  TrackSort reallyLastRead = null;
+            DateTime currentPub = DateTime.MinValue;
+            DateTime currentPub2 = DateTime.MinValue;
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                //if (conf.extPente > 0)
+                //{
+                //    if (!track.Played && track.Pub == track.Pub2)
+                //        track.Pub2 = Conf.Date0; 
+                //}
+
+                if (track.Pub > currentPub && track.Pub2 <= currentPub2)
+                {
+                    var aux = currentPub2.AddMinutes(1);
+                    log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux;
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+
+
+                if (track.Played) // && track.PlayedDate > lastPlayed)
+                {
+                    // ok mais quid du cas au fil de l'histoire : date dans le futur
+                    if (track.Pub2 <=date0 || conf.extPente > 0)
+                    {
+                        if (next == null)
+                        {
+                            indexLastRead = i;
+                            lastPlayed = track.PlayedDate;
+                            
+                        }
+                    }
+                }
+
+                else if (next == null)
+                {
+                    if (track.Pub2 >= date0)
+                    {
+                        next = track;
+                        indexNextSelected = i;
+                        // break;
+                    }
+                }
+            }
+
+
+            if (indexLastRead < 0)
+                return;
+            if (next == null)
+                return;
+            var intervalle = conf.getIntervalle(album.Rare);
+            var intervalleMin = conf.getIntervalleMin(album.Rare);
+            var lastRead = list[indexLastRead];
+            double deltaLastRead0 = (lastRead.Pub2 - lastRead.Pub).TotalDays;
+            DateTime pub2 = lastRead.Pub2;
+
+            double delta0Corr = deltaLastRead0;
+
+            double cumulMin = conf.getCumulMin(album.Rare);
+            double cumulMax = conf.getCumulMax(album.Rare);
+
+            if (pub2 > lastRead.Pub && conf.extPente == 0)
+            {
+                if (conf.elastique < 1)
+                {
+                    delta0Corr = deltaLastRead0 * conf.elastique;
+                    pub2 = lastRead.Pub.AddDays(delta0Corr);
+                }
+
+
+                if (cumulMin > 0 && cumulMax > 0 && delta0Corr > cumulMin)
+                {
+                    delta0Corr = borneCumul(delta0Corr, cumulMin, cumulMax);
+                    pub2 = lastRead.Pub.AddDays(delta0Corr);
+                }
+            }
+
+
+
+
+            var deltaLecture = (DateTime.Now - lastPlayed).TotalDays;
+
+            int nbReads = 0;
+            int nbTotals = 0;
+
+            int nbRead = 0;
+            int nbTotal = 0;
+
+            int _nbRead = 0;
+            int _nbTotal = 0;
+            double delta = conf.getIntervalle(album.Rare);
+            double delta0 = delta;
+            var _histo = conf.getHisto(album.Rare);
+            if (_histo > 0)
+            {
+                double histo = _histo;
+
+                DateTime histo0 = next.Pub;
+                if (conf.histoMode == histoMode.fix)
+                    histo0 = date0;
+                DateTime limit = histo0.AddDays(-histo);
+
+                for (int i = indexNextSelected - 1; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotals >= conf.totalMin)
+                        break;
+
+                    if (t.Played)
+                        nbReads++;
+
+
+                    nbTotals++;
+
+                }
+
+
+
+                limit = lastRead.Pub.AddDays(-histo);
+                for (int i = indexLastRead; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotal >= conf.totalMin)
+                        break;
+
+                    if (t.Played)
+                        nbRead++;
+
+
+                    nbTotal++;
+
+                }
+
+
+                if (conf.histoMode == histoMode.read)
+                {
+                    _nbRead = nbRead;
+                    _nbTotal = nbTotal;
+                }
+                else
+                {
+                    _nbRead = nbReads;
+                    _nbTotal = nbTotals;
+                }
+
+
+                if (_nbRead > 0 && _nbTotal > 0)
+                {
+                    if (_nbTotal < conf.totalMin)
+                        _nbTotal = conf.totalMin;
+                    //  album.Rare ? conf.intervalleR : conf.intervalle;
+                    var ecouteMax = conf.getEcouteMax(album.Rare); // album.Rare ? conf.ecouteMaxR : conf.ecouteMax;
+
+                    delta = (intervalle * (double)_nbTotal) / (ecouteMax * (double)_nbRead);
+                    var coeff = (double)_nbTotal / (double)_nbRead;
+
+                    //0.1 => 10
+                    //0.9 => 1.11
+                    //coeff -= 1; // 9  0.11
+                    //var dminmax = intervalle - intervalleMin;
+
+                    var _delta = borne(coeff, intervalle, intervalleMin); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+
+                    if (_delta < delta)
+                        delta = _delta;
+                    else
+                    {
+                    }
+
+                }
+
+                //misc.log("{3} {4}/{5} [{0}] {1} {2} ", name, lastRead.Name, lastRead.Pub, delta.ToString("#.##"), nbRead, nbTotal, name);
+
+
+            }
+
+
+
+            if (conf.extPente > 0)
+            {
+                var d0 = (DateTime.Now - pub2).TotalDays;
+                var dl = conf.extDelta;
+                if (dl == 0)
+                {
+                    dl = d0;
+                }
+
+                delta0 = d0 / conf.extPente;
+                delta = delta0;
+                //01/01/2014 ->01/01/2017
+                //04/01/2017 -> 04/01/2014
+                var dateLimitEcoule = DateTime.Now.AddDays(-dl);
+
+                var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
+                log.log("{0} {1}", delta.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
+
+                if (deltaLimiteEcoule > delta)
+                    delta = deltaLimiteEcoule;
+
+                if (delta < 1)
+                    delta = 1;
+
+                //if (delta > intervalle)
+                //    delta = intervalle;
+            }
+
+            if (conf.limitRead && deltaLecture > intervalle)
+            {
+                //13 /10 ->7
+                var _old = delta;
+
+                delta += intervalle - deltaLecture;
+                log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
+            }
+
+
+
+
+            if (delta < intervalleMin)
+                delta = intervalleMin;
+
+            if (delta > intervalle)
+                delta = intervalle;
+
+
+
+            DateTime limitFuture = pub2.AddDays(delta).truncateToMinute();
+            DateTime nextDate = limitFuture;
+
+            int nb = 0;
+            int nblissage = 0;
+            double deltaAtterrissage = intervalleMin;
+
+            if (conf.noCollision)
+                deltaAtterrissage = TimeSpan.FromDays(delta).TotalDays;
+            if (conf.extPente > 0)
+                deltaAtterrissage = TimeSpan.FromDays(delta0).TotalDays;
+
+            if (conf.deltaConst)
+            {
+            }
+
+            else
+            {
+                var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
+                var _deltaRab = limitFuture.AddDays(conf.deltaRab);
+                double deltaattAux = 0;
+                for (int i = indexLastRead + 1; i < count; i++)
+                {
+                    var t = list[i];
+
+                    if (conf.deltaCheckSelected)
+                    {
+                        if (!t.Selected)
+                            continue;
+                        if (!t.Enabled)
+                            continue;
+                    }
+
+                    if (t.Pub >= limitFuture)
+                    {
+                        nextDate = t.Pub;
+                        nblissage++;
+                        if (nextDate > limitFuture && nb > 0 && conf.noCollision)
+                        {
+                            var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
+                            if (_deltaAtt < deltaAtterrissage)
+                            {
+                                if (_deltaAtt > deltaattAux)
+                                    deltaattAux = _deltaAtt;
+                            }
+                        }
+                        if (t.Pub >= _deltaMin && t.Pub >= _deltaRab && nb >= conf.deltaNbMin && nblissage > conf.deltaNbRab)
+                            break;
+                    }
+                    nb++;
+                }
+
+                if (nextDate > limitFuture && nb > 0 && conf.noCollision)
+                {
+                    if (deltaattAux > 0)
+                        deltaAtterrissage = deltaattAux;
+                    else
+                    {
+                        var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
+                        if (_deltaAtt < deltaAtterrissage)
+                            deltaAtterrissage = _deltaAtt;
+                    }
+
+                    if (deltaAtterrissage > intervalleMin)
+                        deltaAtterrissage = intervalleMin;
+                }
+            }
+
+            var tsatt = timeSpan.FromDays(deltaAtterrissage);
+            if (tsatt.TotalMinute < 1)
+                tsatt = timeSpan.FromMinutes(1);
+
+            string deltas = string.Format("{0} {1} {2}->{3}", deltaLastRead0.ToString("0.##"), delta0Corr.ToString("0.##"), delta.ToString("0.##"), tsatt.TotalDay.ToString("0.##"));
+
+            log.log("{0} {1}/{2} ({3}/{4}) [{5}] {6} {7} ({8}) lecture={9} ", deltas, nbRead, nbTotal, nbReads, nbTotals, album.Album, lastRead.track.Name, lastRead.Pub, pub2, deltaLecture.ToString("#.##"));
+
+
+            nb = 0;
+            for (int i = indexLastRead + 1; i < count; i++)
+            {
+
+                var t = list[i];
+
+                if (conf.deltaCheckSelected)
+                {
+                    if (!t.Selected)
+                        continue;
+                    if (!t.Enabled)
+                        continue;
+                }
+                var dt = limitFuture.AddMinutes((int)(tsatt.TotalMinute * nb));
+
+
+                var _delta = (dt - lastRead.Pub2).TotalDays;
+                if (t.Pub >= dt || conf.enabled == sortMode.reset)
+                    eraseSort(t, false);
+                else
+                {
+                    if (cumulMin > 0 && cumulMax > 0 && conf.extPente == 0)
+                    {
+                        var __delta = (dt - t.Pub).TotalDays;
+                        if (__delta > cumulMin)
+                        {
+                            __delta = borneCumul(__delta, cumulMin, cumulMax);
+                            dt = t.Pub.AddDays(__delta);
+
+                        }
+                    }
+
+                    writeComment(t, dt, false, date0, date0);
+                    nb++;
+                }
+
+
+            }
+
+
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
+                {
+                    var aux = currentPub2.AddMinutes(1);
+                    log.log("correction2 pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux;
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+            }
+
+        }
+
         public void build()
         {
             if (done)
@@ -408,11 +806,26 @@ namespace pdb.podcast.Sort
 
             double delta0Corr = deltaLastRead0;
 
-            if (pub2 > lastRead.Pub && conf.elastique < 1)
+            double cumulMin = conf.getCumulMin(album.Rare);
+            double cumulMax = conf.getCumulMax(album.Rare);
+
+            if (pub2 > lastRead.Pub && conf.extPente == 0)
             {
-                delta0Corr = deltaLastRead0 * conf.elastique;
-                pub2 = lastRead.Pub.AddDays(delta0Corr);
+                if (conf.elastique < 1)
+                {
+                    delta0Corr = deltaLastRead0 * conf.elastique;
+                    pub2 = lastRead.Pub.AddDays(delta0Corr);
+                }
+
+
+                if (cumulMin > 0 && cumulMax > 0 && delta0Corr > cumulMin)
+                {
+                    delta0Corr = borneCumul(delta0Corr, cumulMin, cumulMax);
+                    pub2 = lastRead.Pub.AddDays(delta0Corr);
+                }
             }
+
+
 
 
             var deltaLecture = (DateTime.Now - lastPlayed).TotalDays;
@@ -552,6 +965,9 @@ namespace pdb.podcast.Sort
                 log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
             }
 
+
+
+
             if (delta < intervalleMin)
                 delta = intervalleMin;
 
@@ -622,7 +1038,7 @@ namespace pdb.podcast.Sort
                         if (_deltaAtt < deltaAtterrissage)
                             deltaAtterrissage = _deltaAtt;
                     }
-                   
+
                     if (deltaAtterrissage > intervalleMin)
                         deltaAtterrissage = intervalleMin;
                 }
@@ -651,12 +1067,25 @@ namespace pdb.podcast.Sort
                         continue;
                 }
                 var dt = limitFuture.AddMinutes((int)(tsatt.TotalMinute * nb));
+
+
                 var _delta = (dt - lastRead.Pub2).TotalDays;
                 if (t.Pub >= dt || conf.enabled == sortMode.reset)
                     eraseSort(t, false);
                 else
                 {
-                    writeComment(t, dt);
+                    if (cumulMin > 0 && cumulMax > 0 && conf.extPente == 0)
+                    {
+                        var __delta = (dt - t.Pub).TotalDays;
+                        if (__delta > cumulMin)
+                        {
+                            __delta = borneCumul(__delta, cumulMin, cumulMax);
+                            dt = t.Pub.AddDays(__delta);
+
+                        }
+                    }
+
+                    writeComment(t, dt, true, Conf.Date0, Conf.NewDate0); 
                     nb++;
                 }
 
@@ -723,40 +1152,40 @@ namespace pdb.podcast.Sort
             }
         }
 
-        private void writeComment(TrackSort track, DateTime dt)
+        private void writeComment(TrackSort track, DateTime dt, bool checkSelected, DateTime date0, DateTime newDate0)
         {
-            if (!track.Selected)
+            if (checkSelected && !track.Selected)
                 return;
 
             if (conf.canGoBack)
             {
-                if (track.Pub2 >= Conf.Date0 && dt < Conf.Date0)
+                if (track.Pub2 >= date0 && dt < date0)
                 {
                     if (conf.canGoBackButForceSelected)
                     {
-                        log.log("**********{0} pub2 set passe en dessous de Date0 MAIS repéché {1}->{2} ({3})", track.Name, track.Pub2, dt, Conf.Date0);
+                        log.log("**********{0} pub2 set passe en dessous de Date0 MAIS repéché {1}->{2} ({3})", track.Name, track.Pub2, dt, date0);
                         nbRepecheForce++;
-                        dt = Conf.Date0.AddMinutes(nbRepecheForce);
+                        dt = date0.AddMinutes(nbRepecheForce);
                     }
                     else
                     {
-                        log.log("**********{0} pub2 set passe en dessous de Date0 {1}->{2} ({3})", track.Name, track.Pub2, dt, Conf.Date0);
+                        log.log("**********{0} pub2 set passe en dessous de Date0 {1}->{2} ({3})", track.Name, track.Pub2, dt, date0);
                         nbrepeches++;
                     }
                 }
 
-                else if (track.Pub2 >= Conf.NewDate0 && dt < Conf.NewDate0)
+                else if (track.Pub2 >= newDate0 && dt < newDate0)
                 {
 
                     if (conf.canGoBackButForceSelected)
                     {
-                        log.log("**********{0} pub2 set passe en dessous de NewDate0 MAIS repéché {1}->{2} ({3})", track.Name, track.Pub2, dt, Conf.Date0);
+                        log.log("**********{0} pub2 set passe en dessous de NewDate0 MAIS repéché {1}->{2} ({3})", track.Name, track.Pub2, dt,date0);
                         nbRepecheForce++;
                         dt = Conf.Date0.AddMinutes(nbRepecheForce);
                     }
                     else
                     {
-                        log.log("**********{0} pub2 set passe en dessous de NewDate0 {1}->{2} ({3})", track.Name, track.Pub2, dt, Conf.NewDate0);
+                        log.log("**********{0} pub2 set passe en dessous de NewDate0 {1}->{2} ({3})", track.Name, track.Pub2, dt, newDate0);
                         nbrepeches++;
                     }
 
@@ -796,13 +1225,363 @@ namespace pdb.podcast.Sort
 
         private static double borne(double coeff, double intervalle, double intervalleMin)
         {
-           
+            if (coeff < 1)
+                return coeff * intervalleMin;
             coeff -= 1; // 9  0.11
             var dminmax = intervalle - intervalleMin;
 
             var _delta = intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
 
-            return _delta; 
+            return _delta;
+        }
+
+        private static double borneCumul(double delta, double cumulMin, double cumulMax)
+        {
+            if (cumulMin < 0 || cumulMax < 0)
+                return delta;
+            if (delta < cumulMin)
+                return delta;
+            var coeff = delta / cumulMin;
+            return borne(coeff, cumulMax, cumulMin);
         }
     }
 }
+]]></content>
+  </file>
+  <file path="\pdb.podcast\Tuning\Sort.cs">
+    <content><![CDATA[using System.Xml;
+using pdb.util;
+using System;
+using System.Collections.Generic;
+using pdb.podcast.Albums;
+
+namespace pdb.podcast.Tuning.Sort
+{
+    public enum sortMode
+    {
+        no,
+        reset,
+        once,
+        once_all,
+        all
+    }
+
+    public enum histoMode
+    {
+        /// <summary>
+        /// Démarrage de l'histo sur Date0
+        /// </summary>
+        fix,
+        /// <summary>
+        /// Démarrage de l'histo sur le premier sélectionné
+        /// </summary>
+        selected,
+        /// <summary>
+        /// Démarrage de l'histo sur le dernier lu
+        /// </summary>
+        read
+
+    }
+    public class SortItem : SelectParamBase
+    {
+        /// <summary>
+        /// nom de l'album ou suite d'albums
+        /// </summary>
+        public List<string> name = new List<string>();
+
+        public sortMode enabled;
+        public bool checkBefore;
+        /// <summary>
+        /// prise en compte des longs podcasts
+        /// </summary>
+        public double dureeMin;
+        /// <summary>
+        /// intervalle max entre deux écoutes (une semaine)
+        /// </summary>
+        private double intervalle = 7;
+        /// <summary>
+        /// intervalle min entre deux écoutes (un jour)
+        /// </summary>
+        private double intervalleMin = 1;
+        /// <summary>
+        /// intervalle max entre deux écoutes pour un rare
+        /// </summary>
+        private double intervalleR;
+        /// <summary>
+        /// intervalle min entre deux écoutes pour un rare
+        /// </summary>
+        private double intervalleMinR = 7;
+        /// <summary>
+        /// nb d'écoutes maximum dans l'intervalle (typiquement 5)
+        /// </summary>
+        private double ecouteMax;
+        /// <summary>
+        /// nb d'écoutes maximum dans l'intervalle pour un rare
+        /// </summary>
+        private double ecouteMaxR;
+        /// <summary>
+        /// durée sur laquelle on fait des stats pour calculer la fréquence d'écoute
+        /// </summary>
+        private double histo;
+        /// <summary>
+        /// durée sur laquelle on fait des stats pour calculer la fréquence d'écoute pour un rare
+        /// </summary>
+        private double histoR;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : nombre minimum d'éléments à prendre en compte
+        /// </summary>
+        public int deltaNbMin;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : rab d'éléments à prendre en compte
+        /// </summary>
+        public int deltaNbRab;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : intervalle minimum à prendre en compte en jours
+        /// </summary>
+        public double deltaMin;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : rab d'intervalle à prendre en compte
+        /// </summary>
+        public double deltaRab;
+
+        /// <summary>
+        /// pas d'empilage des tracks repoussés
+        /// </summary>
+        public bool noCollision;
+        /// <summary>
+        /// recalcul peut entrainer une date plus récente
+        /// </summary>
+        public bool canGoBack;
+        /// <summary>
+        /// recalcul peut entrainer une date plus récente, mais si ça le rend non séléctionné, on bricole pour qu'il soit quand même selectionné
+        /// </summary>
+        public bool canGoBackButForceSelected;
+        /// <summary>
+        /// écart constant entre les poscasts repoussés
+        /// </summary>
+        public bool deltaConst;
+
+        /// <summary>
+        /// Date0 lors de l'écoute du dernier podcast externe
+        /// </summary>
+        public DateTime extLast0;
+        /// <summary>
+        /// Décalage entre date du podcast supplémentaire et la date0
+        /// </summary>
+        public double extDelta;
+        /// <summary>
+        /// coefficient permettant le calcul de la prochaine date en fonction du retard entre la date0 et maintenant
+        /// </summary>
+        public double extPente;
+        /// <summary>
+        /// check de la date de dernière lecture
+        /// </summary>
+        public bool limitRead;
+        /// <summary>
+        /// Dans le calcul de delta ne pas inclure les non-selectionnés
+        /// </summary>
+        public bool deltaCheckSelected;
+        /// <summary>
+        /// handicap pour les nouveaux podcasts
+        /// </summary>
+        public int totalMin;
+        /// <summary>
+        /// Coefficient de rappel vers la valeur initiale 
+        /// </summary>
+        public double elastique = 1;
+
+        /// <summary>
+        /// Cumul max de retard pour les non-rares
+        /// </summary>
+        public double cumulMax= -1;
+
+        /// <summary>
+        /// Cumul max de retard pour les rares
+        /// </summary>
+        public double cumulMaxR =-1;
+
+        /// <summary>
+        /// Cumul min de retard pour les non-rares
+        /// </summary>
+        public double cumulMin = -1;
+
+        /// <summary>
+        /// Cumul min de retard pour les rares
+        /// </summary>
+        public double cumulMinR = -1; 
+
+      
+        public histoMode histoMode;
+
+        private ITrackSelector selector;
+
+        public SortItem()
+        {
+        }
+
+        public SortItem(XmlElement parent, XmlElement node)
+            : base(parent, node)
+        {
+
+            if (node == null)
+                return;
+            var str = "";
+            builds("name", v => str = v);
+
+            if (!string.IsNullOrEmpty(str))
+            {
+                foreach (string album in str.Split('|'))
+                {
+                    if (!string.IsNullOrWhiteSpace(album))
+                        name.Add(album);
+                }
+            }
+
+            builds("enabled", v => str = v);
+
+            if (!string.IsNullOrEmpty(str))
+                enabled = (sortMode)Enum.Parse(typeof(sortMode), str);
+
+            buildd("dureeMin", v => dureeMin = v);
+            buildd("intervalle", v => intervalle = v);
+            buildd("intervalleMin", v => intervalleMin = v);
+            buildd("intervalleR", v => intervalleR = v);
+            buildd("intervalleMinR", v => intervalleMinR = v);
+            buildd("histo", v => histo = v);
+            buildd("histoR", v => histoR = v);
+            buildd("ecouteMax", v => ecouteMax = v);
+            buildd("ecouteMaxR", v => ecouteMaxR = v);
+
+            buildDate("extLast0", v => extLast0 = v);
+            buildd("extDelta", v => extDelta = v);
+            buildd("extPente", v => extPente = v);
+
+
+
+
+            buildb("deltaConst", v => deltaConst = v);
+
+            buildb("noCollision", v => noCollision = v);
+            buildb("checkBefore", v => checkBefore = v);
+            buildb("limitRead", v => limitRead = v);
+            buildb("canGoBack", v => canGoBack = v);
+            buildb("deltaCheckSelected", v => deltaCheckSelected = v);
+
+            #region lissage
+            buildi("deltaNbMin", v => deltaNbMin = v);
+            buildi("deltaNbRab", v => deltaNbRab = v);
+
+            buildd("deltaMin", v => deltaMin = v);
+            buildd("deltaRab", v => deltaRab = v);
+
+            #endregion
+
+            builds("histoMode", v => str = v);
+            histoMode = (histoMode)Enum.Parse(typeof(histoMode), str);
+
+            buildi("totalMin", v => totalMin = v);
+
+            buildd("elastique", v => elastique = v);
+
+
+            buildd("cumulMin", v => cumulMin = v);
+            buildd("cumulMinR", v => cumulMinR = v);
+            buildd("cumulMax", v => cumulMax = v);
+            buildd("cumulMaxR", v => cumulMaxR = v); 
+            this.selector = new TrackSelector(this);
+        }
+
+        public double getIntervalle(bool rare)
+        {
+            return rare && intervalleR > 0 ? intervalleR : intervalle;
+        }
+        public double getIntervalleMin(bool rare)
+        {
+            return rare && intervalleMinR > 0 ? intervalleMinR : intervalleMin;
+        }
+        public double getHisto(bool rare)
+        {
+            return rare && histoR > 0 ? histoR : histo;
+        }
+        public double getEcouteMax(bool rare)
+        {
+            return rare && ecouteMaxR > 0 ? ecouteMaxR : ecouteMax;
+        }
+
+        internal bool select(ISelectable album)
+        {
+            return selector.select(album);
+        }
+
+        public double getCumulMax(bool rare)
+        {
+            return rare && cumulMaxR > 0 ? cumulMaxR : cumulMax;
+        }
+        public double getCumulMin(bool rare)
+        {
+            return rare && cumulMinR > 0 ? cumulMinR : cumulMin;
+        }
+
+
+    }
+    public class Sort : SortItem
+    {
+        private List<SortItem> items = new List<SortItem>();
+        private List<SortItem> rules = new List<SortItem>();
+
+        public SortItem getItem(string album)
+        {
+            foreach (SortItem g in items)
+            {
+                if (g.name.Contains(album))
+                    return g;
+
+            }
+            return null;
+        }
+
+        public SortItem getRule(TrackAlbum album)
+        {
+            foreach (SortItem r in rules)
+            {
+                if (r.select(album))
+                    return r;
+            }
+
+            return null;
+        }
+        public Sort()
+        {
+
+        }
+
+        public Sort(XmlElement node)
+            : base(null, node)
+        {
+            if (node == null)
+                return;
+            foreach (XmlNode sub in node.ChildNodes)
+            {
+                if (sub is XmlElement)
+                {
+                    if (sub.Name == "album")
+                    {
+                        items.Add(new SortItem(node, sub as XmlElement));
+                    }
+                    else if (sub.Name == "rule")
+                    {
+                        rules.Add(new SortItem(node, sub as XmlElement));
+                    }
+                }
+            }
+
+
+        }
+
+
+
+
+    }
+}]]></content>
+  </file>
+</db>
