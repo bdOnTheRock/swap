@@ -1,710 +1,1491 @@
 <db path="C:\Bernard\db1\pdb4">
-  <file path="\pdb.podcast\pdb.podcast.csproj">
-    <content><![CDATA[<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{6503C759-0373-4B68-A28B-1CB5FF0E6208}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>pdb.podcast</RootNamespace>
-    <AssemblyName>pdb.podcast</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <FileAlignment>512</FileAlignment>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;vendee_</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;MOVE_</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisLogFile>bin\pdb.podcast.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisLogFile>bin\Release\pdb.podcast.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <OutputPath>bin\</OutputPath>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <OutputPath>bin\Release\</OutputPath>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>pdb.podcast.Program</StartupObject>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Interop.iTunesLib">
-      <HintPath>..\pieceDb.iT\bin\Interop.iTunesLib.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Albums\AlbumConsolid.cs" />
-    <Compile Include="Albums\AlbumMgr.cs" />
-    <Compile Include="Albums\TrackAlbum.cs" />
-    <Compile Include="Auto\AutoBuilder.cs" />
-    <Compile Include="Auto\AutoBuilderItem.cs" />
-    <Compile Include="CodeEvaluator.cs" />
-    <Compile Include="DB\Db.cs" />
-    <Compile Include="Hibernator.cs" />
-    <Compile Include="ISelectable.cs" />
-    <Compile Include="Load\Albums.cs" />
-    <Compile Include="Load\Contribution.cs" />
-    <Compile Include="MockLoader.cs" />
-    <Compile Include="Selection\CauseData.cs" />
-    <Compile Include="Auto\Interfaces.cs" />
-    <Compile Include="Auto\TrackBorderItem.cs" />
-    <Compile Include="Build\FilePub.cs" />
-    <Compile Include="Build\IPub.cs" />
-    <Compile Include="Build\PubLoader.cs" />
-    <Compile Include="Delta\Memory.cs" />
-    <Compile Include="Exporter.cs" />
-    <Compile Include="Load\LimitItemLoader.cs" />
-    <Compile Include="Load\LimitLoader.cs" />
-    <Compile Include="Load\LimitsLoader.cs" />
-    <Compile Include="Menage.cs" />
-    <Compile Include="Feed.cs" />
-    <Compile Include="Feeds.cs" />
-    <Compile Include="Load\FeedsLoader.cs" />
-    <Compile Include="Load\FeedLimitItemLoader.cs" />
-    <Compile Include="Report\DirStat.cs" />
-    <Compile Include="Report\FeedLimitItemStat.cs" />
-    <Compile Include="Report\FeedsLimitItemStat.cs" />
-    <Compile Include="Report\FeedStat.cs" />
-    <Compile Include="Report\GroupStat.cs" />
-    <Compile Include="Report\IStat.cs" />
-    <Compile Include="Report\LimitItemStat.cs" />
-    <Compile Include="Report\LimitStat.cs" />
-    <Compile Include="Report\Stat.cs" />
-    <Compile Include="Loader.cs" />
-    <Compile Include="PlayListFilter.cs" />
-    <Compile Include="PodcastComparer.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Report\DoubleStat.cs" />
-    <Compile Include="Report\StatFloat.cs" />
-    <Compile Include="Report\TrackConteneur.cs" />
-    <Compile Include="Report\TripleStat.cs" />
-    <Compile Include="Selection\CauseItem.cs" />
-    <Compile Include="Selection\CauseRegister.cs" />
-    <Compile Include="Selection\Causes.cs" />
-    <Compile Include="Selection\Conv.cs" />
-    <Compile Include="Sort\Album.cs" />
-    <Compile Include="Sort\Sorter.cs" />
-    <Compile Include="Sort\TrackSort.cs" />
-    <Compile Include="TrackInfoItunes.cs" />
-    <Compile Include="TrackSelector.cs" />
-    <Compile Include="Tuning\Album.cs" />
-    <Compile Include="Tuning\Auto.cs" />
-    <Compile Include="Tuning\Conf.cs" />
-    <Compile Include="Tuning\ConfDate.cs" />
-    <Compile Include="Tuning\Db.cs" />
-    <Compile Include="Tuning\DirConf.cs" />
-    <Compile Include="Tuning\Doublon.cs" />
-    <Compile Include="Tuning\Export.cs" />
-    <Compile Include="Tuning\Hibernate.cs" />
-    <Compile Include="Tuning\Html.cs" />
-    <Compile Include="Tuning\Journal.cs" />
-    <Compile Include="Tuning\Limit.cs" />
-    <Compile Include="Tuning\LimitItem.cs" />
-    <Compile Include="Tuning\LimitItemBase.cs" />
-    <Compile Include="Tuning\Limits.cs" />
-    <Compile Include="Tuning\Listes.cs" />
-    <Compile Include="Tuning\Move.cs" />
-    <Compile Include="Tuning\RootIt.cs" />
-    <Compile Include="Tuning\SelectParam.cs" />
-    <Compile Include="Tuning\Sort.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\pdb.iit\pdb.iit.csproj">
-      <Project>{2D0CCC8D-DACB-4D21-B077-D312D2338D7B}</Project>
-      <Name>pdb.iit</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\pdb.ordo\pdb.ordo.csproj">
-      <Project>{30823D1D-851C-456B-AC4C-B0BEEC173361}</Project>
-      <Name>pdb.ordo</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\pdb.util\pdb.util.csproj">
-      <Project>{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}</Project>
-      <Name>pdb.util</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\pieceDb.iT\pdb.it.csproj">
-      <Project>{CF5DB63F-4790-4351-9050-B30DED32F052}</Project>
-      <Name>pdb.it</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\PieceDb.obj\pdb.obj.csproj">
-      <Project>{9B849072-2B8E-4CE4-8AD7-D173724A9644}</Project>
-      <Name>pdb.obj</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="conf.xml">
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-</Project>]]></content>
-  </file>
-   <file path="\pdb.podcast\Load\Albums.cs">
+  <file path="\pdb.podcast\Exporter.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.IO;
+using System.Threading;
+using pdb.podcast.Tuning;
+using pdb.util;
 
-namespace pdb.podcast.Load
+namespace pdb.podcast
 {
-    class Albums
+    class Exporter
     {
-        private Dictionary<string, FeedLimitItemLoader> dict = new Dictionary<string, FeedLimitItemLoader>();
-        public FeedLimitItemLoader Get(TrackInfoItunes track)
+        enum state
         {
-            var key = track.TrackAlbum.AlbumKey;
-            if (!dict.ContainsKey(key))
+            none,
+            record,
+            copy,
+            abort,
+            end
+
+        }
+        private Exporter()
+        {
+        }
+        static Exporter Instance = new Exporter();
+        private volatile object _lock = new object();
+        BgDictString<TrackInfoItunes> dict = new BgDictString<TrackInfoItunes>();
+        List<TrackInfoItunes> list = new List<TrackInfoItunes>();
+        private state status;
+
+        DirectoryInfo dirDest = null;
+        string dirDestPath = "";
+        public const string PODCASTS = "podcasts";
+        public const string ZIQUE = "zique";
+        const string EXPORTE = @"..\exporte.txt";
+
+        public static void TopRecord() { Instance.topRecord(); }
+        public static void TopCopy() { Instance.topCopy(); }
+        public static void Record(TrackInfoItunes track) { Instance.record(track); }
+        public static void Abort() { Instance.abort(); }
+        // public static void RecordTracks(IEnumerable<TrackInfoItunes> list, ITextWriter sb) { Instance.recordTracks(list, sb); }
+
+
+        //void recordTracks(IEnumerable<TrackInfoItunes> list, ITextWriter sb)
+        //{
+        //    foreach (TrackInfoItunes t in list)
+        //        sb.AppendLine(getShortPath(t.Location)); 
+        //}
+
+        private string getShortPath(string loc)
+        {
+            return loc.getShortPath(PODCASTS, ZIQUE);
+        }
+
+        void abort()
+        {
+            lock (_lock)
             {
-                var fd = new FeedLimitItemLoader(track.TrackAlbum);
-                dict.Add(key, fd);
-                return fd; 
+                if (status != state.none && status != state.end)
+                    status = state.abort;
+            }
+            while (status == state.abort)
+            {
+                Thread.Sleep(30);
+                if (status == state.abort)
+                {
+                    lock (_lock)
+                    {
+                        if (status != state.abort)
+                            return;
+                    }
+                }
+            }
+        }
+
+        void topRecord()
+        {
+            lock (_lock)
+            {
+                var conf = Conf.Export;
+                if (!conf.enabled)
+                {
+                    if (status < state.end)
+                        status = state.none;
+                    return;
+                }
+                var dest = Conf.Export.dir;
+                if (string.IsNullOrEmpty(dest))
+                {
+                    status = state.end;
+                    return;
+                }
+                try
+                {
+                    this.dirDest = new DirectoryInfo(dest);
+                }
+                catch
+                {
+                    status = state.end;
+                    return;
+                }
+
+                if (!dirDest.Exists)
+                {
+                    status = state.end;
+                    return;
+                }
+                this.dirDestPath = dirDest.FullName;
+                if (!dirDestPath.EndsWith("\\"))
+                    dirDestPath += Path.DirectorySeparatorChar;
+                if (status == state.none)
+                {
+                    dict = new BgDictString<TrackInfoItunes>();
+                    status = state.record;
+                }
+            }
+        }
+
+        void record(TrackInfoItunes track)
+        {
+            if (status != state.record)
+                return;
+            dict[track.Location] = track;
+        }
+        void topCopy()
+        {
+            lock (_lock)
+            {
+                if (status != state.record)
+                    return;
+                status = state.copy;
+                list = new List<TrackInfoItunes>(dict.Values);
+                list.Sort(new PodCastComparerPub2());
+                new Thread(loop).Start();
             }
 
-            return dict[key]; 
+        }
+
+        //private void checkDir(BgDictString<bool> dict, DirectoryInfo dir)
+        //{
+        //    if (status != state.copy)
+        //        return;
+        //    foreach (FileInfo f in dir.GetFiles())
+        //    {
+        //        if (status != state.copy)
+        //            return;
+        //        dict.Add(f.FullName.getShortPath(PODCASTS, ZIQUE), false);
+        //    }
+
+        //    foreach (DirectoryInfo sub in dir.GetDirectories())
+        //    {
+        //        if (status != state.copy)
+        //            return;
+        //        checkDir(dict, sub);
+        //    }
+        //}
+
+        private void loop()
+        {
+            int i = 0;
+            int count = list.Count;
+            try
+            {
+                var d = new BgDictString<bool>();
+                //checkDir(d, dirDest);
+
+                //foreach (TrackInfoItunes t0 in list)
+                //{
+                //    if (status != state.copy)
+                //        return;
+                //    var shortPath = t0.Location.getShortPath(PODCASTS, ZIQUE);
+                //    d[shortPath] = true;
+                //}
+
+                var refeDistant = Conf.Export.fIn;
+                if (File.Exists(refeDistant))
+                {
+                    foreach (string line in File.ReadAllLines(refeDistant))
+                    {
+                        if (string.IsNullOrEmpty(line))
+                            continue;
+                        d[line] = true;
+                    }
+                }
+
+                //foreach (KeyValuePair<string, bool> kvp in d.getKeyValuePairs())
+                //{
+                //    if (status != state.copy)
+                //        return;
+                //    if (!kvp.Value)
+                //    {
+                //        string fdest = dirDestPath + kvp.Key;
+                //        misc.log("suppression de {0}", fdest);
+                //        File.Delete(fdest);
+                //    }
+                //}
+                while (i < count && status == state.copy)
+                {
+                    try
+                    {
+                        TrackInfoItunes t = list[i];
+                        FileInfo f = new FileInfo(t.Location);
+                        var shortPath = getShortPath(f.FullName); //(  f.FullName.getShortPath(PODCASTS, ZIQUE);
+
+                        if (!d[t.DbId.ToString()])
+                        {
+                            string fdest = dirDestPath + shortPath;
+                            if (!File.Exists(fdest))
+                            {
+                                misc.log("copie de {0}", t);
+
+                                f.copyTree(fdest, null);
+                                File.AppendAllText(refeDistant, t.DbId.ToString() + "\r\n");
+                            }
+                        }
+
+                        i++;
+                    }
+                    catch (System.IO.IOException ioe)
+                    {
+                        misc.log(ioe.ToString());
+                        if (ioe.Message.Contains("space"))
+                        {
+                            lock (_lock)
+                                status = state.end;
+                        }
+                    }
+
+                    catch (Exception ex)
+                    {
+                        misc.log(ex.ToString());
+                    }
+
+                }
+            }
+
+            catch (Exception ex)
+            {
+                misc.log(ex.ToString());
+            }
+            finally
+            {
+                lock (_lock)
+                {
+                    if (status != state.end)
+                        status = state.none;
+                }
+            }
         }
     }
 }
 ]]></content>
   </file>
-  <file path="\pdb.podcast\Load\FeedLimitItemLoader.cs">
+  <file path="\pdb.podcast\Feed.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
-using pdb.podcast.Tuning;
 using pdb.util;
-using pdb.util.list;
-using pdb.podcast.Auto;
-using timeSpan = pdb.util.timeSpan;
-using pdb.podcast.Albums;
+using pdb.podcast.Tuning;
+using pdb.podcast.Report;
+using Math = System.Math;
 
-namespace pdb.podcast.Load
+namespace pdb.podcast
 {
-  
-    public enum loadState
-    {
-        loadCandidat,
-        standAlone,
-        selection,
-        end
-    }
-    //public enum depotType
-    //{
-    //    load,
-    //    rapporte
-    //}
     /// <summary>
-    /// Chargeur des pistes associées à un item de limite sur un dossier
+    /// Un flux podcast (Un album)
     /// </summary>
-    class FeedLimitItemLoader
+    public class Feed
     {
-        private loadState state;
-        ///// <summary>
-        ///// Répertoire
-        ///// </summary>
-        //private DirConf dir;
-        ///// <summary>
-        ///// Limite
-        ///// </summary>
-       // public readonly LimitItem limit;
         /// <summary>
-        /// Album
+        /// Liste des morceaux d'un album de podcasts
         /// </summary>
-        private TrackAlbum album;
-        /// <summary>
-        /// Chargeur de limite
-        /// </summary>
-       // private LimitsLoader parent;
-
-
-        ///// <summary>
-        ///// Nombre de piste max
-        ///// </summary>
-        //int nbMax;
-        //int loadNbMax;
-        /// <summary>
-        /// Durée cumulée max
-        /// </summary>
-        //timeSpan durationMax;
-        //timeSpan loadDurationMax;
-
-        ///// <summary>
-        ///// Date de publication min
-        ///// </summary>
-        //DateTime dateMin;
-
-        // private Logger logger;
-        //private Logger logLimit;
-        //private Logger logItem;
+        private List<TrackInfoItunes> tracks = new List<TrackInfoItunes>();
 
         /// <summary>
-        /// Durée cumulée
+        /// Nom de l'album
         /// </summary>
-        timeSpan currentDuration = new timeSpan();
-        timeSpan currentDurationVirtuel = new timeSpan();
-        timeSpan durationStop = new timeSpan();
+        private string name;
 
         /// <summary>
-        /// Nombre total
+        /// Album de type info
         /// </summary>
-        int nb = 0;
-        int nbVirtuel = 0;
-        int nbStop = 0;
+        private bool info;
+        public bool Info { get { return info; } }
 
-        private bool? endByFd;
-        public bool EndByFd { get { if (endByFd == null) return false; return endByFd.Value; } }
-
-        private bool _okFd; public bool OkFd { get { return _okFd; } }
-        private bool _okNb; public bool OkNb { get { return _okNb; } }
-
-
-        private int _indexv = -1;
-        private int _index = -1;
-
-        public int Index { get { return _index;  } }
-        public int IndexV { get { return _indexv; } }
-      //  public List<TrackInfoItunes> Candidats { get { return candidats;  } }
-
-        #region refonte
-        Contribution virt = new Contribution();
-        Contribution current = new Contribution(); 
-      
-        int count;
-        //private TrackInfoItunes _nextCandidat;
-        //private List<TrackInfoItunes> candidats = new List<TrackInfoItunes>();
-      //  private Contribution dict = new Contribution(); 
-        //public void AddCandidat(TrackInfoItunes track)
-        //{
-        //    candidats.Add(track);
-        //    count++;
-        //}
-        public int NbV { get { return virt.Nb; } }
-        public timeSpan FdV { get { return virt.Duree;  } }
         /// <summary>
-        /// Donne les valeurs min pour ajouter un track à partir de valeurs de base
+        /// Album rare
         /// </summary>
-        /// <param name="nb"></param>
-        /// <param name="fd"></param>
-        //public void checkV(int nb, timeSpan fd)
-        //{
-        //    //nb > _nbv && fd > _fdv
-        //    // 1-> je sors nb=1 fd=5 > retenu par exemple nb=0 fd = 5 ridicule mais c'est comme ça
-        //    // step fait un check(0,5) qui ne renvoie rien
-        //    // 2-> check (0,5 ) ? je fais pas indev++ car j'ai déja 5
-        //    //0/0   1/5    2/11    3/16
-        //    // |-----|------|-------|-->
-        //    // debut
-
-        //    while (true)
-        //    {
-        //        if (virt.Nb > nb)
-        //            break;
-        //        if (virt.Duree > fd)
-        //            break; 
-        //        _indexv++;
-        //        if (_indexv >= count)
-        //            break;
-        //        _nextCandidat = candidats[_indexv];
-        //        virt.add(_nextCandidat); 
-        //    }
-
-        //}
-
-        public void reservation(int nb, timeSpan fd)
+        private bool rare;
+        public bool Rare { get { return rare; } }
+        public Feed(string name)
         {
-            while (true)
-            {
-                
-            }
+            this.name = name;
         }
 
-        #endregion
-        //public FeedLimitLoaderState getNext(FeedLimitLoaderState current)
-        //{
-        //    int i = index + 1;
-        //    if (i >= candidats.Count)
-        //        return null;
-        //    var track = candidats[i]; 
-        //    var _nb = nb + 1;
-        //    var _fd = currentDuration + track.Duree;
+        public string Name { get { return name; } }
+        public int Count { get { return tracks.Count; } }
 
-        //    var ret = new FeedLimitLoaderState() { track = track }(); 
-        //    if (_nb > current.nb)
-        //        ret.
-        //}
-
-        public void phase2()
+        /// <summary>
+        /// D�finition du plus r�cent
+        /// </summary>
+        /// <param name="otrack"></param>
+        public bool check(TrackInfoItunes otrack)
         {
-            currentDuration = new timeSpan();
-            currentDurationVirtuel = new timeSpan();
-            durationStop = new timeSpan();
-            nb = 0;
-            nbVirtuel = 0;
-            nbStop = 0;
-            state = loadState.selection;
-            endByFd = null;
-        }
-
-
-        //private bool loadEqSel;
-        //public bool LoadEqSel { get { return loadEqSel; } }
-
-        public FeedLimitItemLoader( TrackAlbum album)
-        {
-            //this.dir = limit.Dir;
-            //this.limit = limit;
-
-            //this.parent = parent;
-            this.album = album;
-
-
-          //  nbMax = limit.Nb;
-
-
-          //  var feedDuration = limit.FeedDuration;
-          //  int rating = limit.Rating;
-          ////  durationMax = timeSpan.FromMinutes(feedDuration);
-
-
-          //  loadDurationMax = durationMax;
-          //  loadNbMax = nbMax;
-
-          //  bool loadEqSeld = true;
-          //  bool loadEqSeln = true;
-
-          //  //if (limit.Dir.Cascading)
-          //  //{
-          //  if (limit.LoadNb > nbMax)
-          //  {
-          //      loadNbMax = limit.LoadNb;
-          //      loadEqSeln = false;
-          //  }
-          //  if (limit.LoadFeedDuration > feedDuration)
-          //  {
-          //      loadDurationMax = timeSpan.FromMinutes(limit.LoadFeedDuration);
-          //      loadEqSeld = false;
-          //  }
-
-          //  //}
-          //  if (loadEqSeln)
-          //      loadNbMax++;
-          //  if (loadEqSeld)
-          //      loadDurationMax = timeSpan.FromMinutes(loadDurationMax.TotalMinute + 200);
-
-          //  //logItem = Logger.getLogger(limit.ID + "\\" + album, null, false);
-            //logLimit = limit.Logger;
-        }
-
-        //private void log(string txt)
-        //{
-        //    logLimit.log(txt);
-        //    logItem.log(txt);
-        //}
-
-        //private void log(string txt, params object[] other)
-        //{
-
-        //    logLimit.log(txt, other);
-        //    logItem.log(txt, other);
-        //}
-
-
-
-
-        public timeSpan getCurrentDuration(bool real)
-        {
-            if (real)
-                return currentDuration;
-            return currentDurationVirtuel;
-        }
-
-        public timeSpan getDurationStop(bool real)
-        {
-            if (durationStop.Value == 0)
-                return getCurrentDuration(real);
-            return durationStop;
-        }
-
-        public int getNb(bool real)
-        {
-
-            if (real)
-                return nb;
-            return nbVirtuel;
-        }
-        public int getNbStop(bool real)
-        {
-            if (nbStop == 0)
-                return getNb(real);
-            return nbStop;
-        }
-
-        public int Nb { get { return nb; } }
-
-        public bool control(LimitsLoader parent, LimitItem limit,TrackInfoItunes track, bool select, bool load, bool real, bool increment)
-        {
-            //if (state == loadState.end)
-            //    return false;
-
-
-            string location = track.Location;
-            if (string.IsNullOrEmpty(location))
-                return false;
-
-
-
-            //     string str = string.Format("{0} {1} {2} {3}", limit, nb, currentDuration.TotalMinutes.ToString("0"), track.ToString());
-           // string phase = select ? "ctl" : "load";
-
-            //if (!Logger.CreateNullLoggers)
+            //if (otrack.Pub.DayOfYear !=1)
             //{
-            //    string str = string.Format("{0} {1} {2} {3}", limit, nb, currentDuration, track.ToString());
-
-            //    log("-->  {0} ok {1} ", phase, str);
+            //var found tracks.Find(t=>t.Pub == otrack.Pub))
+            //{
             //}
-
-            var ok = checkStatus(limit,  load, track, limit, real, increment);
-
-            if (!ok)
-                return false;
-
-            if (select && real && LimitItemLoader.ModeSelection)
-            {
-               // var selected = selectMode.simple;
-                //if (dir.Histo)
-                //{
-                //    selected = selectMode.serial;
-                //    if (dir.HistoAll.HasValue && dir.HistoAll.Value)
-                //        selected = selectMode.histo;
-                //    if (dir.Serial)
-                //        selected = selectMode.serial;
-                //}
-                //else
-                //{
-                //    //if (!candidat.Serial && !candidat.Histo)
-                //    selected = selectMode.simple;
-                //}
-
-                track.select(selectMode.simple, limit);
-                limit.Dir.Feeds.recordTrack(track, limit);
-            }
-
-            //report aux niveaux inférieurs
-            if (real)
-                parent.recordLimitItemCandidat(track, limit);
+            //}
+            info = otrack.Info;
+            rare = otrack.Rare;
+            tracks.Add(otrack);
             return true;
         }
 
 
 
 
-        private bool checkStatus(LimitItem limit,bool load, TrackInfoItunes track, LimitItem itemSource, bool real, bool increment)
+        public List<TrackInfoItunes> Tracks
         {
-            endByFd = null;
-            _okFd = true;
-            _okNb = true;
-            bool ret = true;
-            //        string str = string.Format("{0} {1} {2} {3} {4}", limit, itemSource, (nb), currentDuration.TotalMinutes.ToString("0"), track.ToString());
-            nbVirtuel = nb;
-            currentDurationVirtuel = currentDuration;
-            var nbBase = real ? nb : nbVirtuel;
-
-            var _nb = nbBase + 1;
-          //  var durationBase =   real ? currentDuration : currentDurationVirtuel;
-         //   var dur = durationBase + track.Duree;
-
-            var conf = album.ConfAlbum; 
-            
-            int _nbMax =  limit.getNb(load, conf); //    load ? limit.LoadNb : (int)(System.Math.Min(limit.Nb, limit.Nb2));
-            var __durationMax = limit.getFd(load, conf); //  load ? limit.LoadDuration : System.Math.Min(limit.FeedDuration, limit.Fd2);
-            var _durationMax = timeSpan.FromMinutes(__durationMax); 
-
-            bool justStopped = false; 
-
-            if (_nb > _nbMax)
+            get
             {
-                _okNb = false;
-                if (real)
-                {
-                    if (LimitItemLoader.ModeSelection)
-                        limit.NbFeedLimit = true;
-                    //if (!Logger.CreateNullLoggers)
-                    //{
-                    //    string str = string.Format("{0} {1} {2} {3} {4}", limit, itemSource, (nb), currentDuration, track.ToString());
-                    //    log("{0} stop nb {1} ", phase, str);
-                    //}
-                    if (state != loadState.end || justStopped)
-                    {
-                        justStopped = true; 
-                        state = loadState.end;
-                        nbStop = _nb;
-                    }
-                }
+                var list = new List<TrackInfoItunes>(tracks);
+                return list;
+            }
+        }
 
-                endByFd = false;
-                ret = false;
+
+        //public ICollection<TrackInfoItunes> getTracks(int level, int nbMax, float feedDuration, bool histo)
+        //{
+        //    TimeSpan currentDuration = new TimeSpan();
+        //    var DurationMax = TimeSpan.FromMinutes(feedDuration);
+        //    int rating = level * 20;
+        //    if (histo)
+        //        tracks.Sort(new PodCastComparer());
+        //    else
+        //        tracks.Sort(new PodCastComparerInv());
+        //    int count = tracks.Count;
+
+        //    List<TrackInfoItunes> aux = new List<TrackInfoItunes>();
+        //    int nb = 0;
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        var track = tracks[i];
+        //        if (track.Rating >= rating)
+        //        {
+        //            var auxD = currentDuration;
+        //            currentDuration += track.Duration;
+        //            if (currentDuration > DurationMax)
+        //            {
+        //                misc.log("{0} level:{1} nbMax:{2} feedDuration:{3} histo:{4} duration:{5}  -->  stop duration {6}", this, level, nbMax, feedDuration, histo, auxD.TotalMinutes.ToString("0"), feedDuration);
+        //                break;
+        //            }
+        //            aux.Add(track);
+        //            nb++;
+        //            if (nb >= nbMax)
+        //            {
+        //                //  misc.log("{0} level:{1} nbMax:{2} feedDuration:{3} histo:{4} duration{5}   -->  stop nb {6}", this, level, nbMax, feedDuration, histo, currentDuration.TotalMinutes.ToString("0"), nb); 
+        //                break;
+        //            }
+        //        }
+        //    }
+
+
+        //    return aux;
+        //}
+
+        public List<TrackInfoItunes> getSelectedTracks
+        {
+            get
+            {
+                var list = tracks.FindAll(t => t.Selected);
+                list.Sort(new PodCastComparerPub2());
+                return list;
+
+            }
+        }
+
+        //public List<TrackInfoItunes> getPreSelectedTracks
+        //{
+        //    get
+        //    {
+        //        var list = tracks.FindAll(t => t.isPreselected); // Providers1.Count > 0);
+        //        list.Sort(new PodCastComparer());
+        //        return list;
+
+        //    }
+        //}
+
+        public List<TrackInfoItunes> getSelectedTracksLevel(int level)
+        {
+            int rating = level * 20;
+
+            var list = tracks.FindAll(t => t.Selected && t.Rating == rating);
+            list.Sort(new PodCastComparerPub2());
+            return list;
+
+        }
+
+        public void buildLastSelectedTrack(List<TrackInfoItunes> depot)
+        {
+            var list = tracks.FindAll(t => t.Selected);
+            if (list.Count > 0)
+            {
+                list.Sort(new PodCastComparerInv());
+                var t = list[0];
+                if (!depot.Contains(t))
+                    depot.Add(t);
             }
 
+        }
 
+        /// <summary>
+        /// Ajout les tracks pour le jour j du journal
+        /// </summary>
+        /// <param name="depot"></param>
+        /// <param name="journal"></param>
+        internal void getSelecTrackJournal(List<TrackInfoItunes> depot, Journal journal)
+        {
+            var list = tracks.FindAll(t => t.FreeInJournal);
+            list.Sort(new PodCastComparerPub2());
+            timeSpan totalDurationMax = timeSpan.FromMinutes(journal.FeedDuration);
+            timeSpan duration = new timeSpan();
 
-            // vérification des valeurs cumulées
-            if (currentDuration > _durationMax)
+            int nbMax = journal.Nb;
+            int nb = 0;
+
+            foreach (TrackInfoItunes track in list)
             {
-                _okFd = false;
-                if (real)
+                depot.Add(track);
+                nb++;
+                if (nb >= nbMax)
+                    return;
+                duration += track.Duree;
+                if (duration >= totalDurationMax)
+                    return;
+            }
+        }
+
+        // const int SEMAINE = 7;
+        private void getSelectedTrack(List<TrackInfoItunes> depot, List<TrackInfoItunes> list, IComparer<TrackInfoItunes> comparer, SelectParam param)
+        {
+
+            if (list == null)
+                list = tracks.FindAll(t => t.Selected);
+            if (list.Count > 0)
+            {
+                list.Sort(comparer);
+
+                var selector = new TrackSelector(param);
+
+                foreach (TrackInfoItunes track in list)
                 {
+                    bool check = selector.select(track);
 
-                    //if (!limit.DurationFeedLimit)
-                    //{
-                    //    //if (!Logger.CreateNullLoggers)
-                    //    //{
-                    //    //    string str = string.Format("{0} {1} {2} {3} {4}", limit, itemSource, (nb), currentDuration, track.ToString());
-                    //    //    log("{0} stop d. {1} ", phase, str);
-                    //    //}
-                    //}
-                    if (LimitItemLoader.ModeSelection)
-                        limit.DurationFeedLimit = true;
-                    if (state != loadState.end || justStopped)
-                    {
-                        justStopped = true; 
-                        state = loadState.end;
-                        durationStop = currentDuration;
-                    }
-
+                    if (check && !depot.Contains(track))
+                        depot.Add(track);
                 }
 
-                //if (select || durationMax == loadDurationMax)
-                //{
-                //    if (ret)
-                //    {
-                //        var tb = new TrackBorderItem(limit, track, borderType.fd, dur, false);
-                //        limit.signal(tb);
-                //    }
-                //    //limit.checkBorderFd(track, dur, false);
-                //}
+            }   
+        }
 
-                if (endByFd == null)
-                    endByFd = true;
-                ret = false;
-            }
+        public void buildFirstSelectedTrackLevel(List<TrackInfoItunes> depot, SelectParam param)
+        {
+            IComparer<TrackInfoItunes> comparer = null;
+
+            int rating = 20 * param.level;
+
+            var list = tracks.FindAll(t => t.Selected && t.Rating >= rating);
+            if (list.Count == 0)
+                return;
+
+            if (param.dateCroissante)
+                comparer = new PodCastComparerPub2();
             else
-            {
-                // endByFd = null;
-                //if (select || durationMax == loadDurationMax)
-                //{
-                //    if (ret)
-                //    {
-                //        var tb = new TrackBorderItem(limit, track, borderType.fd, dur, true);
-                //        limit.signal(tb);
-                //    }
-                //}
-            }
+                comparer = new PodCastComparerInv();
 
+            getSelectedTrack(depot, list, comparer, param);
 
+        }
 
+        public void buildFirstSelectedTrack(List<TrackInfoItunes> depot, SelectParam param)
+        {
+            IComparer<TrackInfoItunes> comparer = null;
 
+            if (param.dateCroissante)
+                comparer = new FeedPodCastComparerHisto();
+            else
+                comparer = new FeedPodCastComparer();
 
-
-            if (increment)
-            {
-                if (real)
-                {
-                    nb += 1;
-                    currentDuration += track.Duree;
-                }
-
-                //currentDurationVirtuel += track.Duree;
-                nbVirtuel += 1;
-            }
-            return ret;
+            getSelectedTrack(depot, null, comparer, param);
 
         }
 
         public override string ToString()
         {
-            return string.Format("{0}", album); 
+            return name + " " + tracks.Count;
         }
+
+        //  private ITextWriter sb = new StringBuilder();
+
+        private Stat stats = new Stat();
+        public void recordTrack(TrackInfoItunes track, LimitItem provider)
+        {
+            stats.recordTrack(track);
+            //sb.Append(provider.Dir.getPath());
+            //sb.Append(" ");
+            //sb.Append(provider.ToString());
+            //sb.Append(" ");
+            //sb.Append(track);
+
+            //  sb.AppendLine();
+        }
+
+        public void rapport(ITextWriter sb)
+        {
+            sb.AppendLine();
+            sb.AppendLine("feed -------------");
+            sb.AppendLine(name);
+            stats.rapport(sb);
+
+
+            foreach (TrackInfoItunes track in getSelectedTracks) //  getPreSelectedTracks)
+            {
+                sb.AppendLine();
+                sb.AppendLine(track.ToString());
+                //sb.AppendLine("pre-selection");
+                //foreach (LimitItem provider in track.Providers1)
+                //{
+                //    sb.Append("\t");
+                //    //sb.Append(provider.Dir.getPath());
+                //    //sb.Append(" ");
+                //    sb.AppendLine(provider.ToString());
+                //}
+
+                //sb.AppendLine("selection");
+                foreach (LimitItem provider in track.Providers)
+                {
+                    sb.Append("\t");
+                    //sb.Append(provider.Dir.getPath());
+                    //sb.Append(" ");
+                    sb.AppendLine(provider.ToString());
+                }
+            }
+        }
+
 
     }
 }
 ]]></content>
   </file>
-  <file path="\pdb.podcast\Load\LimitItemLoader.cs">
+  <file path="\pdb.podcast\Feeds.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using pdb.podcast.Tuning;
+using pdb.util;
+using pdb.util.list;
+using pdb.podcast.Report;
+
+namespace pdb.podcast
+{
+    /// <summary>
+    /// ensemble des albums de podcast
+    /// </summary>
+    public class Feeds : IEnumerable<Feed>
+    {
+        private Dictionary<string, Feed> dict = new Dictionary<string, Feed>();
+        private IDictionary<string, TrackInfoItunes> loaded = new BgDictString0<TrackInfoItunes>();
+        private SequentialDictString<TrackInfoItunes> selected = new SequentialDictString<TrackInfoItunes>();
+        // private SequentialDictString<TrackInfoItunes> preSelected = new SequentialDictString<TrackInfoItunes>();
+        private Stat stat = new Stat();
+
+        private bool ignoretrackDisabled = true;
+        private bool ignoreTrackRead = true;
+        private bool checkExist = true;
+        public Feeds()
+        {
+            ignoretrackDisabled = Conf.OnlyEnabled;
+            ignoreTrackRead = Conf.OnlyUnRead;
+            checkExist = Conf.CheckExist;
+
+        }
+        private static Feeds _instance = new Feeds();
+
+        //public static Feeds Instance { get { return _instance; } }
+        //public static Feeds createInstance()
+        //{
+        //    _instance = new Feeds();          
+        //    return _instance;
+        //}
+        public IDictionary<string, TrackInfoItunes> LoadedTracks { get { return loaded; } }
+        public void check(TrackInfoItunes track)
+        {
+
+            if (!track.Enabled && ignoretrackDisabled) return;
+            if (track.Played && ignoreTrackRead) return;
+            if (checkExist && !FileRegister.Exist(track.Location)) return;
+            checkAll(track);
+        }
+
+        public void check(string album)
+        {
+            string key = album;
+            if (!dict.ContainsKey(key))
+            {
+                Feed feed = new Feed(key);
+                dict.Add(key, feed);
+            }
+
+        }
+
+        public bool checkAll(TrackInfoItunes track)
+        {
+
+           // string album = track.Album;
+            //  string _feed = track.Feed;
+
+            string key = track.AlbumKey;
+            //if (!string.IsNullOrEmpty(_feed))
+            //    key = _feed;
+            if (string.IsNullOrEmpty(key))
+            {
+                misc.log("pas d'album pour " + track);
+                return false;
+            }
+
+            var location = track.Location;
+            if (string.IsNullOrEmpty(location))
+                return false;
+
+            if (loaded.ContainsKey(location))
+                return false;
+
+            stat.recordTrack(track);
+
+            loaded.Add(location, track);
+
+            if (!dict.ContainsKey(key))
+            {
+                Feed feed = new Feed(key);
+                dict.Add(key, feed);
+            }
+            return dict[key].check(track);
+        }
+        private List<TrackInfoItunes> _loaded;
+        public List<TrackInfoItunes> Loaded
+        {
+            get
+            {
+                if (_loaded == null)
+                    _loaded = new List<TrackInfoItunes>(loaded.Values);
+                return _loaded;
+            }
+        }
+        public Stat Stat { get { return stat; } }
+        public List<Feed> List { get { return new List<Feed>(dict.Values); } }
+        //public List<TrackInfoItunes> ListTracks {
+        //    get
+        //    {
+        //        var list = new List<TrackInfoItunes>(dict.Count);
+        //        foreach (var feed in dict.Values)
+        //        {
+        //            list.AddRange(feed.TracksForMulti); 
+        //        }
+        //        list.Sort(new PodCastComparerInv()); 
+        //        return list; 
+        //    }
+
+        //}
+
+        //public List<TrackInfoItunes> ListTrackSingle
+        //{
+        //    get
+        //    {
+        //        var list = new List<TrackInfoItunes>(dict.Count);
+        //        foreach (var feed in dict.Values)
+        //        {
+        //            list.Add(feed.Track);
+        //        }
+        //        list.Sort(new PodCastComparerInv()); 
+        //        return list;
+        //    }
+
+        //}
+
+        //public List<TrackInfoItunes> getLastTracks(int levelMin, int duration, bool? info, bool? rare, int nbMaxByFeed)
+        //{
+        //    return getTracks(levelMin, duration, info, rare, nbMaxByFeed, false); 
+        //    //TimeSpan currentDuration = new TimeSpan();
+        //    //var DurationMax = TimeSpan.FromMinutes(duration); 
+        //    //int ratingMin = levelMin*20; 
+        //    //var aux = new List<TrackInfoItunes>();
+        //    //foreach (var feed in dict.Values)
+        //    //{
+        //    //   aux.AddRange(feed.getLastTracks(nbMaxByFeed,levelMin)); 
+        //    //}
+        //    //aux.Sort(new PodCastComparerInv());
+
+        //    //var list = new List<TrackInfoItunes>();
+
+
+        //    //foreach (TrackInfoItunes candidat in aux)
+        //    //{
+        //    //    if (candidat.Rating < ratingMin) continue;
+        //    //    if (info.HasValue)
+        //    //    {
+        //    //        bool bInfo = info.Value;
+        //    //        if (candidat.Info != bInfo) continue; 
+        //    //    }
+
+        //    //    if (rare.HasValue)
+        //    //    {
+        //    //        bool bRare = rare.Value;
+        //    //        if (candidat.Rare != bRare) continue; 
+        //    //    }
+
+
+        //    //    if (currentDuration + candidat.Duration > DurationMax)
+        //    //        continue;
+        //    //    currentDuration += candidat.Duration;
+        //    //    list.Add(candidat);
+        //    //    candidat.Selected = true; 
+
+        //    //}
+
+        //    //return list; 
+        //}
+
+
+        //public List<TrackInfoItunes> getTracks(Limit limit, DirConf dir, DescBuilder sbDir)
+        //{
+        //    var aux = new List<TrackInfoItunes>();
+
+        //    foreach (LimitItem item in limit.Items)
+        //    {
+        //        aux.AddRange(getTracks(item, dir, sbDir)); 
+        //    }
+        //    return aux; 
+
+        // //   TimeSpan currentDuration = new TimeSpan();
+        // // //  int duration = limit.Duration;
+        // //   var DurationMax = TimeSpan.FromMinutes(duration);
+        // //   int levelMin = limit.Level;
+        // //   int ratingMin = levelMin * 20;
+
+
+        // //   string feedName = null;
+        // //   bool histo = dir.Histo;
+        // //   bool? histoAll = dir.HistoAll; 
+        // //   if (histo)
+        // //       feedName = dir.Name;
+
+        // //   if (limit.Nb == 0 || limit.FeedDuration == 0 || limit.Duration == 0)
+        // //       return aux; 
+
+        // //   foreach (var feed in dict.Values)
+        // //   {
+        // //       if (true.Equals(histoAll) || !histo || (histo && false.Equals(histoAll) && feed.Name.Equals(feedName)))             
+        // //           aux.AddRange(feed.getTracks(limit, dir)); 
+        // //   }
+        // //   if (histo)
+        // //       aux.Sort(new PodCastComparer());
+        // //   else
+        // //       aux.Sort(new PodCastComparerInv());
+
+        // //   var list = new List<TrackInfoItunes>();
+
+        // //   bool? info = dir.Info;
+        // //   bool? rare = dir.Rare;
+
+        // //   bool durationLimitAtteinte = false; 
+
+
+        // //   foreach (TrackInfoItunes candidat in aux)
+        // //   {
+        // //       if (candidat.Rating < ratingMin) 
+        // //           continue;
+        // //       if (info.HasValue)
+        // //       {
+        // //           bool bInfo = info.Value;
+        // //           if (candidat.Info != bInfo)
+        // //               continue;
+        // //       }
+
+        // //       if (rare.HasValue)
+        // //       {
+        // //           bool bRare = rare.Value;
+        // //           if (candidat.Rare != bRare) 
+        // //               continue;
+        // //       }
+
+
+        // //       if (currentDuration + candidat.Duration > DurationMax)
+        // //       {
+        // //           durationLimitAtteinte = true; 
+        // //           continue;
+        // //       }
+        // //       currentDuration += candidat.Duration;
+        // //       list.Add(candidat);
+        // //       candidat.Selected = true;
+
+        // //   }
+        // //   //limit.Append(dir.ToString()); 
+        // //   //limit.Append(" "); 
+        // //   if (durationLimitAtteinte)
+        // //   {
+        // //       limit.Append(">>> ");
+        // //       //limit.Append(limit.Duration); 
+        // //   }
+
+        // //   limit.Append(list.Count); 
+        // //   limit.Append(" elts "); 
+        // //   limit.Append(currentDuration.TotalMinutes.ToString("0"));
+        // //   limit.Append(" min. ");
+
+        // //   var desc = DescBuilder.create();
+
+        // //   limit.rapport(desc);
+
+        // //   foreach (TrackInfoItunes track in list)
+        // //   {
+        // //       desc.AppendLine();
+        // //       desc.Append(track.Pub.ToShortDateString());
+        // //       desc.Append(" ");
+        // //       desc.Append(track.Album);
+        // //       desc.Append(" ");
+        // //       desc.Append(track.Name);
+        // //       desc.Append(" ");
+        // //       desc.Append(track.Rating / 20);
+        // //       desc.Append(" info:");
+        // //       desc.Append(track.Info);
+        // //       desc.Append(" rare:");
+        // //       desc.Append(track.Rare); 
+        // //   }
+
+        // //   misc.log(desc.ToString()); 
+
+
+
+        // //   //for (int i = 0; i < Limits.NB; i++)
+        // //   //{
+        // //   //    var listLevel = list.FindAll(t => t.Rating == 20 * i);
+        // //   //    if (listLevel.Count == 0)
+        // //   //        continue;
+        // //   //    var contributeurLevel = new Contributeur();
+        // //   //    var sb = sbDir.createChild("level " + i); 
+        // //   //    contributeurLevel.recordList(null, listLevel);
+        // //   //    //sb.AppendLine(); 
+        // //   //    //sb.Append("\t"); sb.Append("\t");
+        // //   //    //sb.Append("level ");
+        // //   //    //sb.Append(i);
+        // //   //    //sb.Append(":");
+        // //   //    contributeurLevel.rapport(sb);
+        // //   //    limit.Append(sb.ToString()); 
+
+        // //   //}
+
+
+        // //  // misc.log("getTracks {0} {1} ==> {2} {3}", dir, limit, list.Count, currentDuration.TotalMinutes.ToString("0"));
+
+        // ////   misc.log("getTracks levelMin:{0}, duration:{1}, feedDuration:{2}, nbMaxByFeed:{3}, info:{4}, rare:{5}, feedName:{6} ==> {7} {8}", levelMin, duration, feedDuration, nbMaxByFeed, info, rare, feedName, list.Count, currentDuration.TotalMinutes.ToString("0"));
+
+        // //   return list;
+        //}
+
+
+        //public void getTracks(LimitItem limit, DirConf dir)
+        //{
+        //    TimeSpan currentDuration = new TimeSpan();
+        //    int duration = limit.Duration;
+        //    var DurationMax = TimeSpan.FromMinutes(duration);
+        //    int levelMin = limit.Level;
+        //    int ratingMin = levelMin * 20;
+
+        //    var aux = new List<TrackInfoItunes>();
+
+        //    string feedName = null;
+        //    bool histo = dir.Histo;
+        //    bool? histoAll = dir.HistoAll;
+        //    if (histo)
+        //        feedName = dir.Name;
+
+        //    var logList = new List<TrackInfoItunes>();
+
+        //    if (limit.Nb == 0 || limit.FeedDuration == 0 || limit.Duration == 0)
+        //        return;
+
+
+        //    foreach (var feed in dict.Values)
+        //    {
+        //        if (true.Equals(histoAll) || !histo || (histo && false.Equals(histoAll) && feed.Name.Equals(feedName)))
+        //            feed.getTracks(limit, dir);
+        //    }
+        //    if (histo)
+        //        aux.Sort(new PodCastComparer());
+        //    else
+        //        aux.Sort(new PodCastComparerInv());
+
+
+
+        //    bool? info = dir.Info;
+        //    bool? rare = dir.Rare;
+
+        //    bool durationLimitAtteinte = false;
+
+
+        //    foreach (TrackInfoItunes candidat in aux)
+        //    {
+        //        if (candidat.Rating < ratingMin)
+        //            continue;
+        //        if (info.HasValue)
+        //        {
+        //            bool bInfo = info.Value;
+        //            if (candidat.Info != bInfo)
+        //                continue;
+        //        }
+
+        //        if (rare.HasValue)
+        //        {
+        //            bool bRare = rare.Value;
+        //            if (candidat.Rare != bRare)
+        //                continue;
+        //        }
+
+
+        //        if (currentDuration + candidat.Duration > DurationMax)
+        //        {
+        //            durationLimitAtteinte = true;
+        //            continue;
+        //        }
+        //        currentDuration += candidat.Duration;
+        //        //if (!dir.List.Contains(candidat))
+        //        //{
+        //        //    dir.List.Add(candidat);
+
+        //        //}
+
+        //        if (!logList.Contains(candidat))
+        //            logList.Add(candidat);
+        //        candidat.Selected = true;
+
+        //    }
+        //    //limit.Append(dir.ToString()); 
+        //    //limit.Append(" "); 
+        //    limit.DurationLimitAtteinte = durationLimitAtteinte;
+        //    //if (durationLimitAtteinte)
+        //    //{
+        //    //    limit.Append(">>> ");
+        //    //    //limit.Append(limit.Duration); 
+        //    //}
+        //    //limit.Elt = list.Count;
+        //    //limit.DurationFact = currentDuration; 
+        //    //limit.Append(list.Count);
+        //    //limit.Append(" elts ");
+        //    //limit.Append(currentDuration.TotalMinutes.ToString("0"));
+        //    //limit.Append(" min. ");
+        //    // limit.buildValues(); 
+
+        //    var desc = DescBuilder.create();
+
+
+        //    //limit.recordList(null, dir.List);
+        //    limit.rapport(desc);
+
+
+
+        //    foreach (TrackInfoItunes track in logList)
+        //    {
+        //        desc.AppendLine();
+        //        desc.Append(track.Pub.ToShortDateString());
+        //        desc.Append(" ");
+        //        desc.Append(track.Album);
+        //        desc.Append(" ");
+        //        desc.Append(track.Name);
+        //        desc.Append(" ");
+        //        desc.Append(track.Rating / 20);
+        //        if (track.Info)
+        //            desc.Append(" info ");
+        //        // desc.Append(track.Info);
+        //        if (track.Rare)
+        //            desc.Append(" rare");
+        //        // desc.Append(track.Rare);
+        //    }
+
+        //    misc.log(desc.ToString());
+
+
+
+        //    //for (int i = 0; i < Limits.NB; i++)
+        //    //{
+        //    //    var listLevel = list.FindAll(t => t.Rating == 20 * i);
+        //    //    if (listLevel.Count == 0)
+        //    //        continue;
+        //    //    var contributeurLevel = new Contributeur();
+        //    //    var sb = sbDir.createChild("level " + i); 
+        //    //    contributeurLevel.recordList(null, listLevel);
+        //    //    //sb.AppendLine(); 
+        //    //    //sb.Append("\t"); sb.Append("\t");
+        //    //    //sb.Append("level ");
+        //    //    //sb.Append(i);
+        //    //    //sb.Append(":");
+        //    //    contributeurLevel.rapport(sb);
+        //    //    limit.Append(sb.ToString()); 
+
+        //    //}
+
+
+        //    // misc.log("getTracks {0} {1} ==> {2} {3}", dir, limit, list.Count, currentDuration.TotalMinutes.ToString("0"));
+
+        //    //   misc.log("getTracks levelMin:{0}, duration:{1}, feedDuration:{2}, nbMaxByFeed:{3}, info:{4}, rare:{5}, feedName:{6} ==> {7} {8}", levelMin, duration, feedDuration, nbMaxByFeed, info, rare, feedName, list.Count, currentDuration.TotalMinutes.ToString("0"));
+
+        //    return; // logList;
+
+        //}
+
+        Dict<string, TrackInfoItunes> tracks = new Dict<string, TrackInfoItunes>();
+
+        public void recordTrack(TrackInfoItunes track, LimitItem provider)
+        {
+            string location = track.Location;
+            if (string.IsNullOrEmpty(location)) return;
+
+            if (!selected.ContainsKey(location))
+                selected.Add(location, track);
+            if (tracks.ContainsKey(location)) return;
+            tracks[location] = track;
+
+            Feed feed = dict[track.AlbumKey];
+            feed.recordTrack(track, provider);
+        }
+
+        //public void recordPreselectedTrack(TrackInfoItunes track, LimitItem provider)
+        //{
+        //    string location = track.Location;
+        //    if (string.IsNullOrEmpty(location)) return;
+
+        //    if (!preSelected.ContainsKey(location))
+        //        preSelected.Add(location, track);
+        //}
+
+        private void rapportSelected(ITextWriter sb, string name, IEnumerable<LimitItem> providers)
+        {
+            sb.AppendLine(name);
+            foreach (LimitItem provider in providers)
+            {
+                sb.Append("\t");
+                //sb.Append(provider.Dir.getPath());
+                //sb.Append(" ");
+                sb.AppendLine(provider.ToString());
+            }
+            sb.AppendLine();
+        }
+
+
+        public List<TrackInfoItunes> getSelectedTracks()
+        {
+            return new List<TrackInfoItunes>(selected.Values);
+        }
+
+        public bool existSelected(string location)
+        {
+            return selected.ContainsKey(location);
+        }
+
+
+        public void rapportSelected(ITextWriter sb)
+        {
+            foreach (TrackInfoItunes track in selected.Values)
+            {
+                sb.AppendLine();
+                sb.AppendLine("==================================");
+                sb.AppendLine(track.ToString());
+                // sb.AppendLine("==================================");
+
+                //rapportSelected(sb, "phase 1", track.Providers1);
+                //// rapportSelected(sb, "guests", track.ProvidersGuest);
+                //// rapportSelected(sb, "recursif", track.ProvidersRecursif);
+                rapportSelected(sb, "selected", track.Providers);
+                sb.AppendLine();
+
+            }
+        }
+
+        //public void rapportPreSelected(ITextWriter sb)
+        //{
+        //    foreach (TrackInfoItunes track in preSelected.Values)
+        //    {
+        //        sb.AppendLine();
+        //        sb.AppendLine("==================================");
+        //        sb.AppendLine(track.ToString());
+        //        // sb.AppendLine("==================================");
+
+        //        //rapportSelected(sb, "phase 1", track.Providers1);
+        //        ////  rapportSelected(sb, "guests", track.ProvidersGuest);
+        //        //// rapportSelected(sb, "recursif", track.ProvidersRecursif);
+        //        //rapportSelected(sb, "selected", track.Providers);
+        //        sb.AppendLine();
+
+        //    }
+        //}
+
+        public void rapport(ITextWriter sb)
+        {
+            sb.AppendLine("==================================");
+            sb.AppendLine("Feeds");
+            sb.AppendLine("==================================");
+            foreach (Feed feed in dict.Values)
+            {
+                feed.rapport(sb);
+            }
+        }
+
+        //public List<TrackInfoItunes> getTracks(int levelMin, float duration, float feedDuration, bool? info, bool? rare, int nbMaxByFeed, string feedName)
+        //{
+        //    TimeSpan currentDuration = new TimeSpan();
+        //    var DurationMax = TimeSpan.FromMinutes(duration);
+        //    int ratingMin = levelMin * 20;
+        //    var aux = new List<TrackInfoItunes>();
+        //    bool histo = feedName != null;
+        //    foreach (var feed in dict.Values)
+        //    {
+        //        if (feed.Name.Equals(feedName) || !histo)
+        //            aux.AddRange(feed.getTracks(levelMin, nbMaxByFeed, feedDuration, histo));
+        //    }
+        //    if (histo)
+        //        aux.Sort(new PodCastComparer());
+        //    else
+        //        aux.Sort(new PodCastComparerInv());
+
+        //    var list = new List<TrackInfoItunes>();
+
+
+        //    foreach (TrackInfoItunes candidat in aux)
+        //    {
+        //        if (candidat.Rating < ratingMin) continue;
+        //        if (info.HasValue)
+        //        {
+        //            bool bInfo = info.Value;
+        //            if (candidat.Info != bInfo) continue;
+        //        }
+
+        //        if (rare.HasValue)
+        //        {
+        //            bool bRare = rare.Value;
+        //            if (candidat.Rare != bRare) continue;
+        //        }
+
+
+        //        if (currentDuration + candidat.Duration > DurationMax)
+        //            continue;
+        //        currentDuration += candidat.Duration;
+        //        list.Add(candidat);
+
+        //        //if (!candidat.Selected)
+        //        //    candidat.SelectMode = selectMode.simple; 
+        //        //candidat.Selected = true;
+
+        //    }
+
+        //    misc.log("getTracks levelMin:{0}, duration:{1}, feedDuration:{2}, nbMaxByFeed:{3}, info:{4}, rare:{5}, feedName:{6} ==> {7} {8}", levelMin, duration, feedDuration, nbMaxByFeed, info, rare, feedName, list.Count, currentDuration.TotalMinutes.ToString("0"));
+
+        //    return list;
+        //}
+
+        public List<TrackInfoItunes> getSingleSelectedTracks(int levelMin)
+        {
+            List<TrackInfoItunes> list = new List<TrackInfoItunes>();
+            int ratingMin = levelMin * 20;
+            foreach (var feed in dict.Values)
+            {
+                var listFeed = feed.getSelectedTracks;
+                listFeed.Sort(new PodCastComparerInv());
+                foreach (var track in listFeed)
+                {
+                    if (track.Rating >= ratingMin)
+                    {
+                        list.Add(track);
+                        break;
+                    }
+                }
+
+            }
+            list.Sort(new PodCastComparerInv());
+            return list;
+        }
+
+
+        //public void getSingleSelectedTracks(List<TrackInfoItunes> depot)
+        //{
+        //    foreach (var feed in dict.Values)
+        //    {
+        //        feed.buildLastSelectedTrack(depot);
+        //    }
+
+        //}
+
+        public void getFirstSelectedTracks(List<TrackInfoItunes> depot, SelectParam param)
+        {
+            foreach (var feed in dict.Values)
+            {
+                feed.buildFirstSelectedTrack(depot, param);
+            }
+
+        }
+
+        public void buildFirstSelectedTrackLevel(List<TrackInfoItunes> depot, SelectParam param)
+        {
+            foreach (var feed in dict.Values)
+            {
+                feed.buildFirstSelectedTrackLevel(depot, param);
+            }
+
+
+            if (param.dateCroissante)
+                depot.Sort(new PodCastComparerPub2());
+            else
+                depot.Sort(new PodCastComparerInv());
+        }
+
+        internal List<TrackInfoItunes> buildJournal(Journal journal)
+        {
+            var depot = new List<TrackInfoItunes>();
+            foreach (var feed in dict.Values)
+            {
+                feed.getSelecTrackJournal(depot, journal);
+            }
+            depot.Sort(new PodCastComparerPub2());
+
+            TimeSpan totalDurationMax = TimeSpan.FromMinutes(journal.Duration);
+            TimeSpan duration = new TimeSpan();
+            var list = new List<TrackInfoItunes>();
+
+            foreach (TrackInfoItunes track in depot)
+            {
+                list.Add(track);
+                track.markInJournal();
+                duration += track.Duration;
+                if (duration > totalDurationMax)
+                    break;
+            }
+            return list;
+        }
+
+
+
+
+        public IEnumerator<Feed> GetEnumerator()
+        {
+            return dict.Values.GetEnumerator();
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return dict.Values.GetEnumerator();
+        }
+
+        public Feed this[string album] { get { return dict[album]; } }
+        // public List<TrackInfoItunes> PreSel { get { return new List<TrackInfoItunes>(preSelected); } }
+    }
+
+
+
+
+
+}
+]]></content>
+  </file>
+  <file path="\pdb.podcast\Hibernator.cs">
+    <content><![CDATA[using pdb.it;
+using pdb.util;
+using System.IO;
+using System;
+using System.Collections.Generic;
+using pdb.iit;
+
+namespace pdb.podcast
+{
+    class Hibernator
+    {
+        public int go(ILoader loader, List<TrackInfoItunes> tracks)
+        {
+
+            var conf = pdb.podcast.Tuning.Conf.Hibernate;
+            if (!conf.enabled)
+                return 0;
+            var toH = new List<TrackInfoItunes>();
+            var dirH = conf.dir;
+            var list = conf.list;
+            if (!string.IsNullOrEmpty(list))
+            {
+
+                var auto = loader.TreePlayList.getComposite("auto");
+                if (auto != null)
+                {
+                    var itl = auto.getComposite(list);
+                    if (itl != null)
+                    {
+                        foreach (var plc in itl)
+                        {
+                            if (plc is TrackInList)
+                            {
+                                var t = plc as TrackInList;
+                                var piece = t.Piece as TrackInfoItunes;
+                                if (piece == null)
+                                {
+                                    misc.log("plc pas un TrackInfoItunes {0}", plc);
+                                    continue;
+                                }
+                                if (piece.Selected)
+                                {
+                                    misc.log("non hiberné car selected {0}", piece);
+                                    continue;
+                                }
+                                Program.log.log("hibernation de {0} par liste", piece);
+                                toH.Add(piece);
+                            }
+                        }
+                    }
+                }
+            }
+
+            select(conf, toH, tracks, false);
+
+
+            int nb = 0;
+            DateTime limit = DateTime.Now.AddDays(-conf.delay);
+            DateTime limitAdd = DateTime.Now.AddDays(-conf.delayAdd); 
+            foreach (TrackInfoItunes track in toH)
+            {
+                var fv = FileRegister.Check(track.Location);
+                if (fv.Exists)
+                {
+                    //if (pdb.podcast.Sort.Album.LastRead.Contains(track.DbId))
+                    //    continue;
+                    if (track.Selected)
+                        continue; 
+                    if (track.GlobalSelected)
+                        continue;
+                    if (track.Gout > limit)
+                        continue;
+                    if (track.Added > limitAdd)
+                        continue; 
+                    nb++;
+                    track.hibernate(fv, dirH);
+                }
+            }
+
+
+            return nb;
+        }
+
+        public void select(pdb.podcast.Tuning.Hibernate conf, List<TrackInfoItunes> toCheck, List<TrackInfoItunes> tracks, bool import)
+        {
+            bool critereDate = conf.dateMin > DateTime.MinValue && conf.dateMax < DateTime.MaxValue;
+            bool critereAlbum = !string.IsNullOrEmpty(conf.album);
+            bool critereLast = conf.nblast > 0;
+
+
+            if (import || critereAlbum || critereDate || critereLast)
+            {
+
+                if (!critereLast)
+                {
+                    foreach (TrackInfoItunes t in tracks)
+                    {
+                        if (import)
+                        {
+                            //if (t.Present)
+                            //    continue;
+                        }
+                        else
+                        {
+                            if (!t.Present)
+                                continue;
+                            if (t.Selected)
+                                continue;
+                        }
+
+
+                        if (!critereDate || t.Pub2 >= conf.dateMin && t.Pub2 <= conf.dateMax)
+                        {
+                            if (!critereAlbum || t.Album.ToLower().Contains(conf.album.ToLower()))
+                            {
+                                toCheck.Add(t);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Dictionary<string, Album> dict = new Dictionary<string, Album>();
+                    tracks.Sort(new PodCastComparerPub2());
+                    foreach (TrackInfoItunes track in tracks)
+                    {
+                        string album = track.Album;
+                        string key = album;
+                        if (string.IsNullOrEmpty(album))
+                        {
+                            misc.log("pas d'album pour " + track.Location);
+                            if (import)
+                                toCheck.Add(track);
+                            continue;
+
+                        }
+
+                        if (!dict.ContainsKey(key))
+                        {
+                            Album a = new Album(key);
+                            dict.Add(key, a);
+                        }
+                        dict[key].add(track);
+                    }
+
+                    foreach (Album album in dict.Values)
+                    {
+                        if (critereAlbum)
+                        {
+                            if (album.Name.ToLower().Contains(conf.album.ToLower()))
+                            {
+                            }
+                            else continue;
+                        }
+
+                        var list = album.List;
+                        int count = list.Count;
+                        int nb = 0;
+
+                        for (int i = count - 1; i >= 0; i--)
+                        {
+                            var t = list[i];
+                            if (!import)
+                            {
+                                if (t.Selected)
+                                    continue;
+                                if (!t.Present)
+                                    continue;
+                            }
+                            if (!critereDate || t.Pub2 >= conf.dateMin && t.Pub2 <= conf.dateMax)
+                            {
+                                if (import)
+                                {
+                                    nb++;
+                                    toCheck.Add(t);
+                                    if (nb >= conf.nblast)
+                                        break;
+                                    continue;
+                                }
+
+
+                                if (t.Pub2 > conf.dateLast)
+                                {
+                                    nb++;
+                                    if (nb <= conf.nblast)
+                                        continue;
+                                }
+
+                                toCheck.Add(t);
+                            }
+                        }
+                    }
+                }
+
+
+
+            }
+        }
+
+        private class Album
+        {
+            private string name;
+            private List<TrackInfoItunes> list = new List<TrackInfoItunes>();
+            public Album(string name)
+            {
+                this.name = name;
+            }
+            public void add(TrackInfoItunes track)
+            {
+                list.Add(track);
+            }
+            public List<TrackInfoItunes> List { get { return list; } }
+            public string Name { get { return name; } }
+        }
+    }
+}
+]]></content>
+  </file>
+   <file path="\pdb.podcast\Load\LimitItemLoader.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -725,7 +1506,7 @@ namespace pdb.podcast.Load
         public static bool ModeSelection { get { return _selection; } set { _selection = value; } }
         private LimitItem limit;
         private LimitsLoader parent;
-        private IDictionary<string, FeedLimitItemLoader> loaders = new BgDictString0<FeedLimitItemLoader>();
+        //  private IDictionary<string, FeedLimitItemLoader> loaders = new BgDictString0<FeedLimitItemLoader>();
         //  public SequentialDictString<TrackInfoItunes> preloaded = new SequentialDictString<TrackInfoItunes>();
         public SequentialDictString<TrackInfoItunes> standAlone = new SequentialDictString<TrackInfoItunes>();
         public SequentialDictString<TrackInfoItunes> legacy = new SequentialDictString<TrackInfoItunes>();
@@ -813,11 +1594,11 @@ namespace pdb.podcast.Load
 
         public void loadCandidats(List<TrackInfoItunes> _loaded)
         {
-            if (limit.Nb ==0)
+            if (limit.Nb == 0)
                 return;
 
             if (!limit.OverwriteConf && limit.Nb2 == 0)
-                return; 
+                return;
 
             var duration = limit.Duration;
             //var _loadDuration = limit.LoadDuration; 
@@ -877,20 +1658,7 @@ namespace pdb.podcast.Load
 
         private FeedLimitItemLoader getLoader(TrackInfoItunes candidat)
         {
-            var album = candidat.TrackAlbum;
-            var key = album.AlbumKey; 
-           
-            FeedLimitItemLoader loader = null;
-            if (!loaders.ContainsKey(key))
-            {
-                loader = new FeedLimitItemLoader( album);
-                loaders.Add(key, loader);
-                if (parent.state == loadState.selection)
-                    loader.phase2();
-            }
-            else
-                loader = loaders[key];
-            return loader;
+            return limit.Dir.Loader.Albums.Get(candidat);
         }
 
         /// <summary>
@@ -898,7 +1666,7 @@ namespace pdb.podcast.Load
         /// </summary>
         public void reset()
         {
-            loaders = new BgDictString0<FeedLimitItemLoader>();
+            //loaders = new BgDictString0<FeedLimitItemLoader>();
             //  public SequentialDictString<TrackInfoItunes> preloaded = new SequentialDictString<TrackInfoItunes>();
             // public SequentialDictString<TrackInfoItunes> standAlone = new SequentialDictString<TrackInfoItunes>();
             legacy = new SequentialDictString<TrackInfoItunes>();
@@ -934,7 +1702,7 @@ namespace pdb.podcast.Load
                 limit.DurationFeedLimit = false;
                 limit.NbFeedLimit = false;
             }
-            foreach (FeedLimitItemLoader loader in loaders.Values)
+            foreach (FeedLimitItemLoader loader in limit.Dir.Loader.Albums)
                 loader.phase2();
         }
 
@@ -1009,7 +1777,7 @@ namespace pdb.podcast.Load
             if (relax.Count > 0)
             {
                 if (histo)
-                    relax.Sort(new PodCastComparer());
+                    relax.Sort(new PodCastComparerPub2());
                 else
                     relax.Sort(new PodCastComparerInv());
                 selection(relax, false, false);
@@ -1019,7 +1787,7 @@ namespace pdb.podcast.Load
             if (list.Count > 0)
             {
                 if (histo)
-                    list.Sort(new PodCastComparer());
+                    list.Sort(new PodCastComparerPub2());
                 else
                     list.Sort(new PodCastComparerInv());
                 selection(list, false, true);
@@ -1033,7 +1801,7 @@ namespace pdb.podcast.Load
             if (list2.Count > 0)
             {
                 if (histo)
-                    list2.Sort(new PodCastComparer());
+                    list2.Sort(new PodCastComparerPub2());
                 else
                     list2.Sort(new PodCastComparerInv());
 
@@ -1043,14 +1811,49 @@ namespace pdb.podcast.Load
         }
 
 
+        private class FdResponse
+        {
+            public int nb;
+            public timeSpan duree;
+            public bool okFd;
+            public bool okNb;
+            public bool Result { get { return okFd && okNb; } }
 
+
+        }
+
+        FdResponse check(FeedLimitItemLoader loader, TrackInfoItunes candidat, LimitItem limit)
+        {
+            if (loader.isSelected(candidat))
+            {
+                return null;
+            }
+            var response = new FdResponse();
+
+            var _nb = loader.Nb + 1;
+            response.nb = _nb;
+
+            response.duree = loader.fd;
+
+            var conf = loader.album.ConfAlbum;
+
+            int _nbMax = limit.getNb(conf); //    load ? limit.LoadNb : (int)(System.Math.Min(limit.Nb, limit.Nb2));
+            var __durationMax = limit.getFd(conf); //  load ? limit.LoadDuration : System.Math.Min(limit.FeedDuration, limit.Fd2);
+            var _durationMax = timeSpan.FromMinutes(__durationMax);
+
+            response.okNb = _nb <= _nbMax;
+            response.okFd = response.duree < _durationMax;
+
+            return response;
+
+        }
 
         private void selection(List<TrackInfoItunes> list, bool select, bool increment)
         {
-            var duration = limit.getDuration(); 
-           
+            var duration = limit.getDuration();
+
             var durationMax = timeSpan.FromMinutes(duration);
-      
+
             var contributionMax = timeSpan.FromMinutes(limit.Contribution);
 
             int count = list.Count;
@@ -1077,6 +1880,7 @@ namespace pdb.podcast.Load
                 bool newContribut = candidat.Selected;
 
                 DateTime d = candidat.TrackAlbum.ConfAlbum.checkPub ? candidat.Pub : candidat.Pub2;
+                
                 bool okDate = d <= limit.DateMax && d <= limit.DateMax2;
                 var loader = getLoader(candidat);
                 bool okTotalDuration = false;
@@ -1090,15 +1894,18 @@ namespace pdb.podcast.Load
                 //    _newDuration = currentDuration + candidat.Duree;
 
                 // savoir si ça passe uniquement avec le critère d
-                okTotalDuration = currentDuration <= durationMax; 
+                okTotalDuration = currentDuration <= durationMax;
 
-                bool okprovi = okDate && okTotalDuration;
+                //  bool okprovi = okDate && okTotalDuration;
                 // bool ok = okDate && okTotalDuration && _control;
 
                 // rejouer le controle pour incrémenter nb et fd      
+                FdResponse response = null;
                 if (!increment) // données venant de sous-dossier (histo, voisins....)
                 {
-                    _control = loader.control(parent,limit, candidat, select, false, okDate && okTotalDuration, true);
+                    response = check(loader, candidat, limit);
+                    _control = response == null || response.Result;
+                    //  _control = loader.control(false, limit, candidat); // loader.control(parent, limit, candidat, select, false, okDate && okTotalDuration, true);
                     if (_control && !selectedByFd.ContainsKey(location))
                         selectedByFd.Add(location, candidat);
                     if (!manageByFd.ContainsKey(location))
@@ -1137,7 +1944,7 @@ namespace pdb.podcast.Load
                 if (increment)
                 {
                     var newDuration = currentDuration; // +candidat.Duree;
-                    okTotalDuration = newDuration <= durationMax; 
+                    okTotalDuration = newDuration <= durationMax;
                     if (manageByFd.ContainsKey(location))
                     {
                         _control = false;
@@ -1146,7 +1953,9 @@ namespace pdb.podcast.Load
                     }
                     else
                     {
-                        _control = loader.control(parent, limit,candidat, select, false, okDate && okTotalDuration, true);
+                        response = check(loader, candidat, limit);
+                        _control = response == null || response.Result;
+                        //_control = loader.control(false, limit, candidat); // loader.control(parent, limit, candidat, select, false, okDate && okTotalDuration, true);
 
                     }
 
@@ -1167,217 +1976,50 @@ namespace pdb.podcast.Load
 
 
 
-                    //okTotalDuration = newDuration <= durationMax;
-                    //_control = loader.control(candidat, select, okDate && okTotalDuration, true,true);
 
-                    //if (okDate && _control)
-                    //    currentDuration += candidat.Duree;
-                    //currentDurationVirtual = currentDuration; // += candidat.Duree;
+                 
 
-                    //var newDuration = okDate && _control ? currentDuration : currentDurationVirtual;
+                    bool go = okDate && _control && okTotalDuration;
+                    if (go)
+                    {
+                        loader.record(candidat);
+                        if (select && LimitItemLoader.ModeSelection)
+                        {
+                            candidat.select(selectMode.simple, limit);
+                            limit.Dir.Feeds.recordTrack(candidat, limit);
+                        }
 
-                    //  bool okTotalDuration = newDuration <= durationMax;
+                        //report aux niveaux inférieurs
+                        // if (real)
+                        parent.recordLimitItemCandidat(candidat, limit);
+                        // return true;
+
+                    }
 
                     if (!_selection)
                     {
 
-
-                        //var _fd = loader.getCurrentDuration(false);
-
-                        //if (_fd > newDuration)
-                        //{
-                        //    newDuration = _fd;
-                        //    okTotalDuration = newDuration <= durationMax;
-                        //}
-                        //if (_control)
-                        //{
-                        //}
-                        //else
-                        //{
-                        //    //var fd = loader.getCurrentDuration(true);
-                        //    //var nb = loader.getNb(true);
-
-                        //    //newDuration = new timeSpan();
-                        //    //foreach (FeedLimitItemLoader l in loaders.Values)
-                        //    //    l.phaseTest();
-                        //    //for (int j = 0; j <= index; j++)
-                        //    //{
-                        //    //    TrackInfoItunes t = list[j];
-                        //    //    var subloader = getLoader(t.Album);
-                        //    //    var subok = subloader.test(nb, fd, t);
-                        //    //    if (j >= subloader.IndexBase)
-                        //    //    {
-                        //    //        if (subok || selectedByFd.ContainsKey(location))
-                        //    //            newDuration += t.Duree;
-                        //    //    }
-
-                        //    //}
-                        //    //// newDuration += getDuration(nb, fd);
-
-                        //    //if (newDuration < currentDuration)
-                        //    //{
-                        //    //}
-                        //    //else if (newDuration > currentDurationVirtual)
-                        //    //{
-                        //    //}
-                        //    //okTotalDuration = newDuration <= durationMax;
-                        //}
-
-
-                        //question fd
-                        //if (!loader.LoadEqSel)
-                        //{
-
-                        var causeReg0 = limit.Dir.CauseRegister;
-                        if (!causeReg0.IsNull)
+                        if (limit.canSignal() && response != null)
                         {
-                            var dataRoot = new CauseDatas(okDate, new timeSpan(d - Conf.Date0),
-                          loader.OkFd, loader.getDurationStop(okDate)
-                          , loader.OkNb, loader.getNbStop(okDate)
-                          , okTotalDuration, durationStop.Value == 0 ? newDuration : durationStop, candidat, limit);
 
-                            causeReg0.signal(dataRoot);
-                        }
 
-                        if (limit.canSignal())
-                        {
 
                             var dataAuto = new CauseDatas(okDate, new timeSpan(d - Conf.Date0),
                                 //loader.OkFd, loader.getCurrentDuration(okDate && okTotalDuration)
                                 //, loader.OkNb, loader.getNb(okDate && okTotalDuration)
                                 //, okTotalDuration, newDuration, candidat, limit);
-                                    loader.OkFd, loader.getCurrentDuration (false)
-                            , loader.OkNb, loader.getNb(false)
+                                    response.okFd, response.duree
+                            , response.okNb, response.nb
                             , okTotalDuration, newDuration, candidat, limit);
 
                             limit.signal(dataAuto);
                         }
-                    }
-
-
-
-
-                    //   Program.CauseRegister.Get(candidat).check(okDate, new timeSpan(d - Conf.Date0),
-                    //loader.OkFd, loader.getDurationStop(okDate)
-                    //, loader.OkNb, loader.getNbStop(okDate)
-                    //, okTotalDuration, durationStop.Value == 0 ? newDuration : durationStop, limit);
-
-                    //   limit.signal(new CauseData(okDate, borderType.maxdate, new timeSpan(d - Conf.Date0), limit, candidat));
-                    //   limit.signal(new CauseData(loader.OkFd, borderType.fd, loader.getCurrentDuration(okDate), limit, candidat));
-                    //   limit.signal(new CauseData(okTotalDuration, borderType.d, newDuration, limit, candidat));
-
-                    if (Conf.BorderTb)
-                    {
-                        if (okDate && _control && okTotalDuration)
-                            limit.signal(new TrackBorderItem(limit, candidat, borderType.fd, loader.getCurrentDuration(true), borderStatus.selectedStrict));
-                        else if (okDate && okTotalDuration)
-                        {
-                            if (loader.EndByFd)
-                                limit.signal(new TrackBorderItem(limit, candidat, borderType.fd, loader.getCurrentDuration(true), borderStatus.rejectedStrict));
-                        }
-                        //else if (Conf.BorderVirtual)
-                        //{
-                        //    if (_control)
-                        //        limit.signal(new TrackBorderItem(limit, candidat, borderType.fd, loader.getCurrentDuration(true), borderStatus.selectedLight));
-                        //    else if (loader.EndByFd)
-                        //        limit.signal(new TrackBorderItem(limit, candidat, borderType.fd, loader.getCurrentDuration(true), borderStatus.rejectedLight));
-                        //}
-
-
-                        //}
-
-                        //if (!loadEqSel)
-                        //{
-                        // question d
-                        if (okDate && _control && okTotalDuration)
-                            limit.signal(new TrackBorderItem(limit, candidat, borderType.d, newDuration, borderStatus.selectedStrict));
-                        else if (okDate && _control)
-                            limit.signal(new TrackBorderItem(limit, candidat, borderType.d, newDuration, borderStatus.rejectedStrict));
-                        else if (Conf.BorderVirtual)
-                        {
-                            if (okTotalDuration)
-                                limit.signal(new TrackBorderItem(limit, candidat, borderType.d, newDuration, borderStatus.selectedLight));
-                            else
-                                limit.signal(new TrackBorderItem(limit, candidat, borderType.d, newDuration, borderStatus.rejectedLight));
-                        }
-
-
-                        // question date
-                        if (okDate && _control && okTotalDuration)
-                            limit.signal(new TrackBorderItem(limit, candidat, borderType.maxdate, d, borderStatus.selectedStrict));
-                        else if (_control && okTotalDuration)
-                            limit.signal(new TrackBorderItem(limit, candidat, borderType.maxdate, d, borderStatus.rejectedStrict));
-                        else if (Conf.BorderVirtual)
-                        {
-                            if (okDate)
-                                limit.signal(new TrackBorderItem(limit, candidat, borderType.maxdate, d, borderStatus.selectedLight));
-                            else
-                                limit.signal(new TrackBorderItem(limit, candidat, borderType.maxdate, d, borderStatus.rejectedLight));
-                        }
-
-                        //}
 
                     }
 
 
-                    ////question duree
-                    //if (okDate && _control) // || Conf.BorderVirtual)
-                    //{
-                    //    var tb = new TrackBorderItem(limit, candidat, borderType.d, newDuration, okDuration, true); limit.signal(tb);
-                    //}
-                    //else if (Conf.BorderVirtual)
-                    //{
-                    //    var tb = new TrackBorderItem(limit, candidat, borderType.d, newDuration, okDuration, false); limit.signal(tb);
-                    //}
 
-                    ////question fd
-
-                    //if (_control)
-                    //{
-                    //    if (okDate && okDuration)
-                    //    {
-                    //        var tb = new TrackBorderItem(limit, candidat, borderType.fd, loader.getCurrentDuration(true), borderStatus.selectedStrict); limit.signal(tb);
-                    //    }
-                    //    else if (Conf.BorderVirtual)
-                    //    {
-                    //        var tb = new TrackBorderItem(limit, candidat, borderType.fd, loader.getCurrentDuration(okDate), borderStatus.selectedLight); limit.signal(tb);
-
-                    //    }
-                    //}
-                    //else //if (!loader.limit.NbFeedLimit)
-                    //{
-                    //    if (okDate && okDuration)
-                    //    {
-                    //        var tb = new TrackBorderItem(limit, candidat, borderType.fd, loader.getCurrentDuration(true), borderStatus.rejectedStrict);
-                    //        limit.signal(tb);
-                    //    }
-                    //    else if (Conf.BorderVirtual)
-                    //    {
-                    //        var tb = new TrackBorderItem(limit, candidat, borderType.fd, loader.getCurrentDuration(okDate), borderStatus.rejectedLight);
-                    //        limit.signal(tb);
-                    //    }
-                    //}
-                    ////question date
-                    //if (_control && okDuration)
-                    //{
-                    //    var tb = new TrackBorderItem(limit, candidat, borderType.maxdate, candidat.Pub, okDate, true);
-                    //    limit.signal(tb);
-                    //}
-                    //else if (Conf.BorderVirtual)
-                    //{
-                    //    var tb = new TrackBorderItem(limit, candidat, borderType.maxdate, candidat.Pub, okDate, false);
-                    //    limit.signal(tb);
-                    //}
-
-
-
-                    //if (!_control && !Conf.BorderVirtual)
-                    //    continue;
-                    if (!okDate)
-                        continue;
-
-                    if (!_control)
-                        continue;
+                  
                     //newDuration = currentDuration;
                     //okTotalDuration = newDuration <= durationMax;
                     if (!okTotalDuration)
@@ -1392,11 +2034,17 @@ namespace pdb.podcast.Load
                             // currentDuration = newDuration;
                             durationStop = currentDuration;
                         }
+                        break; 
 
                     }
 
-                    if (!okTotalDuration)
+                    if (!okDate)
+                        break;
+
+                    if (!_control)
                         continue;
+
+                
 
 
                     if (_selection && !newContribut)
@@ -1837,1339 +2485,740 @@ namespace pdb.podcast.Load
 }
 ]]></content>
   </file>
-  <file path="\pdb.podcast\Sort\Album.cs">
+  <file path="\pdb.podcast\Load\LimitsLoader.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
-using pdb.podcast.Albums;
+using System.Linq;
+
 using pdb.podcast.Tuning;
-using pdb.podcast.Tuning.Sort;
+using pdb.util.list;
 using pdb.util;
-using pdb.iit;
+using pdb.podcast.Report;
+using System.Xml;
+using pdb.podcast.Selection;
 
-namespace pdb.podcast.Sort
+namespace pdb.podcast.Load
 {
-    class Album
+    public interface IWriter
     {
-        const char SEP = '|';
-        private TrackAlbum album;
-        private SortItem conf;
-        private List<TrackSort> list = new List<TrackSort>();
-        //  private static HashSet<int> lastReads = new HashSet<int>();
-        //   private int indexLastRead = -1;
-        timeSpan limit;
-        private static int nbrepeches = 0;
-        private static int nbModif = 0;
-        private static int nbRepecheForce = 0;
-        public static int NbRepeches { get { return nbrepeches; } }
-        public static int NbModif { get { return nbModif; } }
-        private bool done;
-        public static void Init()
+        void StartElement(string elt);
+        void SetAttribute(string name, object value);
+        void EndElement();
+    }
+    public class WriterXml : IWriter
+    {
+        private XmlWriter writer;
+        public WriterXml(XmlWriter writer)
         {
-            //lastReads.Clear(); 
-            nbrepeches = 0;
-            nbModif = 0;
-            nbRepecheForce = 0;
+            this.writer = writer;
         }
-        // public static HashSet<int> LastRead { get { return lastReads; } }
-        public static Logger log;
-
-        public Album(SortItem conf, TrackAlbum album)
+        public void StartElement(string elt)
         {
-            this.conf = conf;
-            this.album = album;
-            limit = timeSpan.FromMinutes(conf.dureeMin);
-
+            writer.WriteStartElement(elt);
         }
 
-        public override string ToString()
+        public void SetAttribute(string name, object value)
         {
-            return album.ToString();
+            writer.WriteAttributeString(name, value.ToString());
         }
 
-        public void check(TrackInfoItunes track)
+        public void EndElement()
         {
-            if (track.Duree >= limit)
-                list.Add(new TrackSort(track));
+            writer.WriteEndElement();
+        }
+    }
+
+    public class WriterHtml : IWriter
+    {
+        private ITextWriter writer;
+        int level;
+        void beginLine()
+        {
+            writer.AppendLine();
+            for (int i = 0; i < level; i++)
+                writer.Append("\t");
+        }
+        public WriterHtml(ITextWriter writer)
+        {
+            this.writer = writer;
+        }
+        public void StartElement(string elt)
+        {
+            StartElement(elt, null);
         }
 
-        //public void Build(Loader loader)
-        //{
-
-        //    if (conf.enabled == sortMode.no)
-        //        return;
-        //    int count = list.Count;
-        //    if (count == 0)
-        //        return;
-        //    int indexLastRead = -1;
-        //    int indexNextSelected = -1;
-        //    DateTime lastPlayed = DateTime.MinValue;
-        //    TrackSort next = null;
-        //    TrackSort reallyLastRead = null;
-        //    DateTime currentPub = DateTime.MinValue;
-        //    DateTime currentPub2 = DateTime.MinValue;
-        //    TrackSort lastRead = null;
-
-
-
-        //    for (int i = 0; i < count; i++)
-        //    {
-        //        var track = list[i];
-        //        if (track.Selected)
-        //        {
-        //            next = track;
-        //            indexNextSelected = i;
-        //            break;
-        //        }
-        //    }
-
-        //    if (next == null)
-        //        return;
-
-        //    int nbRead = 0;
-        //    int nbTotal = 0;
-
-        //    var histo = conf.getHisto(album.Rare);
-
-        //    DateTime limit = next.Pub.AddDays(-histo);
-        //    for (int i = indexNextSelected - 1; i >= 0; i--)
-        //    {
-        //        var t = list[i];
-        //        var dt = t.Pub;
-        //        if (dt < limit)
-        //            break;
-
-        //        if (t.Played)
-        //            nbRead++;
-
-        //        if (t.Played || t.track.Enabled)
-        //            nbTotal++;
-
-        //    }
-        //    double delta = conf.getIntervalle(album.Rare);
-        //    var intervalle = conf.getIntervalle(album.Rare);
-        //    var intervalleMin = conf.getIntervalleMin(album.Rare);
-        //    if (nbRead > 0 && nbTotal > 0)
-        //    {
-        //        //  album.Rare ? conf.intervalleR : conf.intervalle;
-        //        var ecouteMax = conf.getEcouteMax(album.Rare); // album.Rare ? conf.ecouteMaxR : conf.ecouteMax;
-
-        //        delta = (intervalle * (double)nbTotal) / (ecouteMax * (double)nbRead);
-        //        var coeff = (double)nbTotal / (double)nbRead;
-
-        //        //0.1 => 10
-        //        //0.9 => 1.11
-        //        coeff -= 1; // 9  0.11
-        //        var dminmax = intervalle - intervalleMin;
-
-        //        var _delta = intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
-
-        //        if (_delta < delta)
-        //            delta = _delta;
-        //        else
-        //        {
-        //        }
-        //    }
-
-
-        //    var deltaLecture = (DateTime.Now - reallyLastRead.PlayedDate).TotalDays;
-
-
-
-        //    for (int j = 0; j < indexNextSelected; j++)
-        //    {
-        //        for (int i = j; i < indexNextSelected; i++)
-        //        {
-        //            var track = list[i];
-        //            if (track.Played)
-        //            {
-        //                reallyLastRead = track;
-        //                lastRead = track;
-        //                indexLastRead = i;
-        //                lastPlayed = track.PlayedDate;
-        //                j = i;
-        //                break;
-        //            }
-        //        }
-        //        var pub2 = lastRead.Pub2;
-
-        //        if (conf.extPente > 0)
-        //        {
-        //            var d0 = (DateTime.Now - pub2).TotalDays;
-        //            var dl = conf.extDelta;
-        //            if (dl == 0)
-        //            {
-        //                dl = d0;
-        //            }
-
-        //            delta = d0 / conf.extPente;
-        //            //01/01/2014 ->01/01/2017
-        //            //04/01/2017 -> 04/01/2014
-        //            var dateLimitEcoule = DateTime.Now.AddDays(-dl);
-
-        //            var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
-        //            log.log("{0} {1}", delta.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
-
-        //            if (deltaLimiteEcoule > delta)
-        //                delta = deltaLimiteEcoule;
-
-        //            if (delta < 1)
-        //                delta = 1;
-
-
-
-        //        }
-
-        //        if (conf.limitRead && deltaLecture > intervalle)
-        //        {
-        //            //13 /10 ->7
-        //            var _old = delta;
-
-        //            delta += intervalle - deltaLecture;
-        //            log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
-        //        }
-
-        //        if (delta < intervalleMin)
-        //            delta = intervalleMin;
-
-        //        if (delta > intervalle)
-        //            delta = intervalle;
-
-
-        //        DateTime limitFuture = pub2.AddDays(delta);
-
-        //        if (limitFuture.Second > 0)
-        //        {
-        //            limitFuture = new DateTime(limitFuture.Ticks - limitFuture.Ticks % TimeSpan.TicksPerMinute + TimeSpan.TicksPerMinute);
-        //        }
-
-
-        //        DateTime nextDate = limitFuture;
-        //        int nb = 0;
-        //        int nblissage = 0;
-        //        double deltaMinute = 1;
-
-        //        if (conf.noCollision)
-        //            deltaMinute = TimeSpan.FromDays(delta).TotalMinutes;
-
-        //        if (conf.deltaConst)
-        //        {
-
-        //        }
-
-        //        else
-        //        {
-        //            var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
-        //            var _deltaRab = limitFuture.AddDays(conf.deltaRab);
-
-        //            for (int i = indexLastRead + 1; i < list.Count; i++)
-        //            {
-        //                var t = list[i];
-        //                if (t.Pub >= limitFuture)
-        //                {
-        //                    nextDate = t.Pub;
-        //                    nblissage++;
-        //                    if (t.Pub >= _deltaMin && t.Pub >= _deltaRab && nb >= conf.deltaNbMin && nblissage > conf.deltaNbRab)
-        //                        break;
-        //                }
-        //                nb++;
-        //            }
-
-        //            if (nextDate > limitFuture && nb > 0 && conf.noCollision)
-        //                deltaMinute = (nextDate - limitFuture).TotalMinutes / (double)nb;
-        //        }
-
-        //        if (deltaMinute < 1)
-        //            deltaMinute = 1;
-
-
-
-        //        nb = 0;
-        //        for (int i = indexLastRead + 1; i < count; i++)
-        //        {
-
-        //            var t = list[i];
-
-        //            if (!t.Selected && conf.enabled != sortMode.reset)
-        //                continue;
-        //            if (!t.track.Enabled)
-        //                continue;
-        //            var dt = limitFuture.AddMinutes(deltaMinute * nb);
-        //            var _delta = (dt - lastRead.Pub2).TotalDays;
-
-        //            if (t.Pub >= dt || conf.enabled == sortMode.reset)
-        //                t.increasePub(t.Pub);
-        //            else
-        //            {
-        //                t.increasePub(dt);
-        //                nb++;
-        //            }
-
-
-        //        }
-        //    }
-
-        //    for (int i = 0; i < count; i++)
-        //    {
-        //        var track = list[i];
-        //        if (!track.Selected)
-        //            continue;
-        //        var pub2 = track.Pub2;
-        //        var newPub = track.getPub();
-
-        //        if (newPub != pub2)
-        //        {
-        //            writeComment(track, newPub);
-        //        }
-        //    }
-
-
-
-
-
-
-
-
-
-        //    //  log.log("{0} {1}/{2} ({3}/{4}) [{5}] {6} {7} ({8}) lecture={9} ", delta.ToString("#.##"), nbRead, nbTotal, nbReads, nbTotals, album.Album, lastRead.Name, lastRead.Pub, pub2, deltaLecture.ToString("#.##"));
-
-
-
-
-
-
-
-
-
-        //    for (int i = 0; i < list.Count; i++)
-        //    {
-        //        var track = list[i].track;
-
-        //        if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
-        //        {
-        //            var aux = currentPub2.AddMinutes(1);
-        //            log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
-        //            track.Pub2 = aux;
-        //        }
-
-        //        currentPub = track.Pub;
-        //        currentPub2 = track.Pub2;
-        //    }
-
-
-        //}
-
-
-        public void init()
+        private void StartElement(string elt, string class_)
         {
-            done = false;
-        }
-
-        public void buildAll()
-        {
-            if (done)
-                return;
-            done = true;
-            if (conf.enabled == sortMode.no)
-                return;
-            int count = list.Count;
-            if (count == 0)
-                return;
-
-
-
-            for (int i = 0; i < count; i++)
+            beginLine();
+            if (string.IsNullOrEmpty(class_))
+                writer.Append("<div>");
+            else
             {
-                var track = list[i];
-                var dt = track.Pub2.AddSeconds(1);
-                build(false, false, dt, dt);
-                if (dt >= Conf.Date0)
+                writer.Append("<div class='");
+                writer.Append(class_);
+                writer.Append("'>");
+            }
+            if (elt.Length > 1)
+            {
+                writer.Append(elt);
+                writer.Append("&nbsp;");
+            }
+            level++;
+        }
+
+
+        public void Start(string elt)
+        {
+            StartElement(elt, "tree");
+        }
+
+        public void SetAttribute(string name, object value)
+        {
+            if (name == "track")
+            {
+                writer.Append("<span class='track'>");
+                writer.Append(value);
+                writer.Append("</span>");
+
+            }
+            else if (name == "album")
+            {
+                writer.Append("<span class='album'>");
+                writer.Append(value);
+                writer.Append("</span>");
+            }
+            else
+            {
+                writer.Append(name);
+                writer.Append("=");
+                writer.Append(value);
+            }
+            writer.Append("&nbsp");
+
+        }
+
+        public void EndElement()
+        {
+            level--;
+            beginLine();
+            writer.Append("</div>");
+        }
+    }
+
+    public class LimitsLoader
+    {
+        private DirConf dir;
+        private Limits limit;
+        // private IDictionary<string, TrackInfoItunes> loaded;
+        private LimitLoader[] limites = new LimitLoader[Limits.NB];
+        public loadState state;
+      //  private Logger log;
+        private static IWriter writer;
+        public LimitsLoader(DirConf dir)
+        {
+            this.dir = dir;
+            this.limit = dir.Limites;
+            for (int i = 0; i < Limits.NB; i++)
+            {
+                limites[i] = new LimitLoader(this, limit[i]);
+            }
+          //  log = Logger.getLogger(dir.getPath() + "\\dir", null, false);
+        }
+
+        public void getLoaders(List<LimitItemLoader> list)
+        {
+            for (int i = 0; i < Limits.NB; i++)
+            {
+                limites[i].getLoaders(list);
+            }
+        }
+
+        private bool candidatLoaded;
+        public void loadCandidats()
+        {
+            if (candidatLoaded)
+            {
+                foreach (LimitLoader item in limites)
+                {
+                    item.reset();
+                }
+                return; 
+            }
+            try
+            {
+                var feeds = dir.Feeds;
+                string feedName = null;
+                bool histo = dir.Histo;
+                bool? histoAll = dir.HistoAll;
+                if (histo && false.Equals(histoAll))
+                    feedName = dir.Name;
+
+                bool? dirInfo = dir.Info;
+                bool? dirRare = dir.Rare;
+
+                var _loaded = feeds.Loaded;
+                List<TrackInfoItunes> loaded = new List<TrackInfoItunes>();
+
+
+
+                foreach (TrackInfoItunes track in _loaded)
+                {
+
+                    if (feedName != null)
+                    {
+                        if (track.Album != feedName)
+                            continue;
+                    }
+
+                    if (dirInfo.HasValue && dirInfo.Value != track.Info)
+                        continue;
+
+                    if (dirRare.HasValue && dirRare.Value != track.Rare)
+                        continue;
+                    loaded.Add(track);
+                }
+
+                if (histo)
+                    loaded.Sort(new PodCastComparerPub2());
+                else
+                    loaded.Sort(new PodCastComparerInv());
+
+
+                for (int i = dir.Cascading ? Limits.NB - 1 : 0; ((i >= 0 && dir.Cascading) || (i < Limits.NB && !dir.Cascading)); i = dir.Cascading ? i - 1 : i + 1)
+                {
+                    var limit = limites[i];
+                    limit.loadCandidats(loaded);
+
+                }
+
+
+            }
+            finally
+            {
+                state = loadState.selection;
+                candidatLoaded = true;
+            }
+        }
+
+        private bool recordGuests;
+        public void phase2()
+        {
+            state = loadState.selection;
+            if (dir.Cascading)
+                recordGuests = true;
+            foreach (LimitLoader item in limites)
+            {
+                item.phase2();
+            }
+        }
+
+        public void recordLimitItemCandidat(TrackInfoItunes track, LimitItem item)
+        {
+
+            if (!recordGuests)
+                return;
+
+
+            for (int i = 0; i < Limits.NB; i++)
+            {
+                limites[i].recordGuest(track, item);
+            }
+        }
+
+        public void recordTrackFromChild(TrackInfoItunes track, LimitItem itemSource, bool transmitTotal)
+        {
+            for (int i = 0; i < Limits.NB; i++)
+            {
+                limites[i].recordTrackFromChild(track, itemSource, transmitTotal);
+            }
+        }
+
+
+        public void WriteLists()
+        {
+            if (dir.Parent == null || Conf.WritePlayLists)
+            {
+                // var preSel = feeds.PreSel;
+                var list = dir.getListe();
+
+                var limits = dir.Limites;
+                var usegenPrior = Conf.GenUsePrior;
+                var exclugenPrior = Conf.GenExcluPrior;
+
+                for (int i = 0; i < Limits.NB; i++)
+                {
+                    var limit = limites[i];
+                    List<TrackInfoItunes> items;
+                    foreach (LimitItemLoader item in limit.Items)
+                    {
+                        // var index = limit.index(item);
+                        if (Conf.WriteItems)
+                        {
+                            items = item.exclu.List; // list.FindAll(t => t.containsSelect(item));
+                            buildList(item.Item.ID, items, "_sel");
+                        }
+
+                        if (Conf.WritePreSel)
+                        {
+                            items = item.standAlone.List; // preSel.FindAll(t => t.containsStandAlone(item));
+                            buildList(item.Item.ID, items, "_sel0");
+                        }
+                        if (Conf.WriteUse)
+                        {
+                            items = item.use;
+                            buildList(item.Item.ID, usegenPrior, items, "_use");
+                        }
+                        if (Conf.WriteExclu)
+                        {
+                            var limite = item.Item;
+                            items = item.use.FindAll(t => t.Exclu == limite);
+                            buildList(item.Item.ID, exclugenPrior, items, "_exclu");
+                        }
+
+                    }
+                }
+
+                //if (dir.Parent == null)
+                //{
+                if (dir.Parent == null)
+                {
+
+                    var lfolders = dir.Folders;
+
+                    buildListPrior("_auto", list, lfolders);
+
+                 
+
+                    foreach (SelectParamBase listeSuppl in Conf.Listes)
+                    {
+                        var selector = new TrackSelector(listeSuppl);
+                        var l = new List<TrackInfoItunes>();
+                        foreach (TrackInfoItunes t in list)
+                        {
+                            if (selector.select(t))
+                                l.Add(t); 
+                        }
+                       // var l = selector.getList(list,listeSuppl); // new List<TrackInfoItunes>();
+                        //foreach (TrackInfoItunes t in list)
+                        //{
+                        //    if (t.Actu != listeSuppl.actu && listeSuppl.actu != null)                            
+                        //        continue;
+                        //    if (t.Info != listeSuppl.info && listeSuppl.info != null)
+                        //        continue;
+                        //    if (t.Rare != listeSuppl.rare && listeSuppl.rare != null)
+                        //        continue;
+
+                        //    l.Add(t); 
+                        //}
+                        buildListPrior(listeSuppl.name, l, lfolders);
+                    }
+
+                    //var lHisto = list.FindAll(t => t.Histo);
+                    //buildList("_histo", lHisto, lfolders);
+
+                    //var lPasHisto = list.FindAll(t => !t.Histo);
+                    //buildList("_pasHisto", lPasHisto, lfolders);
+
+                    //var lSerie = list.FindAll(t => t.Serial);
+                    //buildList("_serie", lSerie, lfolders);
+                }
+                // }
+            }
+        }
+
+
+
+        private static void buildList(string name, List<TrackInfoItunes> list, string folder)
+        {
+            Program.buildList(name, list, int.MaxValue, folder);
+        }
+
+        private static void buildList(string name, int prior, List<TrackInfoItunes> list, string folder)
+        {
+            Program.buildList(name, list, prior, folder);
+        }
+
+        private static void buildList(string name, List<TrackInfoItunes> list, List<string> folders)
+        {
+            Program.buildList(name, list, folders);
+        }
+        private static void buildListPrior(string name, List<TrackInfoItunes> list, List<string> folders)
+        {
+            Program.buildList(name, list, 0, folders,false);
+        }
+
+
+
+        private void writeStat(GroupStat stat, bool? onlyUse)
+        {
+            writeStat(stat.Total, onlyUse);
+        }
+
+        private void writeStat(DoubleStat stat, bool? onlyUse)
+        {
+            if (onlyUse == null)
+                return;
+            string strStat = "";
+            if (true == onlyUse)
+                strStat = stat.getUseValues();
+            else
+                strStat = stat.getStats();
+            writer.SetAttribute("stats", strStat);
+        }
+
+        private void writeTrackList(List<TrackInfoItunes> list, bool includeAlbum, bool includeLevel, bool includeItem)
+        {
+            var conf = Conf.Html;
+            int nbmax = conf.trackCause;
+            int nb = 0;
+            foreach (TrackInfoItunes track in list)
+            {
+                nb++;
+                writer.StartElement("t");
+                writer.SetAttribute("date", track.Pub.ToString(TrackInfoItunes.PUB_DATE_FORMAT_DB));
+
+                if (includeItem)
+                {
+                    writer.SetAttribute("i", track.GetProvider());
+                    if (conf.trackItemDetail)
+                    {
+                        var lim = track.Provider;
+                        if (lim != null)
+                        {
+                            var sb = new StringBuilder();
+                            lim.writeStatHeader(sb);
+                            lim.Stat.Total.buildValues(sb);
+                            writer.SetAttribute("stats", sb.ToString());
+                        }
+                    }
+
+                }
+
+                if (includeAlbum)
+                    writer.SetAttribute("album", track.Album);
+                if (includeLevel)
+                    writer.SetAttribute("l", (track.Rating / 20).ToString());
+                writer.SetAttribute("track", track.Name);
+
+                if (track.Pub2 > track.Pub)
+                    writer.SetAttribute("pub2", track.Pub2.ToString(TrackInfoItunes.PUB_DATE_FORMAT_DB));
+                if (nb <= nbmax)
+                {
+                    WriteCause(dir.CauseRegister.Get(track), true, true);
+                    WriteCause(dir.CauseRegister.Get(track), true, false);
+                    WriteCause(dir.CauseRegister.Get(track), false, true);
+                    WriteCause(dir.CauseRegister.Get(track), false, false);
+
+                }
+                writer.EndElement();
+            }
+        }
+
+        private List<TrackInfoItunes> getItems(DirConf dir, DoubleStat stat)
+        {
+            var items = new List<TrackInfoItunes>(stat.Use.List);
+            if (dir.Histo)
+                items.Sort(new PodCastComparerPub2());
+            else
+                items.Sort(new PodCastComparerInv());
+            return items;
+
+        }
+
+        internal void writeTracks(DirConf dir, GroupStat stat, bool? onlyUseStat, bool includeTrackItem)
+        {
+            writeStat(stat, onlyUseStat);
+
+            var items = getItems(dir, stat.Total);
+            if (items.Count == 0)
+                return;
+
+            int nbLevel = 0;
+
+
+
+            #region tracks
+            writer.StartElement("tracks");
+
+            for (int i = 0; i < Limits.NB; i++)
+            {
+                var soutot = stat.SousTotaux[i];
+                if (soutot.Empty)
+                    continue;
+                nbLevel++;
+                if (nbLevel > 1)
                     break;
             }
-
-            for (int i = 0; i < count; i++)
+            if (nbLevel > 1)
             {
-                var track = list[i];
-                applyPub(track);
+                #region levels
+                writer.StartElement("levels");
+                for (int i = 0; i < Limits.NB; i++)
+                {
+                    var soutot = stat.SousTotaux[i];
+                    if (soutot.Empty)
+                        continue;
+                    #region level
+                    writer.StartElement("level");
+                    writer.SetAttribute("level", i.ToString());
+                    writeStat(soutot, true);
+                    var subItems = getItems(dir, soutot);
+                    #region subItems
+                    writeTrackList(subItems, true, false, includeTrackItem);
+
+                    #endregion
+
+                    writer.EndElement();
+                    #endregion
+
+                }
+                writer.EndElement();
+                #endregion
+            }
+
+            writeTrackList(items, true, true, includeTrackItem);
+
+            writer.EndElement();
+            #endregion
+
+
+            if (false != dir.HistoAll)
+            {
+                int nbAlbum = 0;
+                foreach (FeedLimitItemStat f in stat.Feed.getFeeds())
+                {
+                    var listInAlbum = items.FindAll(t => t.Album == f.Album);
+                    if (listInAlbum.Count == 0)
+                        continue;
+                    nbAlbum++;
+                    if (nbAlbum > 1)
+                        break;
+                }
+                if (nbAlbum > 1)
+                {
+                    #region albums
+                    writer.StartElement("albums");
+                    foreach (FeedLimitItemStat f in stat.Feed.getFeeds())
+                    {
+                        var listInAlbum = items.FindAll(t => t.Album == f.Album);
+                        if (listInAlbum.Count == 0)
+                            continue;
+                        #region album
+                        writer.StartElement("album");
+                        writer.SetAttribute("name", f.Album);
+
+                        writeStat(f.Totaux, true);
+                        writeTrackList(listInAlbum, false, true, includeTrackItem);
+
+                        writer.EndElement();
+                        #endregion
+
+                    }
+                    writer.EndElement();
+                    #endregion
+                }
             }
         }
-
-        private void build(bool checkSelected, bool apply, DateTime date0, DateTime newDate0)
-        {           
-            int count = list.Count;
-            if (count == 0)
-                return;
-            if (album.Album.ToLower().Contains("voix nue")) 
-            {
-            }
-            TrackSort.Date0 = date0; 
-            int indexLastRead = -1;
-            int indexNextSelected = -1;
-            DateTime lastPlayed = DateTime.MinValue;
-            TrackSort next = null;
-            //  TrackSort reallyLastRead = null;
-            DateTime currentPub = DateTime.MinValue;
-            DateTime currentPub2 = DateTime.MinValue;
-            for (int i = 0; i < count; i++)
-            {
-                var track = list[i];
-                //if (conf.extPente > 0)
-                //{
-                //    if (!track.Played && track.Pub == track.Pub2)
-                //        track.Pub2 = Conf.Date0; 
-                //}
-
-                if (track.Pub > currentPub && track.Pub2 <= currentPub2)
-                {
-                    var aux = currentPub2.AddMinutes(1);
-                    log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
-                    track.Pub2 = aux;
-                }
-
-                currentPub = track.Pub;
-                currentPub2 = track.Pub2;
-            }
-            for (int i = 0; i < count; i++)
-            {
-                var track = list[i];
-                if (track.Played) // && track.PlayedDate > lastPlayed)
-                {
-                    //// ok mais quid du cas au fil de l'histoire : date dans le futur
-                    //if (track.Pub2 <= date0 || conf.extPente > 0)
-                    //{
-                    if (next == null)
-                    {
-                        indexLastRead = i;
-                        lastPlayed = track.PlayedDate;
-                    }
-                    else
-                        break;
-                    //}
-                }
-
-                else
-                {
-                    if (next == null)
-                    {
-                        if ((checkSelected && track.Selected) || (track.Enabled && track.Pub2 >= date0))
-                        {
-                            next = track;
-                            indexNextSelected = i;
-                        }
-                    }
-                    else
-                        break; 
-                }
-            }
-
-
-            if (indexLastRead < 0)
-                return;
-            if (next == null)
-                return;
-
-            var lastRead = list[indexLastRead];
-            var intervalle = conf.getIntervalle(album.Rare, lastRead.DureeEnHeure);
-            var intervalleMin = conf.getIntervalleMin(album.Rare);
-            double deltaLastRead0 = (lastRead.Pub2 - lastRead.Pub).TotalDays;
-            DateTime pub2 = lastRead.Pub2;
-
-            double delta0Corr = deltaLastRead0;
-
-            double cumulMin = conf.getCumulMin(album.Rare);
-            double cumulMax = conf.getCumulMax(album.Rare);
-
-            if (pub2 > lastRead.Pub && conf.extPente == 0)
-            {
-                if (conf.elastique < 1)
-                {
-                    delta0Corr = deltaLastRead0 * conf.elastique;
-                    pub2 = lastRead.Pub.AddDays(delta0Corr).truncateToMinute();
-                }
-
-
-                //if (cumulMin > 0 && cumulMax > 0 && delta0Corr > cumulMin)
-                //{
-                //    delta0Corr = borneCumul(delta0Corr, cumulMin, cumulMax);
-                //    pub2 = lastRead.Pub.AddDays(delta0Corr);
-                //}
-            }
-
-
-
-
-            var deltaLecture = (DateTime.Now - lastPlayed).TotalDays;
-
-            int nbReads = 0;
-            int nbTotals = 0;
-
-            int nbRead = 0;
-            int nbTotal = 0;
-
-            int _nbRead = 0;
-            int _nbTotal = 0;
-            double delta = intervalle; // conf.getIntervalle(album.Rare);
-            double delta0 = delta;
-            var _histo = conf.getHisto(album.Rare);
-            if (_histo > 0)
-            {
-                double histo = _histo;
-
-                DateTime histo0 = next.Pub;
-                if (conf.histoMode == histoMode.fix)
-                    histo0 = date0;
-                DateTime limit = histo0.AddDays(-histo);
-
-                for (int i = indexNextSelected - 1; i >= 0; i--)
-                {
-                    var t = list[i];
-                    var dt = t.Pub;
-                    if (dt < limit && nbTotals >= conf.totalMin)
-                        break;
-
-                    if (t.Played)
-                        nbReads++;
-
-
-                    nbTotals++;
-
-                }
-
-
-
-                limit = lastRead.Pub.AddDays(-histo);
-                for (int i = indexLastRead; i >= 0; i--)
-                {
-                    var t = list[i];
-                    var dt = t.Pub;
-                    if (dt < limit && nbTotal >= conf.totalMin)
-                        break;
-
-                    if (t.Played)
-                        nbRead++;
-
-
-                    nbTotal++;
-
-                }
-
-
-                if (conf.histoMode == histoMode.read)
-                {
-                    _nbRead = nbRead;
-                    _nbTotal = nbTotal;
-                }
-                else
-                {
-                    _nbRead = nbReads;
-                    _nbTotal = nbTotals;
-                }
-
-
-                if (_nbRead > 0 && _nbTotal > 0)
-                {
-                    if (_nbTotal < conf.totalMin)
-                        _nbTotal = conf.totalMin;
-                    //  album.Rare ? conf.intervalleR : conf.intervalle;
-                    var ecouteMax = conf.getEcouteMax(album.Rare); // album.Rare ? conf.ecouteMaxR : conf.ecouteMax;
-
-                    delta = (intervalle * (double)_nbTotal) / (ecouteMax * (double)_nbRead);
-                    var coeff = (double)_nbTotal / (double)_nbRead;
-
-                    //0.1 => 10
-                    //0.9 => 1.11
-                    //coeff -= 1; // 9  0.11
-                    //var dminmax = intervalle - intervalleMin;
-
-                    var _delta = borne(coeff, intervalle, intervalleMin); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
-
-                    if (_delta < delta)
-                        delta = _delta;
-                    else
-                    {
-                    }
-
-                }
-
-                //misc.log("{3} {4}/{5} [{0}] {1} {2} ", name, lastRead.Name, lastRead.Pub, delta.ToString("#.##"), nbRead, nbTotal, name);
-
-
-            }
-
-
-
-            if (conf.extPente > 0)
-            {
-                var d0 = (DateTime.Now - pub2).TotalDays;
-                var dl = conf.extDelta;
-                if (dl == 0)
-                {
-                    dl = d0;
-                }
-
-                delta0 = d0 / conf.extPente;
-                delta = delta0;
-                //01/01/2014 ->01/01/2017
-                //04/01/2017 -> 04/01/2014
-                var dateLimitEcoule = DateTime.Now.AddDays(-dl);
-
-                var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
-                log.log("{0} {1}", delta.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
-
-                if (deltaLimiteEcoule > delta)
-                    delta = deltaLimiteEcoule;
-
-                if (delta < 1)
-                    delta = 1;
-
-                //if (delta > intervalle)
-                //    delta = intervalle;
-            }
-
-            if (conf.limitRead && deltaLecture > intervalle)
-            {
-                //13 /10 ->7
-                var _old = delta;
-
-                delta += intervalle - deltaLecture;
-                log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
-            }
-
-
-
-
-            if (delta < intervalleMin)
-                delta = intervalleMin;
-
-            if (delta > intervalle)
-                delta = intervalle;
-
-
-
-            DateTime limitFuture = pub2.AddDays(delta).truncateToMinute();
-            DateTime limitFutureRab = pub2.AddDays(conf.coeffRab * delta).truncateToMinute();
-            DateTime nextDate = limitFuture;
-
-            int nb = 0;
-            int nblissage = 0;
-            double deltaAtterrissage = intervalleMin;
-
-            if (conf.noCollision)
-                deltaAtterrissage = TimeSpan.FromDays(delta).TotalDays;
-            if (conf.extPente > 0)
-                deltaAtterrissage = TimeSpan.FromDays(delta0).TotalDays;
-
-            if (conf.deltaConst)
-            {
-            }
-
-            else
-            {
-                var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
-                var _deltaRab = limitFuture.AddDays(conf.deltaRab);
-
-                DateTime dt = lastRead.Pub;
-
-                for (int i = indexLastRead + 1; i < count; i++)
-                {
-                    // on utilise des tracks virtuels pour pallier aux absences (week end, track manquant...)
-                    dt = dt.AddDays(intervalleMin);
-
-                    //if (conf.deltaCheckSelected)
-                    //{
-                    //    if (!t.Selected)
-                    //        continue;
-                    //    if (!t.Enabled)
-                    //        continue;
-                    //}
-
-                    if (dt >= limitFuture)
-                    {
-                        nextDate = dt;
-                        nblissage++;
-                        //if (nextDate > limitFuture && nb > 0 && conf.noCollision)
-                        //{
-                        //    var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
-                        //    if (_deltaAtt < deltaAtterrissage)
-                        //    {
-                        //        if (_deltaAtt > deltaattAux)
-                        //            deltaattAux = _deltaAtt;
-                        //    }
-                        //}
-                        if (dt >= _deltaMin && dt >= _deltaRab && nb >= conf.deltaNbMin && nblissage > conf.deltaNbRab && dt >= limitFutureRab)
-                            break;
-                    }
-                    nb++;
-                }
-
-                if (nextDate > limitFuture && nb > 0 && conf.noCollision)
-                {
-                    deltaAtterrissage = (nextDate - limitFuture).TotalDays / (double)nb;
-                    if (deltaAtterrissage > intervalleMin)
-                        deltaAtterrissage = intervalleMin;
-                }
-            }
-
-            var tsatt = timeSpan.FromDays(deltaAtterrissage);
-            if (tsatt.TotalMinute < 1)
-                tsatt = timeSpan.FromMinutes(1);
-
-            string deltas = string.Format("{0} {1} {2} {3}->{4}", intervalle.ToString("0.##"), deltaLastRead0.ToString("0.##"), delta0Corr.ToString("0.##"), delta.ToString("0.##"), tsatt.TotalDay.ToString("0.##"));
-
-            log.log("{0} {1}/{2} ({3}/{4}) [{5}] {6} {7} ({8}) lecture={9} ", deltas, nbRead, nbTotal, nbReads, nbTotals, album.Album, lastRead.track.Name, lastRead.Pub, pub2, deltaLecture.ToString("#.##"));
-
-
-            nb = 0;
-            // bool enRetard = limitFuture < date0;
-            TrackSort last = list[indexLastRead + 1];
-            DateTime lastPub2 = limitFuture;
-            for (int i = indexLastRead + 1; i < count; i++)
-            {
-
-                var t = list[i];
-
-                //if (conf.deltaCheckSelected)
-                //{
-                //    if (!t.Selected)
-                //        continue;
-                //    if (!t.Enabled)
-                //        continue;
-                //}
-                var d = (t.Pub - last.Pub).TotalDays / intervalleMin;
-                double ___delta = tsatt.TotalDay;
-
-                var dt = lastPub2.AddDays(d * ___delta).truncateToMinute();  //  (int)(tsatt.TotalMinute * nb)).truncateToMinute();
-                if (dt < date0 && conf.deltaConstLate)
-                {
-                    var dt2 = lastPub2.AddDays(d * delta).truncateToMinute();
-                    if (dt2 <= date0)
-                        dt = dt2;
-                    else
-                        dt = date0.AddMinutes(1);
-                }
-
-
-                var _delta = (dt - lastRead.Pub2).TotalDays;
-                if (t.Pub >= dt || conf.enabled == sortMode.reset)
-                    eraseSort(t, false, false);
-                else
-                {
-                    if (cumulMin > 0 && cumulMax > 0 && conf.extPente == 0)
-                    {
-                        var __delta = (dt - t.Pub).TotalDays;
-                        if (__delta > cumulMin)
-                        {
-                            __delta = borneCumul(__delta, cumulMin, cumulMax);
-                            dt = t.Pub.AddDays(__delta).truncateToMinute();
-                        }
-                    }
-
-                    writeComment(t, dt, checkSelected, apply, date0, newDate0);
-                    nb++;
-                }
-
-
-                last = t;
-                lastPub2 = dt;
-
-
-            }
-
-
-            for (int i = 0; i < count; i++)
-            {
-                var track = list[i];
-                if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
-                {
-                    var aux = currentPub2.AddMinutes(1);
-                    log.log("correction2 pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
-                    track.Pub2 = aux;
-                }
-
-                currentPub = track.Pub;
-                currentPub2 = track.Pub2;
-            }
-
-        }
-
-        public void build()
+        public static IWriter Writer { set { writer = value; } }
+        public void WriteTracksPre()
         {
-            if (done)
-                return;
-            done = true;
-            if (conf.enabled == sortMode.no)
-                return;
-            int count = list.Count;
-            if (count == 0)
-                return;
-
-            if (conf.enabled == sortMode.histo)
+            if (writer is WriterHtml && dir.Parent == null)
             {
-                buildAll();
-                return;
+                (writer as WriterHtml).Start("dir");
             }
             else
-            {
-                build(true, true, Conf.Date0, Conf.NewDate0);
+                writer.StartElement("dir");
+            writer.SetAttribute("name", this.dir.Name);
+
+
+
+
+            var dirStat = dir.Stat;
+            if (dirStat == null)
                 return;
-            }
 
-            #region old
-            /* if (conf.enabled == sortMode.reset)
+            writeTracks(dir, dir.Conteneur.Tracks, true, true);
+
+            var limits = dir.Limites;
+
+
+            bool hasLimit = false;
+            #region limites
+            for (int i = 0; i < Limits.NB; i++)
             {
-                foreach (var t in list)
+                var limit = limites[i];
+                bool hasLimitItem = false;
+
+                var limite = limit.Limit;
+                var limitStat = limite.Stat;
+                if (limitStat == null)
+                    continue;
+                if (limitStat.Total.Empty)
+                    continue;
+
+
+                if (!hasLimit)
                 {
-                    eraseSort(t, true, true);
+                    writer.StartElement("limites");
+                    writeTracks(dir, dir.Stat, true, true);
                 }
+                hasLimit = true;
 
-                return;
-            }
+                #region limite
+                writer.StartElement("limite");
+                writer.SetAttribute("level", i.ToString());
 
-            int indexLastRead = -1;
-            int indexNextSelected = -1;
-            DateTime lastPlayed = DateTime.MinValue;
-            TrackSort next = null;
-            //  TrackSort reallyLastRead = null;
-            DateTime currentPub = DateTime.MinValue;
-            DateTime currentPub2 = DateTime.MinValue;
-            for (int i = 0; i < count; i++)
-            {
-                var track = list[i];
-                //if (conf.extPente > 0)
-                //{
-                //    if (!track.Played && track.Pub == track.Pub2)
-                //        track.Pub2 = Conf.Date0; 
-                //}
+                writeTracks(dir, limitStat, true, true);
 
-                if (track.Pub > currentPub && track.Pub2 <= currentPub2)
+
+                #region items
+                foreach (LimitItemLoader item in limit.Items)
                 {
-                    var aux = currentPub2.AddMinutes(1);
-                    log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
-                    track.Pub2 = aux;
-                }
-
-                currentPub = track.Pub;
-                currentPub2 = track.Pub2;
-
-
-                if (track.Played) // && track.PlayedDate > lastPlayed)
-                {
-                    // ok mais quid du cas au fil de l'histoire : date dans le futur
-                    if (track.Pub2 <= Conf.Date0 || conf.extPente > 0)
-                    {
-                        if (next == null)
-                        {
-                            indexLastRead = i;
-                            lastPlayed = track.PlayedDate;
-                        }
-                    }
-                }
-
-                else if (next == null)
-                {
-                    if (track.Selected)
-                    {
-                        next = track;
-                        indexNextSelected = i;
-                        // break;
-                    }
-                }
-            }
-
-
-            if (indexLastRead < 0)
-                return;
-            if (next == null)
-                return;
-            var intervalle = conf.getIntervalle(album.Rare);
-            var intervalleMin = conf.getIntervalleMin(album.Rare);
-            var lastRead = list[indexLastRead];
-            double deltaLastRead0 = (lastRead.Pub2 - lastRead.Pub).TotalDays;
-            DateTime pub2 = lastRead.Pub2;
-
-            double delta0Corr = deltaLastRead0;
-
-            double cumulMin = conf.getCumulMin(album.Rare);
-            double cumulMax = conf.getCumulMax(album.Rare);
-
-            if (pub2 > lastRead.Pub && conf.extPente == 0)
-            {
-                if (conf.elastique < 1)
-                {
-                    delta0Corr = deltaLastRead0 * conf.elastique;
-                    pub2 = lastRead.Pub.AddDays(delta0Corr).truncateToMinute();
-                }
-
-
-                //if (cumulMin > 0 && cumulMax > 0 && delta0Corr > cumulMin)
-                //{
-                //    delta0Corr = borneCumul(delta0Corr, cumulMin, cumulMax);
-                //    pub2 = lastRead.Pub.AddDays(delta0Corr);
-                //}
-            }
-
-
-
-
-            var deltaLecture = (DateTime.Now - lastPlayed).TotalDays;
-
-            int nbReads = 0;
-            int nbTotals = 0;
-
-            int nbRead = 0;
-            int nbTotal = 0;
-
-            int _nbRead = 0;
-            int _nbTotal = 0;
-            double delta = conf.getIntervalle(album.Rare);
-            double delta0 = delta;
-            var _histo = conf.getHisto(album.Rare);
-            if (_histo > 0)
-            {
-                double histo = _histo;
-
-                DateTime histo0 = next.Pub;
-                if (conf.histoMode == histoMode.fix)
-                    histo0 = Conf.Date0;
-                DateTime limit = histo0.AddDays(-histo);
-
-                for (int i = indexNextSelected - 1; i >= 0; i--)
-                {
-                    var t = list[i];
-                    var dt = t.Pub;
-                    if (dt < limit && nbTotals >= conf.totalMin)
-                        break;
-
-                    if (t.Played)
-                        nbReads++;
-
-
-                    nbTotals++;
-
-                }
-
-
-
-                limit = lastRead.Pub.AddDays(-histo);
-                for (int i = indexLastRead; i >= 0; i--)
-                {
-                    var t = list[i];
-                    var dt = t.Pub;
-                    if (dt < limit && nbTotal >= conf.totalMin)
-                        break;
-
-                    if (t.Played)
-                        nbRead++;
-
-
-                    nbTotal++;
-
-                }
-
-
-                if (conf.histoMode == histoMode.read)
-                {
-                    _nbRead = nbRead;
-                    _nbTotal = nbTotal;
-                }
-                else
-                {
-                    _nbRead = nbReads;
-                    _nbTotal = nbTotals;
-                }
-
-
-                if (_nbRead > 0 && _nbTotal > 0)
-                {
-                    if (_nbTotal < conf.totalMin)
-                        _nbTotal = conf.totalMin;
-                    //  album.Rare ? conf.intervalleR : conf.intervalle;
-                    var ecouteMax = conf.getEcouteMax(album.Rare); // album.Rare ? conf.ecouteMaxR : conf.ecouteMax;
-
-                    delta = (intervalle * (double)_nbTotal) / (ecouteMax * (double)_nbRead);
-                    var coeff = (double)_nbTotal / (double)_nbRead;
-
-                    //0.1 => 10
-                    //0.9 => 1.11
-                    //coeff -= 1; // 9  0.11
-                    //var dminmax = intervalle - intervalleMin;
-
-                    var _delta = borne(coeff, intervalle, intervalleMin); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
-
-                    if (_delta < delta)
-                        delta = _delta;
-                    else
-                    {
-                    }
-
-                }
-
-                //misc.log("{3} {4}/{5} [{0}] {1} {2} ", name, lastRead.Name, lastRead.Pub, delta.ToString("#.##"), nbRead, nbTotal, name);
-
-
-            }
-
-
-
-            if (conf.extPente > 0)
-            {
-                var d0 = (DateTime.Now - pub2).TotalDays;
-                var dl = conf.extDelta;
-                if (dl == 0)
-                {
-                    dl = d0;
-                }
-
-                delta0 = d0 / conf.extPente;
-                delta = delta0;
-                //01/01/2014 ->01/01/2017
-                //04/01/2017 -> 04/01/2014
-                var dateLimitEcoule = DateTime.Now.AddDays(-dl);
-
-                var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
-                log.log("{0} {1}", delta.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
-
-                if (deltaLimiteEcoule > delta)
-                    delta = deltaLimiteEcoule;
-
-                if (delta < 1)
-                    delta = 1;
-
-                //if (delta > intervalle)
-                //    delta = intervalle;
-            }
-
-            if (conf.limitRead && deltaLecture > intervalle)
-            {
-                //13 /10 ->7
-                var _old = delta;
-
-                delta += intervalle - deltaLecture;
-                log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
-            }
-
-
-
-
-            if (delta < intervalleMin)
-                delta = intervalleMin;
-
-            if (delta > intervalle)
-                delta = intervalle;
-
-
-
-            DateTime limitFuture = pub2.AddDays(delta).truncateToMinute();
-            DateTime nextDate = limitFuture;
-
-            int nb = 0;
-            int nblissage = 0;
-            double deltaAtterrissage = intervalleMin;
-
-            if (conf.noCollision)
-                deltaAtterrissage = TimeSpan.FromDays(delta).TotalDays;
-            if (conf.extPente > 0)
-                deltaAtterrissage = TimeSpan.FromDays(delta0).TotalDays;
-
-            if (conf.deltaConst)
-            {
-            }
-
-            else
-            {
-                var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
-                var _deltaRab = limitFuture.AddDays(conf.deltaRab);
-                double deltaattAux = 0;
-                for (int i = indexLastRead + 1; i < count; i++)
-                {
-                    var t = list[i];
-
-                    if (conf.deltaCheckSelected)
-                    {
-                        if (!t.Selected)
-                            continue;
-                        if (!t.Enabled)
-                            continue;
-                    }
-
-                    if (t.Pub >= limitFuture)
-                    {
-                        nextDate = t.Pub;
-                        nblissage++;
-                        if (nextDate > limitFuture && nb > 0 && conf.noCollision)
-                        {
-                            var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
-                            if (_deltaAtt < deltaAtterrissage)
-                            {
-                                if (_deltaAtt > deltaattAux)
-                                    deltaattAux = _deltaAtt;
-                            }
-                        }
-                        if (t.Pub >= _deltaMin && t.Pub >= _deltaRab && nb >= conf.deltaNbMin && nblissage > conf.deltaNbRab)
-                            break;
-                    }
-                    nb++;
-                }
-
-                if (nextDate > limitFuture && nb > 0 && conf.noCollision)
-                {
-                    if (deltaattAux > 0)
-                        deltaAtterrissage = deltaattAux;
-                    else
-                    {
-                        var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
-                        if (_deltaAtt < deltaAtterrissage)
-                            deltaAtterrissage = _deltaAtt;
-                    }
-
-                    if (deltaAtterrissage > intervalleMin)
-                        deltaAtterrissage = intervalleMin;
-                }
-            }
-
-            var tsatt = timeSpan.FromDays(deltaAtterrissage);
-            if (tsatt.TotalMinute < 1)
-                tsatt = timeSpan.FromMinutes(1);
-
-            string deltas = string.Format("{0} {1} {2}->{3}", deltaLastRead0.ToString("0.##"), delta0Corr.ToString("0.##"), delta.ToString("0.##"), tsatt.TotalDay.ToString("0.##"));
-
-            log.log("{0} {1}/{2} ({3}/{4}) [{5}] {6} {7} ({8}) lecture={9} ", deltas, nbRead, nbTotal, nbReads, nbTotals, album.Album, lastRead.track.Name, lastRead.Pub, pub2, deltaLecture.ToString("#.##"));
-
-
-            nb = 0;
-            for (int i = indexLastRead + 1; i < count; i++)
-            {
-
-                var t = list[i];
-
-                if (conf.deltaCheckSelected)
-                {
-                    if (!t.Selected)
+                    var lim = item.Item;
+                    var items = item.use;
+                    if (items.Count == 0)
                         continue;
-                    if (!t.Enabled)
-                        continue;
+                    if (!hasLimitItem)
+                        writer.StartElement("items");
+                    hasLimitItem = true;
+
+                    #region item
+                    writer.StartElement("i");
+                    writer.SetAttribute("name", lim.ToString().Replace(dir.getPath(), ""));
+                    var sb = new StringBuilder();
+                    lim.writeStatHeader(sb);
+                    lim.Stat.Total.buildValues(sb);
+                    writer.SetAttribute("stats", sb.ToString());
+
+                    writeTracks(dir, lim.Stat, null, false);
+
+                    writer.EndElement();
+                    #endregion
                 }
-                var dt = limitFuture.AddMinutes((int)(tsatt.TotalMinute * nb)).truncateToMinute();
-
-
-                var _delta = (dt - lastRead.Pub2).TotalDays;
-                if (t.Pub >= dt || conf.enabled == sortMode.reset)
-                    eraseSort(t, false, true);
-                else
-                {
-                    if (cumulMin > 0 && cumulMax > 0 && conf.extPente == 0)
-                    {
-                        var __delta = (dt - t.Pub).TotalDays;
-                        if (__delta > cumulMin)
-                        {
-                            __delta = borneCumul(__delta, cumulMin, cumulMax);
-                            dt = t.Pub.AddDays(__delta).truncateToMinute();
-                        }
-                    }
-
-                    writeComment(t, dt, true, true, Conf.Date0, Conf.NewDate0);
-                    nb++;
-                }
-
+                if (hasLimitItem)
+                    writer.EndElement();
+                #endregion
+                writer.EndElement();
+                #endregion
 
             }
-
-
-            for (int i = 0; i < count; i++)
-            {
-                var track = list[i];
-                if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
-                {
-                    var aux = currentPub2.AddMinutes(1);
-                    log.log("correction2 pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
-                    track.Pub2 = aux;
-                }
-
-                currentPub = track.Pub;
-                currentPub2 = track.Pub2;
-            }
-            */
+            if (hasLimit)
+                writer.EndElement();
             #endregion
 
 
         }
 
-        //private void writeComment(TrackInfoItunes track)
-        //{
-        //    string comment = track.Pub.ToString("yyyy/MM/dd HH:mm");
-        //    if (track.Pub2 > track.Pub)
-        //        comment = string.Format("{0}|{1}", track.Pub2.ToString("yyyy/MM/dd HH:mm"), track.Pub.ToString("yyyy/MM/dd HH:mm"));
-
-        //    if (comment != track.Comment)
-        //        track.Comment = comment;
-        //}
-
-        private void eraseSort(TrackSort track, bool force, bool apply)
+        private void WriteCause(Causes causes, bool strict, bool ok)
         {
-            bool go = apply;
-            if (!go)
+            //  writer.StartElement("causes");
+            foreach (CauseItem cause in causes.getCauses(strict, ok, ok))
             {
-                go = true;
-                if (!force && !track.track.Selected)
-                    go = false;
-            }
-            if (!go)
-            {
-                track.Pub2 = track.Pub;
-                return;
-            }
+                string str = "cause";
+                if (strict)
+                    str += "strict";
+                if (!ok)
+                    str += "nok";
+                writer.StartElement(str);
 
-            //if (!force && !track.Selected)
-            //    return;
-            if (conf.canGoBack || conf.enabled == sortMode.reset)
-            {
-                if (!track.Played)
+
+                writer.SetAttribute("type", cause.type);
+                writer.SetAttribute("val", cause.val);
+
+
+                var lim = cause.limit as LimitItem;
+
+
+                #region item
+                //  writer.StartElement("i");
+                writer.SetAttribute("name", lim.ToString());
+                if (Conf.Html.trackCauseItemDetail)
                 {
-                    DateTime pub = track.Pub;
-                    if (track.Pub2 >= Conf.Date0 && pub < Conf.Date0)
+                    var sb = new StringBuilder();
+                    lim.writeStatHeader(sb);
+                    lim.Stat.Total.buildValues(sb);
+                    writer.SetAttribute("stats", sb.ToString());
+                }
+
+                //   writer.EndElement();
+                #endregion
+
+
+                writer.EndElement();
+            }
+            //     writer.EndElement();
+        }
+        public void WriteTracksPost()
+        {
+            if (Conf.Html.writeCause > 0)
+            {
+                if (dir.Parent == null)
+                {
+                    int nbMax = Conf.Html.writeCause;
+                    int nb = 0;
+                    #region nonretenus
+                    writer.StartElement("exclus");
+                    var list = dir.CauseRegister.getList(true);
+                    foreach (Causes causes in list)
                     {
-                        log.log("**********{0} pub2 erase passe en dessous de Date0 {1}->{2} ({3})", track.Name, track.Pub2, track.Pub, Conf.Date0);
-                        nbrepeches++;
-                        // track.Pub2 = TrackInfoItunes.Date0.AddSeconds(nbrepeches);
+                        nb++;
+                        if (nb > nbMax)
+                            break;
+                        var track = causes.candidat;
+                        writer.StartElement("t");
+                        writer.SetAttribute("date", track.Pub);
+                        if (track.Pub2 > track.Pub)
+                            writer.SetAttribute("pub2", track.Pub2);
+                        writer.SetAttribute("album", track.Album);
+                        writer.SetAttribute("l", (track.Rating / 20).ToString());
+                        writer.SetAttribute("track", track.Name);
+
+                        WriteCause(causes, true, true);
+                        WriteCause(causes, true, false);
+
+                        WriteCause(causes, false, true);
+                        WriteCause(causes, false, false);
+                        writer.EndElement();
                     }
-                    else if (track.Pub2 >= Conf.NewDate0 && pub < Conf.NewDate0)
-                    {
-                        log.log("**********{0} pub2 erase passe en dessous de NewDate0 {1}->{2} ({3})", track.Name, track.Pub2, track.Pub, Conf.NewDate0);
-                        nbrepeches++;
-                        // track.Pub2 = TrackInfoItunes.Date0.AddSeconds(nbrepeches);
-                    }
+                    writer.EndElement();
+                    #endregion
                 }
-
-                //}
-                //else
-                //{
-                if (track.Pub2 != track.Pub)
-                    nbModif++;
-                track.Pub2 = track.Pub;
-                //}
-                track.track.BuildComment();
-                // writeComment(track);
             }
+            writer.EndElement();
+
         }
 
-        private void applyPub(TrackSort track)
+        public void SelectionPre()
         {
-            writeComment(track, track.Pub2, false, true, Conf.Date0, Conf.NewDate0);
+            if (dir.SelectionPre)
+                selection();
         }
 
-        private void writeComment(TrackSort track, DateTime dt, bool checkSelected, bool apply, DateTime date0, DateTime newDate0)
+        public void SelectionPost()
         {
-            bool go = apply;
-            if (!go)
-            {
-                go = true;
-                if (checkSelected && !track.track.Selected)
-                    go = false;
-            }
-            if (!go)
-            {
-                track.Pub2 = dt;
-                return;
-            }
-
-            dt = dt.truncateToMinute(); 
-
-            //if (checkSelected && !track.Selected)
-            //    return;
-
-
-            if (conf.canGoBack)
-            {
-                if (!track.Played)
-                {
-                    if (track.pub20 >= date0 && dt < date0)
-                    {
-                        if (conf.canGoBackButForceSelected)
-                        {
-                            log.log("**********{0} pub2 set passe en dessous de Date0 MAIS repéché {1}->{2} ({3})", track.Name, track.pub20, dt, date0);
-                            nbRepecheForce++;
-                            dt = date0.AddMinutes(nbRepecheForce);
-                        }
-                        else
-                        {
-                            log.log("**********{0} pub2 set passe en dessous de Date0 {1}->{2} ({3})", track.Name, track.pub20, dt, date0);
-                            nbrepeches++;
-                        }
-                    }
-
-                    else if (track.pub20 >= newDate0 && dt < newDate0)
-                    {
-
-                        if (conf.canGoBackButForceSelected)
-                        {
-                            log.log("**********{0} pub2 set passe en dessous de NewDate0 MAIS repéché {1}->{2} ({3})", track.Name, track.pub20, dt, date0);
-                            nbRepecheForce++;
-                            dt = Conf.Date0.AddMinutes(nbRepecheForce);
-                        }
-                        else
-                        {
-                            log.log("**********{0} pub2 set passe en dessous de NewDate0 {1}->{2} ({3})", track.Name, track.pub20, dt, newDate0);
-                            nbrepeches++;
-                        }
-
-                    }
-                }
-            }
-            else
-            {
-                if (dt == track.pub20)
-                {
-                    log.log("\t{0}\t{1} {2}", track.Pub, dt, track.Name);
-                    return;
-                }
-                else if (dt < track.pub20)
-                {
-                    log.log("\t{0}\t{1}<=\t{2} {3}", track.Pub, track.pub20, dt, track.Name);
-                    return;
-                }
-            }
-            var delta = (dt - track.Pub).TotalDays;
-            var strDelta = delta.ToString("0.0");
-
-            if (track.pub20 != dt)
-            {
-                if (track.track.Selected)
-                {
-                    nbModif++;
-                    log.log("\t{0}\t{1}=>\t{2}({3}) {4}", track.Pub, track.pub20, dt, strDelta, track.Name);
-                }
-                track.Pub2 = dt;
-            }
-            else if (track.pub20 > track.Pub)
-            {
-                if (track.track.Selected)
-                    log.log("\t{0}\t{1}({2}) {3}", track.Pub, track.pub20, strDelta, track.Name);
-            }
-
-
-            track.track.BuildComment();
+            if (!dir.SelectionPre)
+                selection();
         }
 
-        private static double borne(double coeff, double intervalle, double intervalleMin)
+        private void selection()
         {
-            if (coeff < 1)
-                return coeff * intervalleMin;
-            coeff -= 1; // 9  0.11
-            var dminmax = intervalle - intervalleMin;
 
-            var _delta = intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+            //log.log("{0} Selection", dir);
 
-            return _delta;
+            for (int i = dir.Cascading ? Limits.NB - 1 : 0; ((i >= 0 && dir.Cascading) || (i < Limits.NB && !dir.Cascading)); i = dir.Cascading ? i - 1 : i + 1)
+            {
+                var limit = limites[i];
+                limit.Selection();
+
+            }
+
         }
 
-        private static double borneCumul(double delta, double cumulMin, double cumulMax)
+        public override string ToString()
         {
-            if (cumulMin < 0 || cumulMax < 0)
-                return delta;
-            if (delta < cumulMin)
-                return delta;
-            var coeff = delta / cumulMin;
-            return borne(coeff, cumulMax, cumulMin);
+            return dir.ToString();
         }
+
     }
 }]]></content>
   </file>
@@ -3333,7 +3382,7 @@ namespace pdb.podcast.Tuning
         {
             var list = conteneur.getListe();
             if (Histo)
-                list.Sort(new PodCastComparer());
+                list.Sort(new PodCastComparerPub2());
             else
                 list.Sort(new PodCastComparerInv());
             log.log("");
@@ -3704,7 +3753,7 @@ namespace pdb.podcast.Tuning
         {
             var items = new List<TrackInfoItunes>(conteneur.Tracks.Total.Use.List);
             if (Histo)
-                items.Sort(new PodCastComparer());
+                items.Sort(new PodCastComparerPub2());
             else
                 items.Sort(new PodCastComparerInv());
             return items;
