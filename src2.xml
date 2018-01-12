@@ -19,6 +19,9 @@ J3	=SI(B3<B2;1;SI(B3>B2;-1;J2))
 
 
 
+
+
+
 Sub borne()
 '
 ' borne Macro
@@ -28,7 +31,7 @@ Sub borne()
 
 refreshDyn
 
-courant = Sheets("_c").Cells(1, 10).Value
+courant = Sheets("_c").Cells(1, 12).Value
 Dim last As Integer
 last = courant
 
@@ -43,7 +46,7 @@ For i = courant To 10000
   last = i
 Next
 
-Sheets("_c").Cells(1, 11).Value = Sheets("_c").Cells(last, 2)
+Sheets("_c").Cells(1, 13).Value = Sheets("_c").Cells(last, 2)
 
 borneP10 = 10 * Int(last / 10)
 If borneP10 < last Then borneP10 = borneP10 + 10
@@ -87,15 +90,15 @@ Sub calc(ByVal sheet As String, ByVal borneM As Integer, ByVal borneP As Integer
     
     setBorne 1, "A", borneM, borneP, sheet
    
-    setBorne 2, "I", borneM, borneP, sheet
-    setBorne 3, "F", borneM, borneP, sheet
-    setBorne 4, "E", borneM, borneP, sheet
+    setBorne 2, "K", borneM, borneP, sheet
+    setBorne 3, "H", borneM, borneP, sheet
+    setBorne 4, "G", borneM, borneP, sheet
     
     setBorneX 1, borneM, sheet
     setBorneX 2, borneM, sheet
     
     setBorneY 1, 0, borneM, borneP, sheet, False
-    setBorneY 6, 5, borneM, borneP, sheet, True
+    setBorneY 8, 7, borneM, borneP, sheet, True
 
 End Sub
 
@@ -139,7 +142,7 @@ For i = borneM To borneP
 Next
 
 If Min = Max Then GoTo Ex
-Delta = (Max - Min) / Sheets("_c").Cells(1, 15)
+Delta = (Max - Min) / Sheets("_c").Cells(1, 17)
 coeff = 1
 While Delta < 1
     Delta = Delta * 10
@@ -187,3 +190,4 @@ End If
 
 Ex:
 End Sub
+
