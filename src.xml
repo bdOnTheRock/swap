@@ -425,6 +425,7 @@ namespace pdb.player.ViewModel
                     //percentConv = conf.acceleration / conf.danticonvergenceMin;
                     //sb.Append((percentConv).ToString("0.##", CultureInfo.InvariantCulture)); sb.Append(" ");
                     sb.Append(conf.a.FormatE(4)); sb.Append("  ");
+                    sb.Append(conf.CurrentStaticm.FormatE(3)); sb.Append("  ");
                     // sb.Append(conf.dv.FormatE(4)); sb.Append("   "); 
 
                     // sb.Append(conf.AccelerationRapport.ToString("0.###", CultureInfo.InvariantCulture)); sb.Append("  ");
@@ -1144,8 +1145,24 @@ namespace pdb.util
         /// </summary>
         private int _nbAltHisto;
 
+        /// <summary>
+        /// Quand plusieurs montées consécutives : application d'un coeff à la vitesse pour accélérer la reprise à la normale
+        /// </summary>
+        private decimal coeffStaticp = 1;
+        /// <summary>
+        /// Quand plusieurs descentes consécutives : application d'un coeff à la vitesse pour accélérer la reprise à la normale
+        /// </summary>
+        private decimal coeffStaticm = 1;
 
-
+        /// <summary>
+        /// Valeur courante du coeff corrigeant les situations anormales du point de vue des montées consécutives
+        /// </summary>
+        private decimal currentStaticp = 1;
+        /// <summary>
+        /// Valeur courante du coeff corrigeant les situations anormales du point de vue des descentes consécutives
+        /// </summary>
+        private decimal currentStaticm = 1;
+        public decimal CurrentStaticm { get { return currentStaticm; } }
         /// <summary>
         /// anti atténuation
         /// </summary>
@@ -1386,6 +1403,11 @@ namespace pdb.util
 
             buildbn("lastDelta", v => lastDelta = v);
 
+            builddec("coeffStaticp", v => coeffStaticp = v);
+            builddec("coeffStaticm", v => coeffStaticm = v);
+            builddec("currentStaticp", v => currentStaticp = v);
+            builddec("currentStaticm", v => currentStaticm = v);
+
 
             HistoValue last = null;
             var xhisto = XMLTool.NodeLookUp(child, "histo");
@@ -1553,7 +1575,7 @@ namespace pdb.util
 
             write("pas", pas);
             write("v", v);
-            write("dv", dv); 
+            write("dv", dv);
             write("d0", d0);
             write("a", a);
             write("aa", aa);
@@ -1585,6 +1607,12 @@ namespace pdb.util
 
             write("coeffOldAutoLevel", coeffOldAutoLevel);
             write("epsilon", epsilon);
+
+            write("coeffStaticp", coeffStaticp);
+            write("coeffStaticm", coeffStaticm);
+            write("currentStaticp", currentStaticp);
+            write("currentStaticm", currentStaticm);
+
 
 
             var sb = new StringBuilder();
@@ -1680,7 +1708,7 @@ namespace pdb.util
         public decimal Elastique2 { get { return _nbElastique2; } }
         public decimal dv = 0;
         public decimal dx = 0m;
-      //  public decimal da;
+        //  public decimal da;
         public decimal AccelerationRapport { get { return dv / epsilon; } }
         public decimal VitesseRapport { get { return dx / epsilon; } }
         public decimal danticonvergenceMin
@@ -1689,43 +1717,68 @@ namespace pdb.util
             {
                 // return danticonvergence01;
                 return epsilon;
-                decimal ret = 1;
-                try
-                {
-                    var aux = epsilon / v;
-                    if (aux < ret)
-                        ret = aux;
-                }
-                catch
-                {
-                }
-                return ret;
+                //decimal ret = 1;
+                //try
+                //{
+                //    var aux = epsilon / v;
+                //    if (aux < ret)
+                //        ret = aux;
+                //}
+                //catch
+                //{
+                //}
+                //return ret;
             }
         }
 
-        private void verifHaut()
+        private void verifMaxV()
         {
             var _dxmax = (coeffVirt - 1) * d0;
             var _dx = v * pas;
             if (_dx > _dxmax)
             {
-                v = _dxmax / pas;
+                var vv = _dxmax / pas;
+                misc.log("verifMaxV {0}->{1}", v.FormatE(4), vv.FormatE(4));
+                v = vv;
             }
+        }
 
-            //_dx = vv * pas;
-            //if (_dx > _dxmax)
-            //{
-            //    vv = _dxmax / pas;
-            //}
-
-            _dx = 2 * a * pas * pas;
+        private void verifMaxA()
+        {
+            var _dxmax = (coeffVirt - 1) * d0;
+           var _dx = 2 * a * pas * pas;
 
             if (_dx > _dxmax)
             {
-                a = _dxmax / (2 * pas * pas);
+                var aa = _dxmax / (2 * pas * pas);
+                misc.log("verifMaxA {0}->{1}", a.FormatE(4), aa.FormatE(4));
+                a = aa; 
             }
-
         }
+
+        //private void verifHaut()
+        //{
+        //    var _dxmax = (coeffVirt - 1) * d0;
+        //    var _dx = v * pas;
+        //    if (_dx > _dxmax)
+        //    {
+        //        v = _dxmax / pas;
+        //    }
+
+        //    //_dx = vv * pas;
+        //    //if (_dx > _dxmax)
+        //    //{
+        //    //    vv = _dxmax / pas;
+        //    //}
+
+        //    _dx = 2 * a * pas * pas;
+
+        //    if (_dx > _dxmax)
+        //    {
+        //        a = _dxmax / (2 * pas * pas);
+        //    }
+
+        //}
 
         private void verifBas()
         {
@@ -1758,8 +1811,8 @@ namespace pdb.util
         {
             var _c0 = coeffVirt;
             var _v0 = v;
-           // vv = v;
-            var dv0 = dv; 
+            // vv = v;
+            var dv0 = dv;
             var _a0 = a;
 
             if (-_nbSameDirectionBox > serialm)
@@ -1801,6 +1854,14 @@ namespace pdb.util
                     {
                         _nbElastique--;
                         _nbElastique2 -= coeffElastique2;
+
+                        currentStaticp /= coeffStaticp;
+                        if (currentStaticp < 1)
+                            currentStaticp = 1;
+
+                        currentStaticm /= coeffStaticm;
+                        if (currentStaticm < 1)
+                            currentStaticm = 1;
                     }
                     if (_nbSameDirectionBox > 0 && selectedByCoeff)
                         _nbSameDirectionBox--;
@@ -1840,32 +1901,12 @@ namespace pdb.util
                 return;
 
             var lastProduct = linkProduct;
-            // var rr = 1m;
-            //if (dcoeffp > 0)
-            //    rr = dcoeffm / dcoeffp;
+
 
             var c0 = v;
-            verifHaut();
-            verifBas();
-            // var rrc = 1m;
+            //verifHaut();
+            //verifBas();
 
-
-            //if (danticonvergence0 > 0)
-            //    rrc = dconvergence0 / danticonvergence0;
-
-            //   acceleration = dcoeffp * danticonvergence;
-            ////   accelerationRapport = acceleration / epsilon;
-            //   if (dcoeffp > 0 && acceleration < epsilon)
-            //   {
-            //       //danticonvergence = epsilon / dcoeffp;
-            //       //dconvergence = rrc * danticonvergence;
-            //       acceleration = epsilon;
-            //   }
-
-            // si le delta ne bouge pas on diminue la convergence 
-
-            /// au debut dconvergence à effet  fort 0.9 doit arriver à 0.999
-            /// // quand j'applique la convergence, je fait baisser son effet
 
             if (last.HasValue)
             {
@@ -1888,6 +1929,11 @@ namespace pdb.util
 
                     if (Math.Abs(_nbSameDirection) > 1)
                     {
+                        if (selectedByCoeff)
+                            currentStaticm *= coeffStaticm;
+                        else
+                            currentStaticp *= coeffStaticp;
+
                         if (selectedByCoeff && -_nbSameDirectionBox > serialm)
                             applyanti = true;
                         else if (!selectedByCoeff && _nbSameDirectionBox > serialp)
@@ -1913,8 +1959,8 @@ namespace pdb.util
                 if (onAugmente)
                 {
                     a *= (1 + aa);
-                    verifHaut();
-                    verifBas();
+                    //verifHaut();
+                    //verifBas();
                 }
                 else
                 {
@@ -1925,8 +1971,8 @@ namespace pdb.util
                         if (a < aepsilon)
                             a = aepsilon;
 
-                        verifHaut();
-                        verifBas();
+                        //verifHaut();
+                        //verifBas();
 
                     }
                 }
@@ -1952,10 +1998,10 @@ namespace pdb.util
                 //}
 
 
-               // vv += pas * a;
+                // vv += pas * a;
                 if (lastDelta.HasValue)
                 {
-
+                    verifMaxA(); 
                     if (false == lastDelta)
                     {
                         v -= pas * a;
@@ -1969,12 +2015,12 @@ namespace pdb.util
                         v += a * pas;
                     }
 
-
-                    verifHaut();
-                    verifBas();
+                    verifMaxV(); 
+                    //verifHaut();
+                    //verifBas();
                 }
 
-               
+
 
                 misc.log("convergence {0:0.##}->{1:0.######}", c0, v);
                 misc.log("evol convergence {0:0.######}->{1:0.######}", aux, a);
@@ -1982,28 +2028,26 @@ namespace pdb.util
 
             string montee = selectedByCoeff ? "down" : "up";
 
+            verifBas(); 
 
             if (selectedByCoeff)
-            {
-                coeffVirt -= pas * v;
-
-            }
+                coeffVirt -= pas * v * currentStaticm;
             else
-                coeffVirt += pas * v;
+                coeffVirt += pas * v * currentStaticp;
 
 
-            verifHaut();
-            verifBas();
+            //verifHaut();
+            //verifBas();
             dx = Math.Abs(coeffVirt - _c0);
-            
+
 
             dv = Math.Abs(v - _v0);
             if (dv == 0)
-                dv = dv0 * (a / _a0); 
-           
-        
+                dv = dv0 * (a / _a0);
 
-           // da = Math.Abs(a - _a0);
+
+
+            // da = Math.Abs(a - _a0);
             misc.log("{0} {1:0.### ###} {2:0.### ###}->{3:0.### ###}", montee, dx, c0, coeffVirt);
             checkCoeffOld();
 
