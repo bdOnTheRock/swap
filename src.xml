@@ -525,6 +525,246 @@ namespace pdb.player.ViewModel
 }
 ]]></content>
   </file>
+  <file path="\pdb.player\Vue\Memento.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+using System.Windows;
+using pdb.gen.Tuning;
+using System.Xml;
+using pdb.util;
+
+namespace pdb.player.Vue
+{
+    [Serializable]
+    class Memento
+    {
+        [NonSerialized]
+        const string FILE_CONF = "confAlbum.xml";
+        [NonSerialized]
+        const string PATH = TuningBase.DIR_CONF + "memento.dat";
+        [NonSerialized]
+        const string PATH_CONF = TuningBase.DIR_CONF + FILE_CONF;
+        [NonSerialized]
+        const string SOV_CONF = TuningBase.DIR_CONF + "sov\\";
+        [NonSerialized]
+        private static Memento _instance;
+        [NonSerialized]
+        private FileRotator fileRotator;
+        public WindowPos winPos = null;
+        public CmpPos cmpPos = null;
+        public string selectedPlaylist = "";
+        public Dictionary<string, object> dict = new Dictionary<string, object>();
+        [NonSerialized]
+        public ConfAlbumSort confAlbum;
+
+
+        private Memento()
+        {
+            fileRotator = new FileRotator(); 
+        }
+        public static Memento Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+
+                    var formater = new BinaryFormatter();
+                    try
+                    {
+                        using (Stream st = new FileStream(PATH, FileMode.Open))
+                        {
+                            _instance = (Memento)(formater.Deserialize(st));
+                        }
+                        var doc = new XmlDocument();
+                        doc.Load(PATH_CONF);
+                        var conf = new ConfAlbumSort(doc.DocumentElement);
+
+                        _instance.confAlbum = conf;
+                    }
+                    catch (Exception ex)
+                    {
+                        misc.log(ex.ToString());
+                        throw;
+                    }
+
+
+                }
+
+                if (_instance == null)
+                    _instance = new Memento();
+
+                _instance.fileRotator = new FileRotator(); 
+                return _instance;
+
+            }
+        }
+        public void save()
+        {
+            var formater = new BinaryFormatter();
+            using (Stream st = new FileStream(PATH, FileMode.Create))
+            {
+                formater.Serialize(st, this);
+            }
+            if (this.confAlbum != null)
+            {
+                fileRotator.save(PATH_CONF, SOV_CONF, 100);
+                var settings = new XmlWriterSettings();
+                settings.Indent = true;
+                settings.Encoding = Encoding.UTF8;
+                using (XmlWriter writer = XmlWriter.Create(PATH_CONF, settings))
+                {
+                    this.confAlbum.save(writer);
+                }
+            }
+        }
+    }
+    [Serializable]
+    class WindowPos
+    {
+        public double Top;
+        public double Left;
+        public double Width;
+        public double Height;
+    }
+    [Serializable]
+    class CmpPos
+    {
+        public Length cdBib;
+        public Length cdMain;
+        public Length cdAlbum;
+        public Length cdClassement;
+    }
+
+    [Serializable]
+    public class Length
+    {
+        public double value;
+        public GridUnitType unit;
+        public Length(GridLength ihm)
+        {
+            value = ihm.Value;
+            unit = ihm.GridUnitType;
+        }
+        public GridLength toGrid()
+        {
+            return new GridLength(value, unit);
+        }
+    }
+}
+]]></content>
+  </file>
+  <file path="\pdb.util\FileRotator.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace pdb.util
+{
+    public class FileRotator
+    {
+        private volatile object _lock = new object();
+        private DateTime lastQuery;
+        private string lastContent; 
+       /// <summary>
+       /// Sovegarde un fichier en faisant au préalable la rotation des anciennes versions
+       /// </summary>
+       /// <param name="fileToSave"></param>
+       /// <param name="dirSov"></param>
+       /// <param name="nbrot"></param>
+        public void save(string fileToSave, string dirSov, int nbrot)
+        {
+          
+            string newContent = ""; 
+            lock (_lock)
+            {
+                if ((DateTime.Now - lastQuery).TotalSeconds < 10)
+                    return;
+                newContent = File.ReadAllText(fileToSave);
+                if (newContent == lastContent)
+                    return; 
+            }
+            try
+            {
+
+                lastContent = newContent;
+                DirectoryInfo dir = new DirectoryInfo(dirSov);
+                if (!dir.Exists)
+                    dir.Create();
+
+                FileInfo f0 = new FileInfo(fileToSave);
+                var name = f0.Name;
+                var trunc = Path.GetFileNameWithoutExtension(name);
+
+                List<FileInfo> files = dir.GetFiles().ToList();
+                files.Sort((x, y) => x.Name.CompareTo(y.Name));
+                int count = files.Count;
+                for (int i = count - 1; i >= 0; i--)
+                {
+                    var f = files[i];
+                    var filename = Path.GetFileNameWithoutExtension(f.Name);
+                    var ext = f.Extension;
+                    int index = 0;
+                    try
+                    {
+                        string strIndex = filename.Replace(trunc, "").Replace("_", "");
+                        if (string.IsNullOrEmpty(strIndex))
+                            index = 0;
+                        else
+                            index = Convert.ToInt32(strIndex);
+
+                        if (index >= nbrot)
+                        {
+                            try
+                            {
+                                f.Delete();
+                            }
+                            catch (Exception ex)
+                            {
+                                misc.logError("Impossible de supprimer " + f.FullName, ex);
+                            }
+                        }
+                        else
+                        {
+                            var newName = f.FullName;
+                            try
+                            {
+                                newName = string.Format("{0}\\{1}_{2}{3}", dir.FullName, trunc, (index + 1), ext);
+                                f.MoveTo(newName);
+                            }
+                            catch (Exception ex)
+                            {
+                                misc.logError("Impossible de renommer " + f.FullName + " en " + newName, ex);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        misc.logWarn("le fichier " + f.FullName + " ne convient pas");
+                        continue;
+                    }
+                }
+
+                f0.CopyTo(string.Format("{0}\\{1}", dir.FullName, name));
+            }
+            catch (Exception ex)
+            {
+                misc.logError("impossible de sauvegarder les versions de " + fileToSave, ex);
+            }
+            finally
+            {
+                lastQuery = DateTime.Now;
+            }
+        }
+    }
+}
+]]></content>
+  </file>
   <file path="\pdb.util\Medianne.cs">
     <content><![CDATA[using System;
 using System.Collections;
@@ -1746,13 +1986,13 @@ namespace pdb.util
         private void verifMaxA()
         {
             var _dxmax = (coeffVirt - 1) * d0;
-           var _dx = 2 * a * pas * pas;
+            var _dx = 2 * a * pas * pas;
 
             if (_dx > _dxmax)
             {
                 var aa = _dxmax / (2 * pas * pas);
                 misc.log("verifMaxA {0}->{1}", a.FormatE(4), aa.FormatE(4));
-                a = aa; 
+                a = aa;
             }
         }
 
@@ -1855,13 +2095,17 @@ namespace pdb.util
                         _nbElastique--;
                         _nbElastique2 -= coeffElastique2;
 
-                        currentStaticp /= coeffStaticp;
-                        if (currentStaticp < 1)
-                            currentStaticp = 1;
-
-                        currentStaticm /= coeffStaticm;
-                        if (currentStaticm < 1)
-                            currentStaticm = 1;
+                        if (selectedByCoeff)
+                        {
+                            if (currentStaticm >= coeffStaticm)
+                                currentStaticm /= coeffStaticm;
+                        }
+                        else
+                        {
+                            if (currentStaticp >= coeffStaticp)
+                                currentStaticp /= coeffStaticp;
+                        }
+                     
                     }
                     if (_nbSameDirectionBox > 0 && selectedByCoeff)
                         _nbSameDirectionBox--;
@@ -1999,9 +2243,14 @@ namespace pdb.util
 
 
                 // vv += pas * a;
+
+
+
+                verifMaxA(); 
+
                 if (lastDelta.HasValue)
                 {
-                    verifMaxA(); 
+                    //verifMaxA();
                     if (false == lastDelta)
                     {
                         v -= pas * a;
@@ -2015,11 +2264,13 @@ namespace pdb.util
                         v += a * pas;
                     }
 
-                    verifMaxV(); 
+                  //  verifMaxV();
                     //verifHaut();
                     //verifBas();
                 }
 
+
+                verifMaxV(); 
 
 
                 misc.log("convergence {0:0.##}->{1:0.######}", c0, v);
@@ -2028,12 +2279,21 @@ namespace pdb.util
 
             string montee = selectedByCoeff ? "down" : "up";
 
-            verifBas(); 
+            verifBas();
 
             if (selectedByCoeff)
                 coeffVirt -= pas * v * currentStaticm;
             else
                 coeffVirt += pas * v * currentStaticp;
+
+
+            if (selectedByCoeff)
+            {
+                verifMaxA();
+                verifMaxV();
+
+                coeffVirt = _c0 - pas * v * currentStaticm;
+            }
 
 
             //verifHaut();
@@ -2417,5 +2677,185 @@ namespace pdb.util
         //}
     }
 }]]></content>
+  </file>
+  <file path="\pdb.util\pdb.util.csproj">
+    <content><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>pdb.util</RootNamespace>
+    <AssemblyName>pdb.util</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\pdb.util.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\pdb.util.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AsyncFileWriter.cs" />
+    <Compile Include="BgDict.cs" />
+    <Compile Include="Chrono.cs" />
+    <Compile Include="CustomFormat.cs" />
+    <Compile Include="CUtil.cs" />
+    <Compile Include="DateUtil.cs" />
+    <Compile Include="DecimalIndex.cs" />
+    <Compile Include="DescBuilder.cs" />
+    <Compile Include="Dict.cs" />
+    <Compile Include="FileRegister.cs" />
+    <Compile Include="FileRotator.cs" />
+    <Compile Include="FileType.cs" />
+    <Compile Include="Generic\Attributs\AttributeHelper.cs" />
+    <Compile Include="Generic\Attributs\CustomAttribute.cs" />
+    <Compile Include="Generic\Attributs\Db\DbAttributes.cs" />
+    <Compile Include="Generic\Attributs\Db\SbAttributes.cs" />
+    <Compile Include="Generic\Attributs\GlobalAttributes.cs" />
+    <Compile Include="Generic\Attributs\Json\GlobalAttributes.cs" />
+    <Compile Include="Generic\Attributs\NameAttributeBase.cs" />
+    <Compile Include="Generic\Attributs\Sp\GlobalAttributes.cs" />
+    <Compile Include="Generic\Attributs\Xml\XmlAttributes.cs" />
+    <Compile Include="Generic\Encode\Getters.cs" />
+    <Compile Include="Generic\Encode\JSON.cs" />
+    <Compile Include="Generic\Encode\JsonEncoder.cs" />
+    <Compile Include="Generic\Encode\JsonParser.cs" />
+    <Compile Include="Generic\Encode\JsonSerializer.cs" />
+    <Compile Include="Generic\Encode\JsonXmlEncoder.cs" />
+    <Compile Include="Generic\Encode\SafeDictionary.cs" />
+    <Compile Include="Generic\INode.cs" />
+    <Compile Include="Generic\MappingException.cs" />
+    <Compile Include="Generic\Parse\DbParser.cs" />
+    <Compile Include="Generic\Parse\DbWrapper.cs" />
+    <Compile Include="Generic\Parse\JsonParser.cs" />
+    <Compile Include="Generic\Parse\Json\JsonBuilder.cs" />
+    <Compile Include="Generic\Parse\Json\JsonParseException.cs" />
+    <Compile Include="Generic\Parse\Json\JsonState.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateDeuxPoints.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateFinal.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateIni.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateName.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateValue.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateValueIni.cs" />
+    <Compile Include="Generic\Parse\Json\JsonWrapper.cs" />
+    <Compile Include="Generic\Parse\Node.cs" />
+    <Compile Include="Generic\Parse\Parser.cs" />
+    <Compile Include="Generic\Parse\ParserBase.cs" />
+    <Compile Include="Generic\Parse\XmlParser.cs" />
+    <Compile Include="Generic\Parse\XmlSerializer.cs" />
+    <Compile Include="Generic\Parse\XmlWrapper.cs" />
+    <Compile Include="Generic\TypeInfo.cs" />
+    <Compile Include="Generic\Utils.cs" />
+    <Compile Include="Generic\XmlParser.cs" />
+    <Compile Include="Generic\XmlSerializer.cs" />
+    <Compile Include="list\DictList.cs" />
+    <Compile Include="DictLocation.cs" />
+    <Compile Include="DisposableCounter.cs" />
+    <Compile Include="FileUtil.cs" />
+    <Compile Include="HashList.cs" />
+    <Compile Include="ILogger.cs" />
+    <Compile Include="list\LinkedList.cs" />
+    <Compile Include="list\SequentialDict.cs" />
+    <Compile Include="list\SequentialDictString.cs" />
+    <Compile Include="Locker.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="LoggerConsole.cs" />
+    <Compile Include="Math.cs" />
+    <Compile Include="Medianne.cs" />
+    <Compile Include="MemUtil.cs" />
+    <Compile Include="misc.cs" />
+    <Compile Include="OutputRecorder.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Queue.cs" />
+    <Compile Include="serialize\Serializer.cs" />
+    <Compile Include="serialize\TextSerializer.cs" />
+    <Compile Include="StringUtil.cs" />
+    <Compile Include="TextWriter.cs" />
+    <Compile Include="ThreadUtil.cs" />
+    <Compile Include="TimeSpan.cs" />
+    <Compile Include="TuningBase.cs" />
+    <Compile Include="XMLTool.cs" />
+    <Compile Include="ZipUtil.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>]]></content>
   </file>
 </db>
