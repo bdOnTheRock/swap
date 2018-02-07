@@ -1,663 +1,4 @@
 <db path="C:\Bernard\db1\pdb4">
-  <file path="\pdb.player\ViewModel\AllTracksViewModel.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.ComponentModel;
-using System.Windows.Input;
-using System.Windows.Threading;
-using pdb.player.ViewModel.Commande.Link;
-using pdb.player.ViewModel.Commande.PlayList;
-using pdb.player.ViewModel.Commande;
-using pdb.util;
-using System.Globalization;
-
-namespace pdb.player.ViewModel
-{
-    public enum listDisplay
-    {
-        all,
-        onlyDisabled,
-        onlyEnabled
-    }
-
-    public class AllTracksViewModel : List<TrackListViewModel>, INotifyCollectionChanged, INotifyPropertyChanged
-    {
-        public event NotifyCollectionChangedEventHandler CollectionChanged;
-        public event PropertyChangedEventHandler PropertyChanged;
-        //   private List<TrackListViewModel> tracks;
-        private Dictionary<int, TrackListViewModel> dict;
-        private object _lock = new object();
-        private PlayListViewModel parent;
-        private DispatcherOperation ope;
-
-
-
-        private bool? onlyDisabled;
-        private bool onlyFathers;
-        public AllTracksViewModel(PlayListViewModel parent, bool? onlyDisabled, bool onlyFathers)
-        {
-            this.parent = parent;
-            this.onlyDisabled = onlyDisabled;
-            this.onlyFathers = onlyFathers;
-            //   this.mode = mode; 
-            build();
-            PlayerViewModel.Instance.resumeChange += playerResumeChange;
-            PlayerViewModel.autoChange += new EventHandler(PlayerViewModel_autoChange);
-            //TrackListViewModel.CurrentHumanSelectedChanged += PlayerViewModel_autoChange; 
-        }
-
-        void PlayerViewModel_autoChange(object sender, EventArgs e)
-        {
-            OnPropertyChanged("AutoResume");
-        }
-
-
-        void playerResumeChange(object sender, EventArgs e)
-        {
-            OnPropertyChanged("TV");
-            OnPropertyChanged("Resume");
-            OnPropertyChanged("AutoResume");
-        }
-
-        public string Resume
-        {
-            get
-            {
-                return PlayerViewModel.Instance.Resume;
-            }
-            set
-            {
-
-            }
-        }
-
-        protected void OnCollectionChange(NotifyCollectionChangedEventArgs e)
-        {
-            // Be nice - use BlockReentrancy like MSDN said
-
-            //var dispatcher = Dispatcher.CurrentDispatcher;
-            //if (dispatcher.CheckAccess())
-            //{
-            //    if (CollectionChanged == null)
-            //    {
-            //    }
-            //    else
-            //    {
-            //        CollectionChanged(this, e); 
-            //    }
-            //    return; 
-            //}
-
-            //dispatcher.Invoke(DispatcherPriority.DataBind, new Action<NotifyCollectionChangedEventArgs>(OnCollectionChange), e);
-
-
-
-            var eventHandler = CollectionChanged;
-            if (eventHandler != null)
-            {
-                Delegate[] delegates = eventHandler.GetInvocationList();
-                // Walk thru invocation list
-                foreach (NotifyCollectionChangedEventHandler handler in delegates)
-                {
-                    try
-                    {
-                        var dispatcherObject = handler.Target as DispatcherObject;
-                        // If the subscriber is a DispatcherObject and different thread
-                        if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
-                        // Invoke handler in the target dispatcher's thread
-                        {
-                            ope =
-                               dispatcherObject.Dispatcher.BeginInvoke(App.DISPATCHER_PRIORITY,
-                                            handler, this, e);
-                            ope.Completed += ope_Completed;
-
-
-                        }
-                        else // Execute handler as is
-                            handler(this, e);
-                    }
-                    catch (Exception ex)
-                    {
-                        App.log.log(ex.ToString());
-                    }
-                }
-            }
-            else
-            {
-            }
-
-            // PlayerViewModel.Instance.makeResume();
-
-        }
-
-        void ope_Completed(object sender, EventArgs e)
-        {
-            App.log.log(string.Format("AllTracksViewModel::OnCollectionChange {0} CollectionChanged completé", sender));
-            PlayerViewModel.Instance.makeResume();
-        }
-
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            var eventHandler = PropertyChanged;
-            if (eventHandler == null)
-            {
-                //   int toto = 0;
-            }
-            else
-            {
-                //var dispatcher = Dispatcher.CurrentDispatcher;
-                //if (dispatcher.CheckAccess())
-                //    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-                //else
-                //    dispatcher.Invoke(new Action<string>(OnPropertyChanged), propertyName);
-
-                Delegate[] delegates = eventHandler.GetInvocationList();
-                // Walk thru invocation list
-                foreach (PropertyChangedEventHandler handler in delegates)
-                {
-                    try
-                    {
-                        var dispatcherObject = handler.Target as DispatcherObject;
-                        // If the subscriber is a DispatcherObject and different thread
-                        if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
-                            // Invoke handler in the target dispatcher's thread
-                            dispatcherObject.Dispatcher.BeginInvoke(App.DISPATCHER_PRIORITY,
-                                          handler, this, new PropertyChangedEventArgs(propertyName));
-                        else // Execute handler as is
-                            handler(this, new PropertyChangedEventArgs(propertyName));
-                    }
-                    catch (Exception ex)
-                    {
-                        App.log.log(ex.ToString());
-                    }
-                }
-            }
-        }
-
-        public void refresh()
-        {
-            build();
-            foreach (TrackListViewModel track in this)
-                track.refresh();
-
-        }
-
-        //public void init()
-        //{
-        //    refresh();
-        //    OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-        //}
-
-        public TrackListViewModel TV { get { return TrackListViewModel.HumanSelected; } }
-
-        public void build()
-        {
-            lock (_lock)
-            {
-                var list = new List<TrackListViewModel>();
-                var dict = new Dictionary<int, TrackListViewModel>();
-                buildAllTraks(list, dict, onlyDisabled, onlyFathers);
-                if (this.dict == null)
-                {
-                    this.dict = new Dictionary<int, TrackListViewModel>();
-                    foreach (TrackListViewModel track in list)
-                    {
-                        Add(track);
-                        this.dict.Add(track.PieceId, track);
-                        // track.PropertyChanged += track_PropertyChanged;
-                    }
-
-                    OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
-                }
-                else
-                {
-
-                    foreach (TrackListViewModel newTrack in list)
-                    {
-                        if (!this.dict.ContainsKey(newTrack.PieceId))
-                        {
-                            Add(newTrack);
-                            this.dict.Add(newTrack.PieceId, newTrack);
-                            // newTrack.PropertyChanged += track_PropertyChanged;
-                            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newTrack));
-                        }
-                    }
-
-                    foreach (TrackListViewModel track in new List<TrackListViewModel>(this))
-                    {
-                        if (!dict.ContainsKey(track.PieceId))
-                        {
-                            Remove(track);
-                            this.dict.Remove(track.PieceId);
-                            // track.PropertyChanged -= track_PropertyChanged;
-                            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, track));
-                        }
-                    }
-                }
-            }
-
-            //Clear(); 
-            //foreach (TrackListViewModel track in parent.Tracks)
-            //    Add(track); 
-        }
-
-        //void track_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        //{
-        //    switch (e.PropertyName)
-        //    {
-        //        case "Duration":
-        //        case "Enabled":
-        //            PlayerViewModel.Instance.makeResume();
-        //            break;
-        //    }
-        //}
-
-        public List<TrackListViewModel> AllTracks
-        {
-            get
-            {
-                build();
-                return this;
-            }
-        }
-
-        public List<TrackListViewModel> Tracks
-        {
-            get
-            {
-                return parent.Tracks;
-            }
-        }
-
-        protected void buildAllTraks(List<TrackListViewModel> container, Dictionary<int, TrackListViewModel> dict, bool? onlyDisabled, bool onlyFathers)
-        {
-            foreach (TrackListViewModel t in parent.Tracks)
-            {
-                if (!t.Enabled || true != onlyDisabled)
-                {
-                    if (onlyDisabled == null && t.Enabled)
-                    {
-                        if (!t.PieceGen.ClassementProvisoireRecent)
-                            continue;
-                    }
-                    if (t.PieceParentId < 0 || !onlyFathers)
-                    {
-                        if (!t.Track.Virtual || PlayerViewModel.Instance.WithVirtualAlbum)
-                        {
-
-                            if (!dict.ContainsKey(t.PieceId))
-                            {
-                                dict.Add(t.PieceId, t);
-                                container.Add(t);
-                                //  t.Index = container.Count; 
-                            }
-                        }
-                    }
-                }
-
-            }
-
-            foreach (PlayListViewModel pl in parent)
-            {
-                AllTracksViewModel other = pl.AlltracksVm;
-                //if (true == onlyDisabled)
-                //    other = pl.AlltracksVmd;
-                //else
-                //    other = pl.AlltracksVm;
-                other.buildAllTraks(container, dict, onlyDisabled, onlyFathers);
-            }
-        }
-
-        #region cmd
-
-        private ICommand _contextCmdCheck;
-        public ICommand ContextCmdCheck { get { if (_contextCmdCheck == null) _contextCmdCheck = new CheckCmd(); return _contextCmdCheck; } }
-
-        private ICommand _contextCmdUnCheck;
-        public ICommand ContextCmdUnCheck { get { if (_contextCmdUnCheck == null) _contextCmdUnCheck = new UnCheckCmd(); return _contextCmdUnCheck; } }
-
-
-        private ICommand _contextLinkFather;
-        public ICommand LinkFather { get { if (_contextLinkFather == null) _contextLinkFather = new LinkFather(); return _contextLinkFather; } }
-
-        private ICommand _contextLinkChild;
-        public ICommand LinkChild { get { if (_contextLinkChild == null) _contextLinkChild = new LinkChild(); return _contextLinkChild; } }
-
-        private ICommand _contextLinkFusion;
-        public ICommand LinkFusion { get { if (_contextLinkFusion == null) _contextLinkFusion = new LinkFusion(); return _contextLinkFusion; } }
-
-        private ICommand _contextUnLink;
-        public ICommand LinkReset { get { if (_contextUnLink == null) _contextUnLink = new LinkReset(); return _contextUnLink; } }
-
-        private ICommand _contextExport;
-        public ICommand Export { get { if (_contextExport == null) _contextExport = new ExportCmd(); return _contextExport; } }
-
-        private ICommand _contextExportCompress;
-        public ICommand ExportCompress { get { if (_contextExportCompress == null) _contextExportCompress = new ExportCompress(); return _contextExportCompress; } }
-
-        private ICommand _contextDelete;
-        public ICommand DeleteTrack { get { if (_contextDelete == null) _contextDelete = new DeleteCmd(); return _contextDelete; } }
-
-        private ICommand _contexExplorer;
-        public ICommand Explorer { get { if (_contexExplorer == null) _contexExplorer = new Explorer(); return _contexExplorer; } }
-
-
-
-        private ICommand _ContextCmdAddToList;
-        public ICommand ContextCmdAddToList { get { if (_ContextCmdAddToList == null) _ContextCmdAddToList = new AddToList(App.Instance); return _ContextCmdAddToList; } }
-
-        private ICommand _ContextCmdDbDeleteClassement;
-        public ICommand ContextCmdDbDeleteClassement { get { if (_ContextCmdDbDeleteClassement == null) _ContextCmdDbDeleteClassement = new DbDeleteLastClassement(); return _ContextCmdDbDeleteClassement; } }
-
-        private ICommand _ContextCmdDbDeleteRead;
-        public ICommand ContextCmdDbDeleteRead { get { if (_ContextCmdDbDeleteRead == null) _ContextCmdDbDeleteRead = new DbDeleteLastRead(); return _ContextCmdDbDeleteRead; } }
-
-
-        #endregion
-
-        public TrackListViewModel HumanSelected
-        {
-            get
-            {
-                return TrackListViewModel.HumanSelected;
-            }
-        }
-
-        #region from Ihm
-        private TrackListViewModel selectedTrack;
-        public TrackListViewModel SelectedTrack
-        {
-            get
-            {
-                return selectedTrack;
-            }
-            set
-            {
-                selectedTrack = value;
-                TrackListViewModel.setHumanSelected(parent, value); //  .HumanSelected = value;
-                if (selectedTrack != null)
-                    selectedTrack.IsSelected = true;
-            }
-        }
-        #endregion
-
-        private int nbAlbumMoved;
-
-        public int NbAlbumMoved
-        {
-            get { return nbAlbumMoved; }
-        }
-
-        private int nbEmpeached;
-        public int NbEmpeached { get { return nbEmpeached; } }
-
-        public string AutoResume
-        {
-            get
-            {
-
-                try
-                {
-
-                    var conf = App.gen.SortAlbumMode.ComposantsUtiles[0].Main;
-                    var sb = new StringBuilder();
-
-
-                    sb.Append((conf.coeffVirt - 1).FormatE(4)); sb.Append("  "); //(3,3,9));
-                    //var str = (conf.coeffVirt -1) .ToString("0.000######", CultureInfo.InvariantCulture);
-                    //decimal val = Convert.ToDecimal(str, CultureInfo.InvariantCulture); 
-                    //val += 1m;
-
-
-                    //str = val.ToString("0.000 ### ###", CultureInfo.InvariantCulture); 
-
-
-                    //sb.Append(str); sb.Append(" ");
-
-                    sb.Append((conf.v).FormatE(4)); sb.Append("  ");  //sb.Append("m  ");
-                    //var percentConv = 0m;
-                    //if (conf.a > 0)
-                    //{
-                    //percentConv = 100 * conf.a / conf.a;
-                    //sb.Append((percentConv).Format(2, 2, 6)); sb.Append("/");
-                    //percentConv = conf.acceleration / conf.danticonvergenceMin;
-                    //sb.Append((percentConv).ToString("0.##", CultureInfo.InvariantCulture)); sb.Append(" ");
-                    sb.Append(conf.a.FormatE(4)); sb.Append("  ");
-                    sb.Append(conf.CurrentStaticm.FormatE(3)); sb.Append("  ");
-                    // sb.Append(conf.dv.FormatE(4)); sb.Append("   "); 
-
-                    // sb.Append(conf.AccelerationRapport.ToString("0.###", CultureInfo.InvariantCulture)); sb.Append("  ");
-                    //    }
-
-                    sb.Append(conf.Serial); sb.Append(" ");
-                    sb.Append(conf.SerialBox); sb.Append(" ");
-                    sb.Append(conf.Alt); sb.Append(" ");
-                    sb.Append(conf.AltHisto); sb.Append("  ");
-                    sb.Append(conf.Elastique.ToString("0.#")); sb.Append(" ");
-                    sb.Append(conf.Elastique2.ToString("0.#"));
-                    //var motif = selectedCoeff.none;
-                    //var current = TrackListViewModel.HumanSelected;
-                    //if (current != null)
-                    //    motif = current.SelectedMotif; 
-                    //  var stat10 = conf.calcStat(motif,10);
-                    // sb.Append(stat10); sb.Append(" - ");
-                    //   var stat100 = conf.calcStat(motif,100);
-                    //  sb.Append(stat100); 
-
-                    //sb.Append(conf.coeffTMin(10).ToString("0.000", CultureInfo.InvariantCulture)); sb.Append(" "); sb.Append(conf.coeffTMax(10).ToString("0.000", CultureInfo.InvariantCulture)); sb.Append(" - ");
-                    //sb.Append(conf.coeffTMin(100).ToString("0.000", CultureInfo.InvariantCulture)); sb.Append(" "); sb.Append(conf.coeffTMax(100).ToString("0.000", CultureInfo.InvariantCulture)); 
-                    return sb.ToString();
-
-                }
-                catch
-                {
-                    return "";
-                }
-            }
-        }
-        public string NbAlbumMovedDesc
-        {
-            get
-            {
-                if (nbAlbumMoved < 0)
-                    return "";
-                if (nbAlbumMoved == 0)
-                    return "pas d'album en quarantaine";
-                return string.Format("{0} albums en quarantaine", nbAlbumMoved);
-            }
-        }
-
-        public void setNbAlbum(int nbanavailable, int empeches, int moved)
-        {
-            if (nbanavailable != this.nbAlbumMovedUnavailable)
-            {
-                this.nbAlbumMovedUnavailable = nbanavailable;
-                OnPropertyChanged("NbAlbumMovedUnavailable");
-            }
-
-            if (empeches != nbEmpeached)
-            {
-                nbEmpeached = empeches;
-                OnPropertyChanged("NbEmpeached");
-            }
-
-            if (moved != nbAlbumMoved)
-            {
-                nbAlbumMoved = moved;
-                OnPropertyChanged("NbAlbumMoved");
-            }
-        }
-
-        //public void setNbAlbumMoved(int nb)
-        //{
-        //    if (nb != nbAlbumMoved)
-        //    {
-        //        nbAlbumMoved = nb;
-        //        OnPropertyChanged("NbAlbumMoved");
-        //        OnPropertyChanged("NbAlbumMovedDesc");
-        //    }
-
-        //}
-
-        private int nbAlbumMovedUnavailable;
-        public int NbAlbumMovedUnavailable
-        {
-            get
-            {
-                return nbAlbumMovedUnavailable;
-            }
-
-            //set
-            //{
-            //    if (value != nbAlbumMovedUnavailable)
-            //    {
-            //        nbAlbumMovedUnavailable = value;
-            //        OnPropertyChanged("NbAlbumMovedUnavailable");
-            //    }
-            //}
-        }
-
-    }
-
-
-}
-]]></content>
-  </file>
-  <file path="\pdb.player\Vue\Memento.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.IO;
-using System.Windows;
-using pdb.gen.Tuning;
-using System.Xml;
-using pdb.util;
-
-namespace pdb.player.Vue
-{
-    [Serializable]
-    class Memento
-    {
-        [NonSerialized]
-        const string FILE_CONF = "confAlbum.xml";
-        [NonSerialized]
-        const string PATH = TuningBase.DIR_CONF + "memento.dat";
-        [NonSerialized]
-        const string PATH_CONF = TuningBase.DIR_CONF + FILE_CONF;
-        [NonSerialized]
-        const string SOV_CONF = TuningBase.DIR_CONF + "sov\\";
-        [NonSerialized]
-        private static Memento _instance;
-        [NonSerialized]
-        private FileRotator fileRotator;
-        public WindowPos winPos = null;
-        public CmpPos cmpPos = null;
-        public string selectedPlaylist = "";
-        public Dictionary<string, object> dict = new Dictionary<string, object>();
-        [NonSerialized]
-        public ConfAlbumSort confAlbum;
-
-
-        private Memento()
-        {
-            fileRotator = new FileRotator(); 
-        }
-        public static Memento Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-
-                    var formater = new BinaryFormatter();
-                    try
-                    {
-                        using (Stream st = new FileStream(PATH, FileMode.Open))
-                        {
-                            _instance = (Memento)(formater.Deserialize(st));
-                        }
-                        var doc = new XmlDocument();
-                        doc.Load(PATH_CONF);
-                        var conf = new ConfAlbumSort(doc.DocumentElement);
-
-                        _instance.confAlbum = conf;
-                    }
-                    catch (Exception ex)
-                    {
-                        misc.log(ex.ToString());
-                        throw;
-                    }
-
-
-                }
-
-                if (_instance == null)
-                    _instance = new Memento();
-
-                _instance.fileRotator = new FileRotator(); 
-                return _instance;
-
-            }
-        }
-        public void save()
-        {
-            var formater = new BinaryFormatter();
-            using (Stream st = new FileStream(PATH, FileMode.Create))
-            {
-                formater.Serialize(st, this);
-            }
-            if (this.confAlbum != null)
-            {
-                fileRotator.save(PATH_CONF, SOV_CONF, 100);
-                var settings = new XmlWriterSettings();
-                settings.Indent = true;
-                settings.Encoding = Encoding.UTF8;
-                using (XmlWriter writer = XmlWriter.Create(PATH_CONF, settings))
-                {
-                    this.confAlbum.save(writer);
-                }
-            }
-        }
-    }
-    [Serializable]
-    class WindowPos
-    {
-        public double Top;
-        public double Left;
-        public double Width;
-        public double Height;
-    }
-    [Serializable]
-    class CmpPos
-    {
-        public Length cdBib;
-        public Length cdMain;
-        public Length cdAlbum;
-        public Length cdClassement;
-    }
-
-    [Serializable]
-    public class Length
-    {
-        public double value;
-        public GridUnitType unit;
-        public Length(GridLength ihm)
-        {
-            value = ihm.Value;
-            unit = ihm.GridUnitType;
-        }
-        public GridLength toGrid()
-        {
-            return new GridLength(value, unit);
-        }
-    }
-}
-]]></content>
-  </file>
   <file path="\pdb.util\FileRotator.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
@@ -679,7 +20,7 @@ namespace pdb.util
        /// <param name="nbrot"></param>
         public void save(string fileToSave, string dirSov, int nbrot)
         {
-          
+            DateTime debut = DateTime.Now; 
             string newContent = ""; 
             lock (_lock)
             {
@@ -702,9 +43,9 @@ namespace pdb.util
                 var trunc = Path.GetFileNameWithoutExtension(name);
 
                 List<FileInfo> files = dir.GetFiles().ToList();
-                files.Sort((x, y) => x.Name.CompareTo(y.Name));
+                files.Sort((x, y) => x.LastWriteTime.CompareTo(y.LastWriteTime));
                 int count = files.Count;
-                for (int i = count - 1; i >= 0; i--)
+                for (int i = 0; i <count; i++)
                 {
                     var f = files[i];
                     var filename = Path.GetFileNameWithoutExtension(f.Name);
@@ -759,6 +100,7 @@ namespace pdb.util
             finally
             {
                 lastQuery = DateTime.Now;
+                misc.log("FileRotator:" + (DateTime.Now - debut).TotalMilliseconds.ToString("0 ms")); 
             }
         }
     }
@@ -783,6 +125,7 @@ namespace pdb.util
         // pour info
         public decimal dcoeffp;
         public decimal dv;
+        public decimal vcoeff; 
 
         //private HistoValue(string line)
         //{
@@ -843,15 +186,25 @@ namespace pdb.util
                 else if (last != null)
                     dv = last.dv;
             }
+
+            if (count >= 6)
+            {
+                str = tab[5];
+                if (!string.IsNullOrEmpty(str))
+                    vcoeff = Convert.ToDecimal(str) / 1000m;
+                else if (last != null)
+                    vcoeff = last.vcoeff;
+            }
         }
 
-        public HistoValue(decimal coeff, decimal delta, decimal accel, decimal dcoeff, decimal dv)
+        public HistoValue(decimal coeff, decimal delta, decimal accel, decimal dcoeff, decimal dv, decimal vcoeff)
         {
             this.coeff = coeff;
             this.delta = delta;
             this.accel = accel;
             this.dcoeffp = dcoeff;
             this.dv = dv;
+            this.vcoeff = vcoeff; 
         }
 
         public override string ToString()
@@ -877,6 +230,9 @@ namespace pdb.util
             var v5 = Math.Round(1000m * dv, 10);
             var sc5 = v5.ToString();
 
+            var v6 = Math.Round(1000m * vcoeff, 10);
+            var sc6 = v6.ToString();
+
             sb.Append(sc);
             sb.Append(SEP);
             sb.Append(sc2);
@@ -886,7 +242,9 @@ namespace pdb.util
 
             sb.Append(sc4);
             sb.Append(SEP);
-            sb.AppendLine(sc5);
+            sb.Append(sc5);
+            sb.Append(SEP);
+            sb.AppendLine(sc6);
         }
 
         private static decimal getTruncate(decimal v)
@@ -931,6 +289,13 @@ namespace pdb.util
             {
                 var sc5 = v5.ToString();
                 sb.Append(sc5);
+            }
+
+            var v6 = getTruncate(vcoeff);
+            if (last == null || v6 != getTruncate(last.vcoeff))
+            {
+                var sc6 = v6.ToString();
+                sb.Append(sc6);
             }
             sb.AppendLine();
 
@@ -1403,6 +768,11 @@ namespace pdb.util
         /// </summary>
         private decimal currentStaticm = 1;
         public decimal CurrentStaticm { get { return currentStaticm; } }
+
+        /// <summary>
+        /// Rapport de vitesse négative / vitesse positive
+        /// </summary>
+        private decimal rapportmp = 1m; 
         /// <summary>
         /// anti atténuation
         /// </summary>
@@ -1647,6 +1017,7 @@ namespace pdb.util
             builddec("coeffStaticm", v => coeffStaticm = v);
             builddec("currentStaticp", v => currentStaticp = v);
             builddec("currentStaticm", v => currentStaticm = v);
+            builddec("rapportmp", v => rapportmp = v); 
 
 
             HistoValue last = null;
@@ -1821,6 +1192,7 @@ namespace pdb.util
             write("aa", aa);
             write("aepsilon", aepsilon);
             write("vepsilon", vepsilon);
+            write("rapportmp", rapportmp); 
 
             //write("dcoeffp", dcoeffp);
             //write("dcoeffm", dcoeffm);
@@ -2092,19 +1464,24 @@ namespace pdb.util
                     _nbAltHisto++;
                     if (_nbAltHisto > 1)
                     {
-                        _nbElastique--;
-                        _nbElastique2 -= coeffElastique2;
-
                         if (selectedByCoeff)
                         {
-                            if (currentStaticm >= coeffStaticm)
-                                currentStaticm /= coeffStaticm;
+                            _nbElastique--;
+                            _nbElastique2 -= coeffElastique2;
+                           
+                           
                         }
                         else
                         {
-                            if (currentStaticp >= coeffStaticp)
-                                currentStaticp /= coeffStaticp;
+                            _nbElastique -= rapportmp;
+                            _nbElastique2 -= rapportmp * coeffElastique2;  
+                          
                         }
+
+                        if (currentStaticm >= coeffStaticm)
+                            currentStaticm /= coeffStaticm;
+                        if (currentStaticp >= coeffStaticp)
+                            currentStaticp /= coeffStaticp;
                      
                     }
                     if (_nbSameDirectionBox > 0 && selectedByCoeff)
@@ -2117,15 +1494,18 @@ namespace pdb.util
                 {
                     _nbAlt--;
                     _nbAltHisto = 0;
-                    _nbElastique += coeffElastique1;
-                    _nbElastique2++;
+                  
                     if (selectedByCoeff)
                     {
                         _nbSameDirectionBox--;
                         // _nbSameDirection--;
+                        _nbElastique += coeffElastique1* rapportmp;
+                        _nbElastique2 += rapportmp; 
                     }
                     else
                     {
+                        _nbElastique += coeffElastique1;
+                        _nbElastique2++;
                         _nbSameDirectionBox++;
                         // _nbSameDirection++;
                     }
@@ -2282,7 +1662,7 @@ namespace pdb.util
             verifBas();
 
             if (selectedByCoeff)
-                coeffVirt -= pas * v * currentStaticm;
+                coeffVirt -= pas * v * currentStaticm * rapportmp;
             else
                 coeffVirt += pas * v * currentStaticp;
 
@@ -2292,8 +1672,10 @@ namespace pdb.util
                 verifMaxA();
                 verifMaxV();
 
-                coeffVirt = _c0 - pas * v * currentStaticm;
+                coeffVirt = _c0 - pas * v * currentStaticm* rapportmp;
             }
+
+            verifBas();
 
 
             //verifHaut();
@@ -2311,7 +1693,7 @@ namespace pdb.util
             misc.log("{0} {1:0.### ###} {2:0.### ###}->{3:0.### ###}", montee, dx, c0, coeffVirt);
             checkCoeffOld();
 
-            histo.Add(new HistoValue(coeffVirt, dx, a, v, dv));
+            histo.Add(new HistoValue(coeffVirt, dx, a, v, dv, v * currentStaticm));
 
 
 
@@ -2677,185 +2059,5 @@ namespace pdb.util
         //}
     }
 }]]></content>
-  </file>
-  <file path="\pdb.util\pdb.util.csproj">
-    <content><![CDATA[<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>pdb.util</RootNamespace>
-    <AssemblyName>pdb.util</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisLogFile>bin\Debug\pdb.util.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
-    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <CodeAnalysisLogFile>bin\Release\pdb.util.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
-    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
-    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
-    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
-    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>bin\</OutputPath>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <PlatformTarget>x86</PlatformTarget>
-    <OutputPath>bin\</OutputPath>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AsyncFileWriter.cs" />
-    <Compile Include="BgDict.cs" />
-    <Compile Include="Chrono.cs" />
-    <Compile Include="CustomFormat.cs" />
-    <Compile Include="CUtil.cs" />
-    <Compile Include="DateUtil.cs" />
-    <Compile Include="DecimalIndex.cs" />
-    <Compile Include="DescBuilder.cs" />
-    <Compile Include="Dict.cs" />
-    <Compile Include="FileRegister.cs" />
-    <Compile Include="FileRotator.cs" />
-    <Compile Include="FileType.cs" />
-    <Compile Include="Generic\Attributs\AttributeHelper.cs" />
-    <Compile Include="Generic\Attributs\CustomAttribute.cs" />
-    <Compile Include="Generic\Attributs\Db\DbAttributes.cs" />
-    <Compile Include="Generic\Attributs\Db\SbAttributes.cs" />
-    <Compile Include="Generic\Attributs\GlobalAttributes.cs" />
-    <Compile Include="Generic\Attributs\Json\GlobalAttributes.cs" />
-    <Compile Include="Generic\Attributs\NameAttributeBase.cs" />
-    <Compile Include="Generic\Attributs\Sp\GlobalAttributes.cs" />
-    <Compile Include="Generic\Attributs\Xml\XmlAttributes.cs" />
-    <Compile Include="Generic\Encode\Getters.cs" />
-    <Compile Include="Generic\Encode\JSON.cs" />
-    <Compile Include="Generic\Encode\JsonEncoder.cs" />
-    <Compile Include="Generic\Encode\JsonParser.cs" />
-    <Compile Include="Generic\Encode\JsonSerializer.cs" />
-    <Compile Include="Generic\Encode\JsonXmlEncoder.cs" />
-    <Compile Include="Generic\Encode\SafeDictionary.cs" />
-    <Compile Include="Generic\INode.cs" />
-    <Compile Include="Generic\MappingException.cs" />
-    <Compile Include="Generic\Parse\DbParser.cs" />
-    <Compile Include="Generic\Parse\DbWrapper.cs" />
-    <Compile Include="Generic\Parse\JsonParser.cs" />
-    <Compile Include="Generic\Parse\Json\JsonBuilder.cs" />
-    <Compile Include="Generic\Parse\Json\JsonParseException.cs" />
-    <Compile Include="Generic\Parse\Json\JsonState.cs" />
-    <Compile Include="Generic\Parse\Json\JsonStateDeuxPoints.cs" />
-    <Compile Include="Generic\Parse\Json\JsonStateFinal.cs" />
-    <Compile Include="Generic\Parse\Json\JsonStateIni.cs" />
-    <Compile Include="Generic\Parse\Json\JsonStateName.cs" />
-    <Compile Include="Generic\Parse\Json\JsonStateValue.cs" />
-    <Compile Include="Generic\Parse\Json\JsonStateValueIni.cs" />
-    <Compile Include="Generic\Parse\Json\JsonWrapper.cs" />
-    <Compile Include="Generic\Parse\Node.cs" />
-    <Compile Include="Generic\Parse\Parser.cs" />
-    <Compile Include="Generic\Parse\ParserBase.cs" />
-    <Compile Include="Generic\Parse\XmlParser.cs" />
-    <Compile Include="Generic\Parse\XmlSerializer.cs" />
-    <Compile Include="Generic\Parse\XmlWrapper.cs" />
-    <Compile Include="Generic\TypeInfo.cs" />
-    <Compile Include="Generic\Utils.cs" />
-    <Compile Include="Generic\XmlParser.cs" />
-    <Compile Include="Generic\XmlSerializer.cs" />
-    <Compile Include="list\DictList.cs" />
-    <Compile Include="DictLocation.cs" />
-    <Compile Include="DisposableCounter.cs" />
-    <Compile Include="FileUtil.cs" />
-    <Compile Include="HashList.cs" />
-    <Compile Include="ILogger.cs" />
-    <Compile Include="list\LinkedList.cs" />
-    <Compile Include="list\SequentialDict.cs" />
-    <Compile Include="list\SequentialDictString.cs" />
-    <Compile Include="Locker.cs" />
-    <Compile Include="Logger.cs" />
-    <Compile Include="LoggerConsole.cs" />
-    <Compile Include="Math.cs" />
-    <Compile Include="Medianne.cs" />
-    <Compile Include="MemUtil.cs" />
-    <Compile Include="misc.cs" />
-    <Compile Include="OutputRecorder.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Queue.cs" />
-    <Compile Include="serialize\Serializer.cs" />
-    <Compile Include="serialize\TextSerializer.cs" />
-    <Compile Include="StringUtil.cs" />
-    <Compile Include="TextWriter.cs" />
-    <Compile Include="ThreadUtil.cs" />
-    <Compile Include="TimeSpan.cs" />
-    <Compile Include="TuningBase.cs" />
-    <Compile Include="XMLTool.cs" />
-    <Compile Include="ZipUtil.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-</Project>]]></content>
   </file>
 </db>
