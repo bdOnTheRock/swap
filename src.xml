@@ -1,1998 +1,2196 @@
 <db path="C:\Bernard\db1\pdb4">
-  <file path="\pdb.player\App.xaml.cs">
+  <file path="\pdb.util\Math.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Threading;
-using pdb.db;
-using pdb.db.piece.data;
-using pdb.gen;
-using pdb.gen.conf;
-using pdb.gen.Tuning;
-using pdb.obj;
-using pdb.ordo;
-using pdb.player.ViewModel;
-using pdb.player.ViewModel.Commande.PlayList;
-using pdb.player.ViewModel.gen;
-using pdb.player.Vue;
-using pdb.util;
-using pdb.db.piece.type;
-using pdb.db.obj;
+using System.Linq;
+using System.Text;
+using Math0 = System.Math;
 
-
-namespace pdb.player
+namespace pdb.util
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
-    public partial class App : Application, IIhm
+    public static class Math
     {
-        public static Logger log =Logger.getLogger("Program");
-        public static CDb Db;
-        public static Consolid gen;
-        //  public static LegacyApp app;
-        // internal static HomeLoader loader;
-        internal static BibViewModel bib;
-        static int step = -5;
-        public const string PHASE1 = "PHASE1";
-        public const string PHASE2 = "PHASE2";
-
-        private static Export export;
-        private static Import import;
-        public const DispatcherPriority DISPATCHER_PRIORITY = DispatcherPriority.Background; 
-
-
-        private static Thread thLoop;
-        private static bool __go;
-        private static bool __end;
-        private static volatile object _lock = new object();
-        private static ListWriter listWriter;
-        private static App _instance;
-        public static App Instance { get { return _instance; } }
-        private static DetailClassementViewModel detailClassementViewModel;
-        internal static DetailClassementViewModel DetailClassementViewModel { set { detailClassementViewModel = value; } }
-
-        public App()
-            : base()
+        static readonly double max;
+        static readonly double min;
+        static Math()
         {
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-            this.DispatcherUnhandledException += new DispatcherUnhandledExceptionEventHandler(App_DispatcherUnhandledException);
-            Application.Current.DispatcherUnhandledException += new DispatcherUnhandledExceptionEventHandler(Current_DispatcherUnhandledException);
-            TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>(TaskScheduler_UnobservedTaskException);
-            _instance = this;
+            max = Convert.ToDouble(decimal.MaxValue);
+            min = -max;
+        }
+        public static decimal TotalMilliseconds(this TimeSpan ts)
+        {
+            return ts.TotalMilliseconds.toDecimal();
         }
 
-        void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        public static decimal TotalDays(this TimeSpan ts)
         {
-            e.SetObserved();
-            CheckException("Task", sender, e.Exception);
+            return ts.TotalDays.toDecimal();
+        }
+        public static double toDouble(this decimal x)
+        {
+            return Convert.ToDouble(x);
         }
 
-        void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            e.Handled = true;
-            CheckException("AppDispatcher", sender, e.Exception);
-        }
-
-        void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
-        {
-            e.Handled = true;
-            CheckException("Dispatcher", sender, e.Exception);
-        }
-
-        void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            CheckException("Domain", sender, e.ExceptionObject);
-        }
-
-        private bool displayMsg;
-        private void CheckException(string from, object sender, object ex)
-        {
-            string message = string.Format("Erreur:\r\n from->{0}\r\nsender ->{1}\r\n{2}", from, sender, ex.ToString());  // "Erreur->sender:" + sender +" from:" + from + " " + ex.ToString();
-            if (log != null)
-                log.log(message);
-            var msgBox = message;
-            if (msgBox.Length > 2000)
-                msgBox = msgBox.Substring(0, 1998);
-            if (!displayMsg)
-            {
-                displayMsg = true;
-                var result = MessageBox.Show(msgBox, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-                displayMsg = false;
-            }
-
-        }
-        [STAThread]
-        protected override void OnStartup(StartupEventArgs e)
+        public static decimal toDecimal(this double x)
         {
             try
             {
-
-                pdb.player.ViewModel.Colors.MementoColor.recover();
-
-                base.OnStartup(e);
-                Thread.CurrentThread.Name = "GUI";
-
-                //   app = new LegacyApp(); 
-                Logger.init(Environment.CurrentDirectory.Replace("\\", "_"));
-                log = Logger.getLogger("Program");
-                misc.init(log);
-
-                //  IPlayerEngine player = PlayerBuilder.create("vlcplugin");
-
-
-                var xmlConf = CConf.loadConf();
-                export = CConf.Export;
-                import = CConf.Import;
-
-                gen = new Consolid();
-                var mementoAlbum = Memento.Instance.confAlbum;
-                if (mementoAlbum != null && mementoAlbum.Composants.Count > 0)
-                    gen.SortAlbumMode = mementoAlbum;
-                else
-                    gen.SortAlbumMode = CConf.ConfGen.AlbumSort;
-                Memento.Instance.confAlbum = gen.SortAlbumMode;
-                CConf.ConfGen.AlbumSort = gen.SortAlbumMode; 
-
-                Piece.SeuilProvisoire = gen.SortAlbumMode.lastModif;
-                Piece.SeuilCompact = gen.SortAlbumMode.compact;
-
-                BackGroundTaskMgr.Conf = CConf.ConfOrdo;
-                BackGroundTaskMgr.Start();
-                DataConf dbConf = new DataConf(xmlConf);
-                CFile.DefaultFolder = dbConf.defaultFolder;
-                ZipUtil.Exe = dbConf.sZip;
-                Db = new CDb(dbConf);
-
-                //  loader = new HomeLoader(Db);
-                //  app.init(loader);
-                Db.SovIni();
-                Db.loadData();
-
-                //ChronoData.refreshDate(DateTime.MinValue);
-                //ChronoData.DateAuto = false;
-                //Db.eraseClassementForEnabled();
-                //Db.WriteDB1(); 
-                //return;
-                // app.loadData(Db, CConf.Scan);
-
-                // Db.LegacyConsolid(app.LegacyList, DateTime.Now);
-
-
-
-
-                goInit();
-
-                Memento.Instance.save();
-                thLoop = new Thread(loop);
-                thLoop.Start();
-
-                MemUtil.Start(CConf.GcCollect);
-                //  go();
+                return Convert.ToDecimal(x);
             }
-            catch (Exception ex)
+            catch
             {
-                if (log != null)
-                    log.log(ex.ToString());
-            }
-
-
-
-        }
-
-
-
-        private static void loop()
-        {
-            Thread.CurrentThread.Name = "App";
-            while (!__end)
-            {
-                Thread.Sleep(30);
-                if (!__go)
-                    continue;
-                lock (_lock)
-                {
-                    if (!__go)
-                        continue;
-                    __go = false;
-                }
-                _go();
-
-            }
-
-        }
-        private static bool _updateStats;
-        public static void go()
-        {
-            go(false);
-        }
-        public static void go(bool updateStats)
-        {
-            lock (_lock)
-            {
-                _updateStats |= updateStats;
-                __go = true;
-                if (bib != null)
-                    bib.Aborted = true;
+                if (x >= max)
+                    return decimal.MaxValue;
+                if (x <= min)
+                    return decimal.MinValue;
+                return decimal.Zero;
             }
         }
-
-        private static void goInit()
+        public static decimal toDecimal(this long x)
         {
-            var root = gen.Root;
-
-            ChronoData.DateAuto = false;
-            DateTime now = DateTime.Now;
-            gen.Now = now;
-            gen.Step = -1;
-            gen.MakeConsolid(Db.List.getList(),true);
-
-
-
-            if (CConf.ResetOneCl)
-            {
-                Classement min = Classement.create("00003.0"); decimal mind = min.ClassementValueDecimal;
-                Classement zero = Classement.create("0.0"); decimal zer0d = zero.ClassementValueDecimal;
-
-                foreach (Piece p in gen.sortByClass())
-                {
-                    decimal clValue = p.ClassementValueDecimal;
-                    if (clValue > zer0d)
-                    {
-                        if (clValue >= zer0d)
-                        {
-                            var dPiece = Db.getPiece(p.PieceId);
-                            var strNewCl = "0000" + dPiece.getClassement().ToString();
-                            var newCl = Classement.create(strNewCl);
-                            p.Enabled = true;
-
-                            p.setClassement(newCl.ClassList, newCl.Rating);
-                            dPiece.Classement.eraseClassement2(newCl);
-                        }
-                        else
-                            p.Enabled = false;
-                    }
-                }
-                /*
-                var _albums = gen.Albums;
-                foreach (var album in _albums.List)
-                {
-                    if (album.Name == "Mémos vocaux" || album.Name == "Pictures at an Exhibition")
-                    {
-                    }
-                    var l = album.Tracks;
-                    decimal pluspetitNonNull = int.MaxValue;
-                    foreach (Piece t in l)
-                    {
-                        decimal clValue = t.ClassementValueDecimal;
-                        if (clValue > zer0d)
-                        {
-                            if (clValue < pluspetitNonNull)
-                                pluspetitNonNull = clValue;
-                        }
-
-                    }
-                    foreach (Piece t in l)
-                    {
-                        if (t.Parent == null)
-                        {
-                            decimal clValue = t.ClassementValueDecimal;
-                            if (t.isClassListNumeric && clValue > zer0d)
-                            {
-                                if (clValue > pluspetitNonNull)
-                                {
-                                    var dPiece = Db.getPiece(t.PieceId);
-                                    t.Enabled = true;
-                                    t.setClassement("0", 0);
-                                    dPiece.Classement.eraseClassement2();
-                                }
-                            }
-                        }
-                    }
-                }*/
-                gen.MakeConsolid(Db.List.getList(),true);
-            }
-
-
-            gen.buildMusique();
-           // gen.buildClassTree();
-            gen.buildLists(Db.List.Listes);
-
-            bib = new BibViewModel(root);
-            ChronoData.DateAuto = true;
-            //  var classement = root.getOrCreate("classement");
-
-
-
-            ListWriterMgr.Async = false;
-            listWriter = new ListWriter(bib);
-            //   gen.createRot(CConf.ListBase, listWriter); 
-            //bib = new BibViewModel(Db.Root); 
-            //gen.createRot(CConf.ListBase, bib);
-            //   if (bgClass.IsEnd) BackGroundTaskMgr.Start();
-
-
-          //  gen.timeRanking();
-           // gen.eraseGrouping();
-            // gen.writeComment();
-            Piece.SeuilProvisoire = gen.SortAlbumMode.lastModif;
-            gen.createRot(CConf.ListBase, listWriter);
-            PlayListViewModel.Log = true;
-            //   gen.builStats();
-            //gen.CommentGo = true;
-            //gen.GroupinGO = true;
-            //  PlayerViewModel.Instance.SortAlbumMode = gen.SortAlbumMode;
-            PlayerViewModel.Instance.WithVirtualAlbum = gen.AlbumVirtual;
-            PlayerViewModel.ConfAlbumSort = gen.SortAlbumMode;
-            Memento.Instance.confAlbum = gen.SortAlbumMode;
-            Piece.SeuilProvisoire = gen.SortAlbumMode.lastModif;
-            
-
-            foreach (CPiece p in Db.List)
-            {
-                if (p.DurationInSec == 0 && p.Exists)
-                {
-                    try
-                    {
-                        PlayerViewModel.Player.getDuration(p);
-                        log.log("{0} duration {1} s", p, p.DurationInSec);
-                    }
-                    catch (Exception ex)
-                    {
-                        log.log(ex.ToString());
-                    }
-
-                }
-            }
-
-
-           // detailClassementViewModel.IhmInDispo = ihmInDispo.stat;
-           // new Thread(() =>
-            gen.builStats(null); 
+            return Convert.ToDecimal(x);
+        }
+        public static decimal Abs(decimal x)
+        {
+            return Math0.Abs(x);
+        }
+        public static double Abs(double x)
+        {
+            return Math0.Abs(x);
         }
 
-        private static void _go()
+        public static int Abs(int x)
         {
-            try
-            {
-                Memento.Instance.save();
-                var confSort = PlayerViewModel.ConfAlbumSort;
-                if (confSort != null)
-                {
-                    Piece.SeuilProvisoire = confSort.lastModif;
-                    CConf.ConfGen.AlbumSort = confSort; 
-                }
-                detailClassementViewModel.IhmInDispo = ihmInDispo.rot;
-                //gen.CommentGo = false;
-                //gen.GroupinGO = false;
-                bib.Aborted = true;
-                Db.saveAsync();
-                step++;
-                gen.Step = step;
-
-                ChronoData.DateAuto = false;
-                DateTime now = DateTime.Now;
-                gen.Now = now;
-                ChronoData.DateAuto = false;
-                // if (__end || __go) return;
-
-                if (PlayerViewModel.Instance.CreateRot)
-                {
-                    //  gen.SortAlbumMode = PlayerViewModel.Instance.SortAlbumMode;
-                    //    gen.AlbumVirtual = PlayerViewModel.Instance.WithVirtualAlbum; 
-                    gen.MakeConsolid(Db.List.getList(),_updateStats); //   bib.Musique.Tracks);
-                    //  if (__end || __go) return;
-                   // AlbumCtl.Instance.init();
-                    //   if (__end || __go) return;
-                    //gen.timeRanking();
-                    //  if (__end || __go) return;
-                    ChronoData.DateAuto = true;
-
-                    //if (refresh != null)
-                    //    refresh(PHASE1, EventArgs.Empty);
-
-                    //      if (__end || __go) return;
-                    bib.Aborted = false;
-                    ListWriterMgr.Async = false;
-                    //listWriter = new ListWriter(root);
-                    try
-                    {
-                        CConf.loadConf();
-                    }
-                    catch (Exception ex)
-                    {
-                        log.log(ex.ToString());
-                    }
-                    // gen.SortByAlbum = PlayerViewModel.Instance.SortByAlbum;
-                    gen.createRot(CConf.ListBase, App.bib);
-                    //if (refresh != null)
-                    //    refresh(PHASE1, EventArgs.Empty);
-
-
-                    //log.log("visibles"); 
-                    //foreach (TrackListViewModel visible in Player.VisibleItems)
-                    //{
-                    //    if (__end || __go) return;
-                    //    visible.PieceGen.writeCommentGrouping();
-                    //    visible.refresh(); 
-                    //}
-                    //if (refresh != null)
-                    //    refresh(PHASE2, EventArgs.Empty);
-
-                    //if (__end || __go) return;
-                    //gen.writeComment();
-                    //if (__end || __go) return;
-                    //gen.writeGrouping();
-                    if (refresh != null)
-                        refresh(PHASE2, EventArgs.Empty);
-
-                    //if (__end || __go) return;
-
-                    //gen.CommentGo = true;
-                    //gen.GroupinGO = true;
-
-
-
-                    //if (refresh != null)
-                    //    refresh(PHASE2, EventArgs.Empty);
-                    // _refresh = true;
-                    lock (_lock)
-                    {
-                        if (_updateStats)
-                        {                           
-                            detailClassementViewModel.IhmInDispo = ihmInDispo.stat;
-                            //new Thread(() =>
-                            gen.builStats(() => detailClassementViewModel.IhmInDispo = ihmInDispo.none); 
-
-                        }
-                        else
-                            detailClassementViewModel.IhmInDispo = ihmInDispo.none;
-                    }
-                    //bib = new BibViewModel(Db.Root); 
-                    //gen.createRot(CConf.ListBase, bib);
-                    //   if (bgClass.IsEnd) BackGroundTaskMgr.Start();
-                    //gen.CommentGo = true;
-                    //gen.GroupinGO = true;
-
-
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                log.log(ex.ToString());
-            }
-
-            finally
-            {
-                //   gen.eraseGrouping(); 
-                if (refresh != null && PlayerViewModel.Instance.CreateRot)
-                    refresh(PHASE2, EventArgs.Empty);
-
-                // detailClassementViewModel.IhmInDispo = ihmInDispo.none;
-                lock (_lock)
-                {
-                    ExportCmd.CalculExport();
-                    if (_updateStats)
-                    {
-                        _updateStats = false;                         
-                    }
-                }
-            }
-
-
+            return Math0.Abs(x);
         }
 
-        public static event EventHandler refresh;
-
-        public static void shutdown()
+        public static decimal Exp(decimal d)
         {
-            MemUtil.End();
-            __end = true;
-            App.bib.Aborted = true;
-            Db.WriteDB1();
-            Db.WriteDB2();
-            App.bib.Aborted = true;
-            Environment.Exit(0);
+            return Math0.Exp(d.toDouble()).toDecimal();
         }
 
-        public static List<TrackListViewModel> getAlbum(TrackListViewModel track)
+        public static decimal Log(decimal d)
         {
-            if (gen == null)
-                return null;
-
-            var ll = new List<TrackListViewModel>();
-
-            var l = gen.getTracksAlbum(track.Track);
-            if (l == null)
-                return null;
-            foreach (ITrackMetaData p in l)
-            {
-
-                TrackListViewModel trackList = PlayListViewModel.findTrack(bib.Musique, p.PieceId);
-                if (trackList == null)
-                    continue;
-                ll.Add(trackList);
-            }
-
-            return ll;
-
+            return Math0.Log(d.toDouble()).toDecimal();
         }
 
-        public void InfoIHm(string message, string caption)
+        public static decimal Log10(decimal d)
         {
-            MessageBox.Show(message, caption, MessageBoxButton.OK);
+            return Math0.Log10(d.toDouble()).toDecimal();
         }
 
-        public bool Confirm(string question, string caption)
+        public static decimal Log(decimal x, decimal y)
         {
-            return MessageBox.Show(question, caption, MessageBoxButton.YesNo) == MessageBoxResult.Yes;
+            return Math0.Log(x.toDouble(), y.toDouble()).toDecimal();
         }
 
-        public bool? TriChoix(string question, string caption)
+        public static decimal Pow(decimal x, decimal y)
         {
-            var result = MessageBox.Show(question, caption, MessageBoxButton.YesNoCancel);
-            switch (result)
-            {
-                case MessageBoxResult.Cancel:
-                    return null;
-                case MessageBoxResult.No:
-                    return false;
-                case MessageBoxResult.None:
-                    return null;
-                case MessageBoxResult.OK:
-                    return true;
-                case MessageBoxResult.Yes: return true;
-                default: return null;
-
-            }
-        }
-        public Export getConfExport(string question)
-        {
-            var dialog = new ConfExport(question, export);
-            dialog.ShowDialog();
-            return export;
+            return Math0.Pow(x.toDouble(), y.toDouble()).toDecimal();
         }
 
-        public Import getConfImport(string question)
+        public static double PowD(double x, double y)
         {
-            var dialog = new ConfImport(question, import);
-            dialog.ShowDialog();
-            return import;
-        }
-
-        public string folderDialog()
-        {
-            var dialog = new FolderBrowserDialogW(Db.DefaultFolder); // new System.Windows.Forms.FolderBrowserDialog();
-            dialog.ShowDialog();
-            //dialog.SelectedPath = Db.DefaultFolder;
-            //System.Windows.Forms.DialogResult result = dialog.ShowDialog();
-            //string dir = null;
-            //if (result == System.Windows.Forms.DialogResult.OK)
-            //{
-            //    dir = dialog.SelectedPath;
-            //}
-
-            //return dir;
-            return dialog.Dir;
-        }
-
-        public int getNb(string question)
-        {
-            var w = new getNb(question, 2);
-            w.ShowDialog();
-            return w.Nb;
+            return Math0.Pow(x, y);
         }
 
 
-        public bool changeName(string title, IName data)
+        //  public static int Pow(int x, int y)
+        //{
+        //    return (int)Math0.Pow(x,y); 
+        //}
+
+      
+     
+
+       
+
+        public static decimal Round(decimal x, int nbDec)
         {
-            var stringDialog = new StringDialog(title, data);
-            stringDialog.ShowDialog();
-            return stringDialog.Ok;
+            return Math0.Round(x, nbDec);
+        }
+        public static double Round(double x, int nbDec, MidpointRounding mode)
+        {
+            return Math0.Round(x, nbDec, mode); 
+        }
+        public static double Round(double x)
+        {
+            return Math0.Round(x); 
         }
 
-        public PlayListViewModel selectPlayList(string title)
+        public static int Min(int x, int y)
         {
-            var dialog = new BrowsePlayList(title);
-            dialog.ShowDialog();
-            if (dialog.Ok)
-            {
-                return dialog.Selected;
-            }
-
-            return null;
+            return Math0.Min(x, y);
         }
 
-        public static void buildList()
+        public static double Floor(double x)
         {
-            Db.List.buildLists(bib.Listes.PlayList);
+            return Math0.Floor(x); 
         }
+
+        public static decimal Max(decimal x, decimal y)
+        {
+            return Math0.Max(x, y); 
+        }
+
+
     }
 }
 ]]></content>
   </file>
-  <file path="\PieceDb.Consolid\Consolid.cs">
+  <file path="\pdb.util\Medianne.cs">
     <content><![CDATA[using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Xml;
-using pdb.gen.albums;
-using pdb.gen.conf;
-using pdb.gen.stat;
-using pdb.obj;
-using pdb.ordo;
-using pdb.util;
-using System.Threading;
-using pdb.gen.Virtuel;
-using pdb.gen.Tuning;
+using System.IO;
 
-namespace pdb.gen
+namespace pdb.util
 {
-    /// <summary>
-    /// G�re l'application propri�taire
-    /// </summary>
-    /// <remarks></remarks>ranking
-    /// 
-    public class Consolid
+    public class HistoValue
     {
-        private static Logger logger = Logger.getLogger("gen", true);
-        private CListPiece m_list;
-        private List<Piece> m_listTrackClassed = new List<Piece>();
-        /// <summary>
-        /// Liste des données consolidées morceaux maitres
-        /// </summary>
-        private List<Piece> listPiece = new List<Piece>();
-        private List<Piece> allClassed = new List<Piece>();
-        private List<Piece> allClassedInAlbumEnabled = new List<Piece>();
-        private List<Piece> all = new List<Piece>();
-        /// <summary>
-        /// Liste des données morceux dupliqués 
-        /// </summary>
-        private List<Piece> listPieceInAlbum = new List<Piece>();
-        private Albums albums; // = new Albums(CConf.ConfGen.AlbumSortStrict);
-        private BgDict<int, Piece> htIds = new BgDict<int, Piece>();
+        char SEP = '|';
+        public decimal coeff;
+        public decimal delta;
+        public decimal accel;
+        // pour info
+        public decimal dcoeffp;
+        public decimal dv;
+        public decimal vcoeff;
 
-        private static volatile object _lock = new object();
-        private bool _consolidEnCours;
-        private bool goCompact = true;
-        private bool _firstConsolid = true;
-
-
-        #region navigation
-        private static IComponentFactor creator = new TrackListCreator();
-        private CPlayList root = new CPlayList("root", null, creator);
-        public CPlayList Root { get { return root; } }
-        private CPlayList musique;
-        private CPlayList classement;
-        private CPlayList listes;
-        #endregion
-
-        public DateTime Now { set { CalcDate.refreshDate(value); } }
-
-        private int step;
-        public int Step { set { step = value; } }
-
-        public Consolid()
-        {
-            Piece.Gen = this;
-            musique = new CPlayList("musique", root, creator);
-            classement = new CPlayList("classement", root, creator);
-            listes = new CPlayList("listes", root, creator);
-            albums = new Albums(this);
-        }
-        /// <summary>
-        /// Lance le compactage à la prochaine génération
-        /// </summary>
-        public void GoCompact() { goCompact = true; }
-
-        private void buildClassTree(IPlayList pl)
-        {
-            pl.DeleteChilds();
-            var l = new List<Piece>(allClassed);
-            l.Reverse();
-            foreach (Piece piece in l)
-            {
-
-                var _class = piece.ClassNameAndRating;
-                char[] tab = _class.ToCharArray();
-                int count = tab.GetLength(0);
-                buildClassTree(pl, piece, tab, count, -1);
-            }
-        }
-
-        public void buildClassTree()
-        {
-            buildClassTree(classement);
-        }
-
-
-        private void buildClassTree(IPlayList parent, Piece piece, char[] strClass, int count, int index)
-        {
-            if (index == count - 2)
-            {
-                parent.addObj(piece);
-                return;
-            }
-
-            var _index = index + 1;
-            var pl = parent.getOrCreate(strClass[_index].ToString());
-            buildClassTree(pl, piece, strClass, count, _index);
-
-        }
-
-        private void waitForConsolid()
-        {
-            bool cango = false;
-            try
-            {
-                do
-                {
-                    lock (_lock)
-                        cango = !_consolidEnCours;
-                    if (cango)
-                        return;
-                    Thread.Sleep(1000);
-                } while (!cango);
-            }
-            finally
-            {
-                _consolidEnCours = true;
-            }
-        }
-
-        public Albums Albums { get { return albums; } }
-        public void MakeConsolid(IEnumerable<ITrackNativeDates> dbList, bool makeSort)
-        {
-            try
-            {
-                waitForConsolid();
-                logger.log("consolid");
-                listPiece = new List<Piece>();
-                listPieceInAlbum = new List<Piece>();
-                all = new List<Piece>();
-
-                // albums = new Albums(this);
-                VirtualPiece.init();
-                m_listTrackClassed = new List<Piece>();
-                allClassed = new List<Piece>();
-                allClassedInAlbumEnabled = new List<Piece>();
-                //  htIds = new BgDict<int, Piece>();
-                foreach (ITrackNativeDates track in dbList)
-                {
-
-                    if (!track.isPodcast)
-                    {
-                        Piece piece = null;
-                        int pieceId = track.PieceId;
-                        if (htIds.ContainsKey(pieceId))
-                        {
-                            piece = htIds[pieceId];
-                            piece.initRank();
-                        }
-                        else
-                        {
-                            piece = new Piece(track);
-                            htIds.Add(pieceId, piece);
-                        }
-
-                        all.Add(piece);
-
-                    }
-                }
-                // link
-                foreach (Piece piece in all)
-                {
-                    int parentId = piece.PieceParentId;
-                    if (parentId > 0)
-                    {
-                        piece.Parent = htIds[parentId];
-                    }
-                }
-
-                // liste FORT + albums
-
-                albums.checkBuild();
-                logger.log("build albums");
-                foreach (Piece piece in all)
-                {
-                    if (piece.Parent == null)
-                    {
-                        listPiece.Add(piece);
-                        foreach (Piece p in piece)
-                        {
-                            if (albums.check(p))
-                                listPieceInAlbum.Add(p);
-                        }
-                    }
-                }
-
-                if (_albumVirtual && _firstConsolid)
-                {
-                    logger.log("build albums virtuels");
-                    var listCandidat = new List<Piece>();
-                    var dictTmp = new BgDictString<Album>();
-                    foreach (Piece piece in all)
-                    {
-                        if (piece.Parent == null)
-                        {
-                            piece.buildVirtualAlbums(listCandidat);
-                        }
-                    }
-                    foreach (Piece p in listCandidat)
-                        albums.checkVirtual(p, dictTmp);
-                    var listAlbums = new List<Album>(dictTmp.Values);
-                    listAlbums.Sort(new VirtualAlbumComparer());
-                    albums.checkVirtuals(listAlbums, listPieceInAlbum);
-
-                }
-
-                albums.buildDone();
-
-
-
-                StackAlbum.Instance.init(all);
-
-
-
-                foreach (Piece piece in listPieceInAlbum)
-                {
-                    if (!string.IsNullOrEmpty(piece.ClassName))
-                    {
-                        allClassed.Add(piece);
-                        if (piece.PieceAlbum != null && piece.PieceAlbum.AtLeastOneEnabled)
-                            allClassedInAlbumEnabled.Add(piece);
-                    }
-                }
-
-                if (_firstConsolid)
-                    albums.sortVirtual();
-                Ranking(makeSort);
-            }
-            finally
-            {
-                lock (_lock)
-                {
-                    _firstConsolid = false;
-                    _consolidEnCours = false;
-                }
-            }
-
-        }
-
-        public void buildMusique()
-        {
-            var d = new HashSet<int>();
-            foreach (Piece piece in all)
-            {
-                if (d.Add(piece.PieceId))
-                    musique.addObj(piece);
-            }
-
-
-            foreach (Piece piece in listPieceInAlbum)
-            {
-                if (d.Add(piece.PieceId))
-                    musique.addObj(piece);
-            }
-
-
-#if GEN_ALBUM
-
-            var _albums = musique.getOrCreate("albums");
-            foreach (Album album in albums.List)
-            {
-                CPlayList _alb = _albums.getOrCreate(album.Name);
-                var tracks = album.TrackByNumber;
-
-                foreach (Piece piece in tracks)
-                {
-                    _alb.addObj(piece);
-                }
-            }
-#endif
-
-        }
-
-        public void buildLists(CPlayList listes)
-        {
-            buildList(this.listes, listes);
-        }
-
-        private void buildList(CPlayList mine, CPlayList ext)
-        {
-            foreach (PlComponent c in ext)
-            {
-                if (c is CPlayList)
-                {
-                    var subExt = c as CPlayList;
-                    var sub = new CPlayList(subExt.Name, mine);
-                    sub.ID = subExt.ID;
-                    // mine.add(sub);
-                    buildList(sub, subExt);
-                }
-                else
-                {
-                    var t = c as IFile;
-                    var piece = htIds[t.PieceId];
-                    mine.add(new TrackList(piece));
-                }
-            }
-        }
-
-        internal Album getAlbum(TrackList track)
-        {
-            return albums.getAlbum(track);
-        }
-
-        public HashList<Piece> getTracksAlbum(TrackList track)
-        {
-            var album = getAlbum(track);
-            if (album == null)
-                return new HashList<Piece>();
-            return album.Tracks;
-        }
-
-        public List<Piece> getTracksAlbumReverse(TrackList track)
-        {
-            var album = getAlbum(track);
-            if (album == null)
-                return null;
-            return album.TrackSortedByExportPriority.List;
-        }
-
-        public List<Piece> getTracksAlbumByNumber(TrackList track)
-        {
-            var album = getAlbum(track);
-            if (album == null)
-                return null;
-            return album.TrackByNumber;
-        }
-
-        //public void buildAlbum(ITrackMetaData track, List<ITrackMetaData> container)
+        //private HistoValue(string line)
         //{
-        //    var album = getAlbum(track);
-        //    if (album == null)
-        //        return;
-        //    foreach (var p in album.Tracks)
-        //    {
-        //        container.Add(p);
-        //    }
+        //    var tab = line.Split(SEP);
+        //    int count = tab.GetLength(0);
+        //    if (count >= 1 && !string.IsNullOrEmpty(tab[0]))
+        //        coeff = Convert.ToDecimal(tab[0]);
+        //    if (count >= 2 && !string.IsNullOrEmpty(tab[1]))
+        //        delta = Convert.ToDecimal(tab[1]) / 1000m;
+        //    if (count >= 3 && !string.IsNullOrEmpty(tab[2]))
+        //        conv = Convert.ToDecimal(tab[2]) / 1000m;
         //}
 
-        public List<Piece> sortByClass()
+        public HistoValue(string line, HistoValue last)
         {
             try
             {
-                waitForConsolid();
-                var list = new List<Piece>(listPiece);
-                list.Sort(new CPieceComparerByQualityAndLength());
-                return list;
-            }
-            finally
-            {
-                _consolidEnCours = false;
-            }
-        }
-
-        public List<Piece> sortByAlbum()
-        {
-            try
-            {
-                waitForConsolid();
-
-                var list = new List<Piece>();
-                var d = new HashSet<int>();
-                foreach (Piece piece in all)
+                var tab = line.Split(SEP);
+                int count = tab.GetLength(0);
+                string str = "";
+                if (count >= 1)
                 {
-                    if (d.Add(piece.PieceId))
-                        list.Add(piece);
+                    str = tab[0];
+                    if (!string.IsNullOrEmpty(str))
+                        coeff = Convert.ToDecimal(str);
+                    else if (last != null)
+                        coeff = last.coeff;
+                }
+                if (count >= 2)
+                {
+                    str = tab[1];
+                    if (!string.IsNullOrEmpty(str))
+                        delta = Convert.ToDecimal(str) / 1000m;
+                    else if (last != null)
+                        delta = last.delta;
+                }
+                if (count >= 3)
+                {
+                    str = tab[2];
+                    if (!string.IsNullOrEmpty(str))
+                        accel = Convert.ToDecimal(str) / 1000m;
+                    else if (last != null)
+                        accel = last.accel;
                 }
 
-
-                foreach (Piece piece in listPieceInAlbum)
+                if (count >= 4)
                 {
-                    if (d.Add(piece.PieceId))
-                        list.Add(piece);
+                    str = tab[3];
+                    if (!string.IsNullOrEmpty(str))
+                        dcoeffp = Convert.ToDecimal(str) / 1000m;
+                    else if (last != null)
+                        dcoeffp = last.dcoeffp;
                 }
 
-
-                list.Sort(new AllPieceComparer2());
-                return list;
-            }
-            finally
-            {
-                _consolidEnCours = false;
-            }
-        }
-
-        private void Ranking(bool makeSort)
-        {
-            albums.buildStack(makeSort);
-            QRanking();
-            LRanking();
-            QLRanking();
-
-
-            var list = new List<Piece>(listPiece);
-            //logger.log("setTuningDateValues");
-
-
-            //foreach (Piece piece in list)
-            //{
-            //    piece.Rank.TimeRest = -1;
-            //}
-            //foreach (Piece piece in list)
-            //{
-            //    piece.FirstClass = false;
-            //    CRank rank = piece.Rank;
-            //    var sortValue = CTuning.Calc(rank, CConf.Sort);
-            //    rank.SortValue = sortValue;
-
-            //    ListSelection.setTuningDateValues(piece);
-            //}
-
-            logger.log("PieceRestComparer->RankRest ");
-            list.Sort(new PieceRestComparer());
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                list[i].Rank.RankRest = i + 1;
-            }
-
-            logger.log("list.Sort(new PieceDeltaComparer());");
-            list.Sort(new PieceDeltaComparer());
-            list.Reverse();
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                list[i].Rank.RankDelta = i + 1;
-            }
-
-            logger.log("PieceSortComparer->Sort ");
-            list.Sort(new PieceSortComparer());
-            list.Reverse();
-
-            for (int i = 0; i < list.Count; i++)
-            {
-                list[i].Rank.Sort = i + 1;
-            }
-            logger.log("AlbumsSort ");
-            var all = new List<Piece>(listPieceInAlbum);
-            // if (makeSort)
-            albums.makeSort();
-            logger.log("AllPieceComparer->RankAllAlbum ");
-            all.Sort(new AllPieceComparer());
-            for (int i = 0; i < all.Count; i++)
-            {
-                all[i].RankAllAlbum = i + 1;
-            }
-
-            CTuning.Total = listPieceInAlbum.Count;
-
-        }
-
-        BackGroundTaskMgr bg = BackGroundTaskMgr.getMgrlarge("copy");
-        bool endCopy = false;
-        public void CopyFiles(string defaultDir, IEnumerable<ITrackNativeDates> trace)
-        {
-            if (trace == null)
-                return;
-            string destDir = CConf.CopyTo;
-            if (string.IsNullOrEmpty(destDir))
-                return;
-            bool copyModeFile = CConf.CopyModeFile;
-
-            if (copyModeFile)
-            {
-
-                var list = new List<Piece>();
-                foreach (ITrackNativeDates track in trace)
+                if (count >= 5)
                 {
-
-                    list.Add(new Piece(track));
+                    str = tab[4];
+                    if (!string.IsNullOrEmpty(str))
+                        dv = Convert.ToDecimal(str) / 1000m;
+                    else if (last != null)
+                        dv = last.dv;
                 }
 
-
-                var l_pieceComparer = new CPieceComparerByQualityAndLength();
-                list.Sort(l_pieceComparer);
-
-
-                //compactage de la liste en tenant compte des mieux not�s
-                var remote = new CListPiece(list);
-
-                var l = new List<Piece>(m_listTrackClassed);
-                l.Sort(new CPieceComparerByQualityLengthAndEnable());
-
-                using (StreamWriter sr = new StreamWriter(@"..\listCopy.txt", false))
+                if (count >= 6)
                 {
-                    bool endCopie = false;
-                    int count = m_listTrackClassed.Count;
-                    foreach (Piece l_piece in l)
-                    {
-                        if (endCopie)
-                            return;
-
-                        if (!remote.Contains(l_piece) && File.Exists(l_piece.Location))
-                        {
-                            try
-                            {
-                                StringBuilder sb = new StringBuilder();
-
-                                sb.Append(l_piece.ClassementValueDecimal);
-                                //sb.Append(":");
-                                //sb.Append(l_piece.Rating / 20);
-                                sb.Append(" ");
-                                sb.Append(l_piece.Location);
-                                if (!l_piece.Enabled)
-                                {
-                                    sb.Append(" disabled");
-                                }
-                                sb.Append("==>");
-                                sb.Append(destDir);
-                                string txt = sb.ToString();
-                                sr.WriteLine(txt);
-                                sr.Flush();
-                                logger.log("copy " + txt);
-
-                                copy(l_piece, defaultDir, destDir);
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.log(ex.ToString());
-                                sr.WriteLine(ex.ToString());
-                                endCopie = true;
-                                // endCopie = true;
-
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            else
-            {
-                BgDictString<DirectoryInfo> directoriesCopied = new BgDictString<DirectoryInfo>();
-
-                Dictionary<string, int> items = new Dictionary<string, int>();
-
-
-                DirectoryInfo dest = new DirectoryInfo(destDir);
-                DirectoryInfo from = new DirectoryInfo(defaultDir);
-                List<DirectoryInfo> dirs = new List<DirectoryInfo>();
-                StringBuilder sb = new StringBuilder();
-                try
-                {
-
-                    recordSoon(directoriesCopied, from, dest, dest);
-                    deleteSoon(dest);
-
-                    for (int i = 0; i < m_listTrackClassed.Count; i++)
-                    {
-
-                        var l_piece = m_listTrackClassed[i];
-                        logger.log(">> check {0} {1} {2} ", (i + 1), l_piece.Location, l_piece.ClassNameAndRating);
-                        FileInfo file = new FileInfo(l_piece.Location);
-                        DirectoryInfo dir = file.Directory;
-                        string path = dir.FullName;
-                        if (!directoriesCopied.ContainsKey(path))
-                        {
-                            if (!items.ContainsKey(path))
-                            {
-                                items.Add(path, 1);
-                            }
-                            else
-                                items[path]++;
-
-                            bool go = false;
-                            int passes = items[path];
-                            int nbfiles = 0;
-                            foreach (FileInfo f in dir.GetFiles())
-                            {
-                                if (f.IsMusic())
-                                    nbfiles++;
-                            }
-
-
-
-
-                            if (nbfiles > 0)
-                            {
-                                double rapport = (double)passes / (double)nbfiles;
-                                logger.log(" {0} passe(s) / {1} fichiers ({2})", passes, nbfiles, rapport);
-                                if (rapport > 0.5)
-                                    go = true;
-                                //if (nbfiles <= 3) go = true;
-                                //if (passes == 3 && nbfiles <= 5) go = true;
-                                //if (passes >= 5) go = true;
-
-
-                                if (go)
-                                {
-                                    logger.log(">> copy {0} {1} ", (i + 1), l_piece.Location);
-                                    dirs.Add(dir);
-                                    sb.AppendLine(dir.FullName);
-                                    directoriesCopied.Add(dir.FullName, null);
-                                }
-                            }
-
-                        }
-                    }
-                    logger.log(sb.ToString());
-                    File.WriteAllText(@"..\classementAlbums.txt", sb.ToString());
-
-                    foreach (DirectoryInfo dir in dirs)
-                    {
-
-                        copy(from, dir, dest);
-                    }
-                }
-                catch
-                {
-                    logger.log("fin de copie");
-                }
-            }
-
-
-        }
-
-        private void copy(Piece piece, string musicFrom, string dirDest)
-        {
-            string pathDest = piece.Location.Replace(musicFrom, dirDest);
-            string[] elts = pathDest.Split(Path.DirectorySeparatorChar);
-
-            StringBuilder sbPath = new StringBuilder();
-            sbPath.Append(elts[0]); sbPath.Append(Path.DirectorySeparatorChar);
-            DirectoryInfo current = new DirectoryInfo(sbPath.ToString());
-            for (int i = 1; i < elts.GetLength(0) - 1; i++)
-            {
-                string elt = elts[i];
-                sbPath.Append(elt); sbPath.Append(Path.DirectorySeparatorChar);
-                DirectoryInfo aux = new DirectoryInfo(sbPath.ToString());
-
-                if (!aux.Exists)
-                    aux.Create();
-                current = aux;
-            }
-            if (!File.Exists(pathDest))
-                File.Copy(piece.Location, pathDest, true);
-        }
-
-        private class BgtaskCopy : BgTaskBase
-        {
-            private FileInfo file;
-            private string dest;
-            private Consolid master;
-            public BgtaskCopy(Consolid master, FileInfo file, string dest)
-                : base(dest)
-            {
-                success = true;
-                this.master = master;
-                this.file = file;
-                this.dest = dest;
-            }
-
-            public override void exec()
-            {
-                try
-                {
-                    if (master.endCopy)
-                        return;
-                    file.CopyTo(dest);
-                }
-                catch (Exception e)
-                {
-                    logger.log(e.ToString());
-                    master.endCopy = true;
-
-                }
-            }
-        }
-
-
-        private void recordSoon(BgDictString<DirectoryInfo> dict, DirectoryInfo from, DirectoryInfo baseDirectory, DirectoryInfo dir)
-        {
-            string path = dir.FullName.Replace(baseDirectory.FullName, from.FullName);
-            if (!string.IsNullOrEmpty(path))
-                dict.Add(path, dir);
-
-            foreach (DirectoryInfo sub in dir.GetDirectories())
-                recordSoon(dict, from, baseDirectory, sub);
-        }
-
-        private void deleteSoon(DirectoryInfo dir)
-        {
-            try
-            {
-                foreach (DirectoryInfo sub in dir.GetDirectories())
-                    deleteSoon(sub);
-                dir.Delete();
-            }
-            catch (Exception e)
-            {
-                logger.log(dir.FullName + " " + e.ToString());
-            }
-        }
-
-        private void copy(DirectoryInfo from, DirectoryInfo dir, DirectoryInfo dest)
-        {
-            try
-            {
-                if (endCopy)
-                    return;
-                logger.log("copy {0} ", dir.FullName);
-                string path = dir.FullName.Replace(from.FullName, "");
-                string[] elts = path.Split(Path.DirectorySeparatorChar);
-
-                DirectoryInfo current = dest;
-                bool toBeCreated = false;
-                foreach (string elt in elts)
-                {
-                    DirectoryInfo sub = new DirectoryInfo(current.FullName + Path.DirectorySeparatorChar + elt);
-                    if (!sub.Exists)
-                    {
-                        toBeCreated = true;
-                        sub.Create();
-                    }
-                    current = sub;
-                }
-
-                if (!toBeCreated)
-                {
-                    bool _continue = true;
-                    var aux = current;
-                    while (_continue)
-                    {
-                        try
-                        {
-
-                            current.Delete();
-                            current = current.Parent;
-                            _continue = true;
-
-                        }
-                        catch
-                        {
-                            _continue = false;
-                        }
-                    }
-                    return;
-                }
-
-                foreach (FileInfo file in dir.GetFiles())
-                {
-                    if (endCopy)
-                        return;
-                    string fileDest = current.FullName + Path.DirectorySeparatorChar + file.Name;
-                    logger.log("copy " + fileDest);
-                    file.CopyTo(fileDest);
+                    str = tab[5];
+                    if (!string.IsNullOrEmpty(str))
+                        vcoeff = Convert.ToDecimal(str) / 1000m;
+                    else if (last != null)
+                        vcoeff = last.vcoeff;
                 }
             }
             catch (Exception e)
             {
-                logger.log(dir.FullName + " " + e.Message);
+                misc.log("impossible de parser " + line, e);
                 throw;
             }
         }
 
-        private static List<Piece> m_listQL;
-        public static List<Piece> QLClassed
+        public HistoValue(decimal coeff, decimal delta, decimal accel, decimal dcoeff, decimal dv, decimal vcoeff)
         {
-            get
+            this.coeff = coeff;
+            this.delta = delta;
+            this.accel = accel;
+            this.dcoeffp = dcoeff;
+            this.dv = dv;
+            this.vcoeff = vcoeff;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            write(sb);
+            return sb.ToString();
+        }
+
+        public void write(ITextWriter sb)
+        {
+            var v = Math.Round(coeff, 12);
+            var sc = v.ToString();
+            var v2 = Math.Round(1000m * delta, 10);
+            var sc2 = v2.ToString();
+
+            var v3 = Math.Round(1000m * accel, 10);
+            var sc3 = v3.ToString();
+
+            var v4 = Math.Round(1000m * dcoeffp, 10);
+            var sc4 = v4.ToString();
+
+            var v5 = Math.Round(1000m * dv, 10);
+            var sc5 = v5.ToString();
+
+            var v6 = Math.Round(1000m * vcoeff, 10);
+            var sc6 = v6.ToString();
+
+            sb.Append(sc);
+            sb.Append(SEP);
+            sb.Append(sc2);
+            sb.Append(SEP);
+            sb.Append(sc3);
+            sb.Append(SEP);
+
+            sb.Append(sc4);
+            sb.Append(SEP);
+            sb.Append(sc5);
+            sb.Append(SEP);
+            sb.AppendLine(sc6);
+        }
+
+        private static decimal getTruncate(decimal v)
+        {
+            return Math.Round(1000m * v, 10);
+        }
+
+        public void writeDiff(ITextWriter sb, HistoValue last)
+        {
+
+
+            var v = Math.Round(coeff, 12);
+            var sc = v.ToString();
+            sb.Append(sc);
+
+            sb.Append(SEP);
+            var v2 = getTruncate(delta);
+            if (last == null || v2 != getTruncate(last.delta))
             {
-                return m_listQL;
+                var sc2 = v2.ToString();
+                sb.Append(sc2);
+            }
+
+            sb.Append(SEP);
+            var v3 = getTruncate(accel);
+            if (last == null || v3 != getTruncate(last.accel))
+            {
+                var sc3 = v3.ToString();
+                sb.Append(sc3);
+            }
+            sb.Append(SEP);
+
+            var v4 = getTruncate(dcoeffp);
+            if (last == null || v4 != getTruncate(last.dcoeffp))
+            {
+                var sc4 = v4.ToString();
+                sb.Append(sc4);
+            }
+            sb.Append(SEP);
+            var v5 = getTruncate(dv);
+            if (last == null || v5 != getTruncate(last.dv))
+            {
+                var sc5 = v5.ToString();
+                sb.Append(sc5);
+            }
+            sb.Append(SEP);
+            var v6 = getTruncate(vcoeff);
+            if (last == null || v6 != getTruncate(last.vcoeff))
+            {
+                var sc6 = v6.ToString();
+                sb.Append(sc6);
+            }
+            sb.AppendLine();
+
+        }
+    }
+    public enum selectedCoeff
+    {
+        none,
+        noCoeff,
+        main,
+        min
+    }
+
+    public enum medianneMode
+    {
+        none = 0,
+        strict = 1,
+        light = 2,
+        moy = 3
+
+    }
+    public enum removeLast
+    {
+        non = 0,
+        unselected = 1,
+        virtuel = 2,
+        tous = 3
+    }
+
+    public enum modeMin
+    {
+        /// <summary>
+        /// On ne gère pas
+        /// </summary>
+        non = 0,
+        /// <summary>
+        /// Morceaux supérieurs à la limite ( pas d'influence sur le résultat)
+        /// </summary>
+        orphelin = 1,
+        /// <summary>
+        /// Morceaux cochés et notés
+        /// </summary>
+        toujours = 2
+
+    }
+
+    //public class HistoStat
+    //{
+    //    public HistoStatItem min;
+    //    public HistoStatItem max;
+
+    //    public HistoStat()
+    //    {
+    //        min = new HistoStatItem(int.MaxValue);
+    //        max = new HistoStatItem(-1);
+    //    }
+    //    public HistoStat(decimal val)
+    //    {
+    //        min = new HistoStatItem(val);
+    //        max = new HistoStatItem(val);
+    //    }
+
+    //    //private string desc(decimal d)
+    //    //{
+    //    //    if (d < 0)
+    //    //        return "";
+    //    //    if (d >= int.MaxValue)
+    //    //        return "";
+    //    //    return d.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture);
+    //    //}
+
+    //    public override string ToString()
+    //    {
+    //        //return string.Format("{0}({1}) {2}({3})", desc(min.absolute), desc(min.relative), desc(max.absolute), desc(max.relative)); 
+    //        return string.Format("{0} {1}", min, max);
+    //    }
+    //}
+
+    //public class HistoStatItem
+    //{
+    //    public decimal relative;
+    //    public decimal absolute;
+    //    public HistoStatItem()
+    //    {
+    //        relative = -1;
+    //        absolute = -1;
+    //    }
+    //    public HistoStatItem(decimal val)
+    //    {
+    //        relative = val;
+    //        absolute = val;
+    //    }
+
+    //    public static string desc(decimal d)
+    //    {
+    //        if (d < 0)
+    //            return "";
+    //        if (d >= int.MaxValue)
+    //            return "";
+    //        return d.ToString("0.000", System.Globalization.CultureInfo.InvariantCulture);
+    //    }
+
+    //    public override string ToString()
+    //    {
+    //        var sb = new StringBuilder();
+    //        sb.Append(desc(absolute));
+    //        if (absolute != relative)
+    //        {
+    //            sb.Append("(");
+    //            sb.Append(desc(relative));
+    //            sb.Append(")");
+    //        }
+    //        return sb.ToString();
+    //    }
+
+
+    //}
+
+    [Serializable]
+    public class ConfMedianne : TuningBase
+    {
+        public medianneMode type;
+        public decimal medianne = 0.5m;
+        public bool quasi;
+
+        public bool enabled;
+
+
+
+        public bool removeFirst;
+        public bool deleteFirst;
+        public removeLast removeLast;
+
+        public decimal expEnabled = 0m;
+
+        public decimal zero = 0m;
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool removeEnabled;
+
+
+
+
+        public modeMin cmpMin;
+
+        private ConfMedianneVirt _main;
+        private ConfMedianneVirt _min;
+
+        public ConfMedianneVirt Main { get { return _main; } }
+        public ConfMedianneVirt Min { get { return _min; } }
+        public ConfMedianne()
+        {
+            _main = new ConfMedianneVirt();
+            _min = new ConfMedianneVirt();
+
+        }
+
+        public void makeIdem()
+        {
+            _min = _main;
+        }
+
+        public void duplicateMainIf()
+        {
+            if (_min == _main)
+                _min = new ConfMedianneVirt(_main);
+        }
+
+        public ConfMedianne(ConfMedianne o, bool raz)
+        {
+            type = o.type;
+            medianne = o.medianne;
+            quasi = o.quasi;
+
+            enabled = o.enabled;
+
+
+
+            removeFirst = o.removeFirst;
+            deleteFirst = o.deleteFirst;
+            removeLast = o.removeLast;
+
+            expEnabled = o.expEnabled;
+
+            zero = o.zero;
+            removeEnabled = o.removeEnabled;
+
+
+
+            cmpMin = o.cmpMin;
+
+            _main = new ConfMedianneVirt(o._main, raz);
+            _min = new ConfMedianneVirt(o._min, raz);
+
+        }
+
+        public ConfMedianne(XmlElement parent, XmlElement child)
+            : base(parent, child)
+        {
+            var strType = "";
+            builds("type", v => strType = v);
+            type = (medianneMode)Enum.Parse(typeof(medianneMode), strType, true);
+            builddec("medianne", v => medianne = v);
+            buildb("quasi", v => quasi = v);
+            buildb("enabled", v => enabled = v);
+            buildb("removeFirst", v => removeFirst = v);
+            buildb("deleteFirst", v => deleteFirst = v);
+            builddec("expEnabled", v => expEnabled = v);
+            builddec("zero", v => zero = v);
+            buildb("removeEnabled", v => removeEnabled = v);
+            string _modeMin = "";
+            builds("cmpMin", v => _modeMin = v);
+            if (!string.IsNullOrEmpty(_modeMin))
+                cmpMin = (modeMin)Enum.Parse(typeof(modeMin), _modeMin, true);
+
+            string _removeLast = null;
+            builds("removeLast", v => _removeLast = v);
+            removeLast = (removeLast)Enum.Parse(typeof(removeLast), _removeLast, true);
+
+            _main = null;
+            _min = null;
+            var subs = XMLTool.NodeLookUp(child, "virts");
+            if (subs != null)
+            {
+                foreach (XmlNode _n in subs.ChildNodes)
+                {
+                    if (_n is XmlElement)
+                    {
+                        if (_main == null)
+                        {
+                            _main = new ConfMedianneVirt(child, _n as XmlElement);
+
+                        }
+                        else if (_min == null)
+                        {
+                            _min = new ConfMedianneVirt(child, _n as XmlElement);
+                        }
+                    }
+                }
+                if (_min == null && _main != null)
+                    _min = new ConfMedianneVirt(_main);
             }
         }
-        /// <summary>
-        /// calcul du classement en fonction des listes 
-        /// </summary>
-        /// <remarks></remarks>
-        private void QRanking()
+
+        public override void save(XmlWriter w)
         {
-            logger.log("Qranking");
+            base.save(w);
+            writeStart("cmp");
+            write("type", type);
+            write("medianne", medianne);
+            write("quasi", quasi);
+            write("enabled", enabled);
+            write("removeFirst", removeFirst);
+            write("deleteFirst", deleteFirst);
+            write("expEnabled", expEnabled);
+            write("zero", zero);
+            write("removeEnabled", removeEnabled);
+            write("cmpMin", cmpMin);
+            write("removeLast", removeLast);
+
+            writeStart("virts");
+            _main.save(w);
+            _min.save(w);
+            writeEnd();
+
+            writeEnd();
 
 
 
-            CPieceComparerByGoodness l_pieceComparer = new CPieceComparerByGoodness();
+        }
 
-            foreach (Piece piece in listPiece)
+
+        public void auto(selectedCoeff motif)
+        {
+            if (!enabled)
+                return;
+            if (motif == selectedCoeff.none)
+                return;
+            var coeffPrisEncompte = motif > selectedCoeff.noCoeff;
+            if (_min == _main || _min.coeffVirt == 1m)
             {
-                piece.Rank.init();
+                _main.calcAuto(coeffPrisEncompte);
             }
-
-
-            //on ordonne les morceaux top-down => sont privil�gi�s les plus en vue
-            listPiece.Sort(l_pieceComparer);
-
-            //compactage de la liste en tenant compte des mieux not�s
-            m_list = new CListPiece(listPiece);
-
-            logger.log("Qranking:legacyList Compact:" + m_list.Count);
-
-            foreach (Piece l_piece in m_list)
+            else
             {
-                if (l_piece.ClassName != "")
+                if (coeffPrisEncompte)
                 {
-                    m_listTrackClassed.Add(l_piece);
-                }
-            }
-
-            logger.log("Qranking:track classed :" + m_listTrackClassed.Count);
-            int l_nbPiece = 0;
-
-            int l_iLast = 0;
-            int l_count = m_listTrackClassed.Count;
-            for (int i = 0; i <= l_count - 2; i++)
-            {
-                l_nbPiece += 1;
-                Piece l_One = m_listTrackClassed[i];
-                Piece l_Two = m_listTrackClassed[i + 1];
-
-
-                int l_iCmp = l_pieceComparer.Compare(l_One, l_Two);
-                if (l_iCmp == 0)
-                {
+                    if (motif == selectedCoeff.main)
+                        _main.calcAuto(true);
+                    if (motif == selectedCoeff.min)
+                        _min.calcAuto(true);
                 }
                 else
                 {
-                    int rank = getRank(l_iLast, l_nbPiece);
-
-                    for (int ii = l_iLast; ii <= i; ii++)
-                    {
-                        m_listTrackClassed[ii].QRank = rank;
-                    }
-
-                    l_iLast = l_nbPiece;
+                    _main.calcAuto(false);
+                    _min.calcAuto(false);
                 }
             }
-
-            for (int ii = l_iLast; ii <= l_count - 1; ii++)
-            {
-                int rank = getRank(l_iLast, l_nbPiece);
-                m_listTrackClassed[ii].QRank = rank > 0 ? rank : 1;
-            }
-
-            CTuning.Total = m_listTrackClassed.Count;
-
-            foreach (Piece piece in listPiece)
-            {
-                if (piece.QRank <= 0)
-                    piece.QRank = CTuning.Total;
-            }
-
-            Console.WriteLine("Qranking:total class�s : " + m_listTrackClassed.Count);
-
         }
+    }
 
-        private int getRank(int l_iLast, int l_nbPiece)
-        {
-            double qRank = l_iLast + 1 + l_nbPiece;
-            switch (CConf.RankingType)
-            {
-                case rankingType.middle: qRank = 0.5 * qRank; break;
-                case rankingType.up: qRank = l_iLast + 1; break;
-                case rankingType.bottom: qRank = l_nbPiece; break;
-                default:
-                    break;
-            }
-            return Convert.ToInt32(qRank);
-        }
+    [Serializable]
+    public class ConfMedianneVirt : TuningBase
+    {
+        [NonSerialized]
+        const string PATH_DYN = "..\\dynamic";
+        private string Path { get { return string.Format("{0}{1}", DIR_CONF, fdata); } }
+        private string PathDiff { get { return string.Format("{0}{1}", DIR_CONF, fdiff); } }
+        private string PathDiffTmp { get { return string.Format("{0}{1}", DIR_CONF, fdiffTmp); } }
+        // private string PathLastFull { get { return string.Format("{0}{1}", DIR_CONF, flast); } }
+        const string PATH_DYN_DIFF = "..\\dynamic_diff";
+
+        // const decimal EPSILON = 0.000001m;// 0.001m;
+        const int NB_HISTO = 1000000;
+        public int safe;
+        public decimal coeffVirt = 1m;
+
+        //private bool firstSave = true;
+        //private static bool modeDiff;
+        //public static bool ModeDiff
+        //{
+        //    get { return modeDiff; }
+        //    set
+        //    {
+        //        modeDiff = value;
+        //    }
+        //}
+
+        public string name;
+
+
         /// <summary>
-        /// Tri des morceaux en fonction de leur longueur
+        /// lié au mode db
         /// </summary>
-        /// <remarks></remarks>
-        private void LRanking()
-        {
-            logger.log("LRanking");
-            List<Piece> l_aux = new List<Piece>(listPiece);
-            l_aux.Sort(new CPieceComparerByLenght());
-            for (int l_iIndex = 0; l_iIndex <= l_aux.Count - 1; l_iIndex++)
-            {
-                Piece l_piece = l_aux[l_iIndex];
-                l_piece.LRank = l_iIndex + 1;
-            }
-        }
+        public dbMode mode;
         /// <summary>
-        /// Tri des morceaux en fonction de leur qualité +longueur en cas d'égalité
+        /// fichier ou est consigné l'historique courant
         /// </summary>
-        /// <remarks></remarks>
-        private void QLRanking()
+        public string fdata;
+        /// <summary>
+        /// fichier ou est consigné l'incrémental de l'historique
+        /// </summary>
+        public string fdiff;
+        /// <summary>
+        /// fichier ou est consigné l'incrémental de l'historique en mode full en vue de la sauvegarfe
+        /// </summary>
+        public string fdiffTmp;
+        ///// <summary>
+        ///// fichier ou est consigné la dernière sauvegarde full de l'historique
+        ///// </summary>
+        //public string flast;
+
+        public int indexDiff = 0;
+
+        public bool virtOnlyDisabled;
+        public bool noAddEnd;
+        public bool noAddAll;
+        public bool virtAlignSelected;
+        public bool virtAlignPrec;
+        public bool coeffVirtAuto;
+        public bool coeffVirtAdjust;
+
+        public bool removeEpsilon;
+
+        public bool forceCoeffVirt;
+        public bool lissage;
+        public bool cumul;
+
+        public bool reSort;
+        public bool noAdd;
+
+
+        public bool auto;
+
+        public int serialp = 1;
+        public int serialm = 1;
+        public int serialAlt = 1;
+        public decimal serialElastique = 1m;
+        public decimal coeffElastique1 = 1m;
+        public decimal coeffElastique2 = 1m;
+
+        /// <summary>
+        /// pas de calcul
+        /// </summary>
+        public decimal pas = 0.1m;
+        /// <summary>
+        /// vitesse : augmentation ou diminution du coeff virtuel
+        /// </summary>
+        public decimal v;
+
+        /// <summary>
+        /// variation de la vitesse en proportion
+        /// </summary>
+        public decimal vv = 1.1m;
+
+        ///// <summary>
+        ///// Vitesse virtuelle : pour calculer l'accélaration en tenant compte des contraintes en simulant un augmentation. Mauvaise idée. toujours egal à v en cas de contrainte
+        ///// </summary>
+        //private decimal vv;
+        /// <summary>
+        /// borne visant à limiter le delta entre deux pas
+        /// </summary>
+        public decimal d0 = 0.01m;
+        //  public decimal dcoeffm;
+
+
+        /// <summary>
+        /// accélération : augmentation ou diminution de la vitesse
+        /// </summary>
+        public decimal a;
+        //public decimal a0 =0.01m;
+        //public decimal dconvergence01;
+        /// <summary>
+        /// variation de l'accélération en proportion
+        /// </summary>
+        public decimal aa = 0.01m;
+        /// <summary>
+        ///accélaration plancher
+        /// </summary>
+        public decimal aepsilon = 0.001m;
+
+        /// <summary>
+        /// ecart min entre deux positions
+        /// </summary>
+        private decimal epsilon = 0.001m * 0.001m;
+        /// <summary>
+        /// ecart de vitesse entre deux positions
+        /// </summary>
+        private decimal vepsilon = 0.001m * 0.001m;
+
+        private bool? lastDelta;
+        private bool? lastAutoDirection;
+        /// <summary>
+        /// nb consecutif dans le même sens pour info
+        /// </summary>
+        private int _nbSameDirection;
+        /// <summary>
+        /// nb même sens borné pour calcul
+        /// </summary>
+        private int _nbSameDirectionBox;
+        /// <summary>
+        /// nb allez/retour pour calcul
+        /// </summary>
+        private int _nbAlt;
+        /// <summary>
+        /// bilan même sens vs allez-retour. Quand trop grand on agrandit le delta, quand trop petit on diminue
+        /// </summary>
+        private decimal _nbElastique;
+
+        /// <summary>
+        /// bilan même sens vs allez-retour. Quand trop grand on agrandit le delta, quand trop petit on diminue
+        /// </summary>
+        private decimal _nbElastique2;
+        /// <summary>
+        /// nb allez/retour consécutifs pour info
+        /// </summary>
+        private int _nbAltHisto;
+
+        /// <summary>
+        /// Quand plusieurs montées consécutives : application d'un coeff à la vitesse pour accélérer la reprise à la normale
+        /// </summary>
+        private decimal coeffStaticp = 1;
+        /// <summary>
+        /// Quand plusieurs descentes consécutives : application d'un coeff à la vitesse pour accélérer la reprise à la normale
+        /// </summary>
+        private decimal coeffStaticm = 1;
+
+        /// <summary>
+        /// Après plusieurs montées consécutives : retour au coeff nominal 
+        /// </summary>
+        private decimal coeffStaticpRetour = 1;
+        /// <summary>
+        /// Quand plusieurs descentes consécutives : retour au coeff nominal 
+        /// </summary>
+        private decimal coeffStaticmRetour = 1;
+
+        /// <summary>
+        /// Valeur courante du coeff corrigeant les situations anormales du point de vue des montées consécutives
+        /// </summary>
+        private decimal currentStaticp = 1;
+        /// <summary>
+        /// Valeur courante du coeff corrigeant les situations anormales du point de vue des descentes consécutives
+        /// </summary>
+        private decimal currentStaticm = 1;
+        public decimal CurrentStaticm { get { return currentStaticm; } }
+
+        /// <summary>
+        /// Rapport de vitesse négative / vitesse positive
+        /// </summary>
+        private decimal rapportmp = 1m;
+        /// <summary>
+        /// anti atténuation
+        /// </summary>
+        //public decimal danticonvergence = 1m;
+        //public decimal danticonvergence0;
+        //public decimal danticonvergence01;
+
+        //public decimal danticonvdeltap = 1m;
+        //public decimal danticonvdeltam = 1m;
+        private bool _linkconv;
+        private decimal linkProduct;
+        private List<HistoValue> histo = new List<HistoValue>();
+        //  private List<decimal> histoDiff = new List<decimal>();
+
+        private decimal coeffOld = 1m;
+
+        public bool oldAsZero;
+        private bool coeffOldAuto;
+        public int coeffOldAutoLevel;
+
+        public bool linkconv { get { return _linkconv; } set { _linkconv = value; calcProduct(); } }
+
+        private void calcProduct()
         {
-            logger.log("QLRanking");
-            m_listQL = new List<Piece>(m_listTrackClassed);
-            m_listQL.Sort(new CPieceComparerByQualityAndLength());
-            List<Piece> l_aux = new List<Piece>(listPiece);
-            l_aux.Sort(new CPieceComparerByQualityAndLength());
-            int count = l_aux.Count;
-            for (int l_iIndex = 0; l_iIndex <= l_aux.Count - 1; l_iIndex++)
-            {
-                Piece l_piece = l_aux[l_iIndex];
-                l_piece.QLRank = l_iIndex + 1;
-            }
-
-            l_aux.Sort(new CPieceComparerByQualityAndLengthInv());
-
-            for (int l_iIndex = 0; l_iIndex <= l_aux.Count - 1; l_iIndex++)
-            {
-                Piece l_piece = l_aux[l_iIndex];
-                l_piece.Rank.TwiceInv = l_iIndex + 1;
-            }
-#if COMPACT
-            if (goCompact || CConf.ConfGen.AlbumSort.compactAny)
-            {
-                goCompact = false;
-                var l = new List<Piece>(this.listPiece);
-                l.Sort(new CPieceComparerByQualityAndLength2());
-                new Condenseur(m_listQL).gener2();
-            }
-#endif
-
-            //if (CConf.Condensation)
-            //{
-            //    var l = new List<Piece>(this.listPiece);
-            //    l.Sort(new CPieceComparerByQualityAndLength2());
-            //    new Condenseur(m_listQL).gener2();
-
-            //}
-
+            this.linkProduct = calcProduct(this.v, this.a);
         }
 
-
-        private static volatile object _lockStat = new object();
-        //   private static volatile object _lockStat2 = new object();
-        private static bool buildingStat;
-        const string BUILDING_STATE = @"..\building.txt";
-        const string LOADING_EXCEL = @"..\busyExcel.txt";
-
-        private void _buildStat(Action rappel)
+        public decimal calcProduct(decimal dcoeffp, decimal dconvergence)
         {
-            lock (_lockStat)
-            {
-                if (buildingStat)
-                {
-                    misc.log("stats building by _lockStat 1");
-                    return;
-                }
-                   
-
-                try
-                {
-                    if (File.Exists(LOADING_EXCEL))
-                    {
-                        string content = File.ReadAllText(LOADING_EXCEL);
-                        misc.log(content);
-                        if (content.Contains("BUSY"))
-                        {
-                            return;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    misc.logError("Impossible de lire le fichier lock excel", ex);
-                    return;
-                }
-
-                buildingStat = true;
-            }
-
-
-
+            var linkProduct = this.linkProduct;
             try
             {
-                //bool ok = Monitor.TryEnter(_lockStat2, 60 * 1000);
-                //if (!ok)
+                linkProduct = dcoeffp / dconvergence;
+                // 1 0,9 -> 10
+                // 0.1 0,99 
+            }
+            catch
+            {
+            }
+
+            return linkProduct;
+        }
+
+        private void calcConv()
+        {
+            this.a = calcConv(this.v, this.linkProduct);
+        }
+
+        public decimal LinkProduct
+        {
+            get
+            {
+                if (linkProduct == 0m)
+                    calcProduct();
+                return linkProduct;
+            }
+            set
+            {
+                linkProduct = value;
+                calcConv();
+
+            }
+        }
+
+        public decimal calcConv(decimal dcoeffp, decimal linkProduct)
+        {
+            var dconvergence = this.a;
+            try
+            {
+                // 1- conv = coeff / prod
+                dconvergence = dcoeffp / linkProduct; //1/10
+            }
+            catch
+            {
+
+            }
+            return dconvergence;
+        }
+
+
+
+        public ConfMedianneVirt()
+        { }
+
+        public ConfMedianneVirt(ConfMedianneVirt o, bool raz)
+            : this(o)
+        {
+            if (raz)
+            {
+                safe = 0;
+                coeffOld = 1;
+                coeffVirt = 1;
+            }
+        }
+        public ConfMedianneVirt(ConfMedianneVirt o)
+        {
+            name = o.name;
+            mode = o.mode;
+            fdata = o.fdata;
+            fdiff = o.fdiff;
+            fdiffTmp = o.fdiffTmp;
+            //  flast = o.flast;
+            safe = o.safe;
+            coeffVirt = o.coeffVirt;
+            virtOnlyDisabled = o.virtOnlyDisabled;
+            noAddEnd = o.noAddEnd;
+            noAddAll = o.noAddAll;
+            virtAlignSelected = o.virtAlignSelected;
+            virtAlignPrec = o.virtAlignPrec;
+            coeffVirtAuto = o.coeffVirtAuto;
+            coeffVirtAdjust = o.coeffVirtAdjust;
+            removeEpsilon = o.removeEpsilon;
+            forceCoeffVirt = o.forceCoeffVirt;
+            lissage = o.lissage;
+            cumul = o.cumul;
+            reSort = o.reSort;
+            noAdd = o.noAdd;
+            auto = o.auto;
+            //dcoeffp = o.dcoeffp;
+            //dcoeffm = o.dcoeffm;
+            //dconvergence = o.dconvergence;
+            //dconvdeltap = o.dconvdeltap;
+            //dconvdeltam = o.dconvdeltam;
+            //danticonvergence = o.danticonvergence;
+            //danticonvdeltap = o.danticonvdeltap;
+            //danticonvdeltam = o.danticonvdeltam;
+
+            pas = o.pas;
+            v = o.v;
+            d0 = o.d0;
+            a = o.a;
+            aa = o.aa;
+            aepsilon = o.aepsilon;
+            _linkconv = o._linkconv;
+            serialp = o.serialp;
+            serialm = o.serialm;
+            serialAlt = o.serialAlt;
+            serialElastique = o.serialElastique;
+            coeffElastique1 = o.coeffElastique1;
+            coeffElastique2 = o.coeffElastique2;
+
+            _nbSameDirection = o._nbSameDirection;
+            _nbSameDirectionBox = o._nbSameDirectionBox;
+            _nbAlt = o._nbAlt;
+            _nbAltHisto = o._nbAltHisto;
+            _nbElastique = o._nbElastique;
+            _nbElastique2 = o._nbElastique2;
+
+            coeffOld = o.coeffOld;
+            coeffOldAuto = o.coeffOldAuto;
+            oldAsZero = o.oldAsZero;
+            coeffOldAutoLevel = o.coeffOldAutoLevel;
+            epsilon = o.epsilon;
+
+            //dconvergence0 = o.dconvergence0;
+            //dconvergence01 = o.dconvergence01;
+            //danticonvergence0 = o.danticonvergence0;
+            //danticonvergence01 = o.danticonvergence01;
+
+            lastDelta = o.lastDelta;
+            histo = new List<HistoValue>(o.histo);
+
+        }
+        public ConfMedianneVirt(XmlElement parent, XmlElement child)
+            : base(parent, child)
+        {
+            var str = "";
+            builds("mode", v => str = v);
+            if (!string.IsNullOrEmpty(str))
+                mode = (dbMode)Enum.Parse(typeof(dbMode), str);
+            builds("name", v => name = v);
+            builds("fdata", v => fdata = v);
+            builds("fdiff", v => fdiff = v);
+            builds("fdiffTmp", v => fdiffTmp = v);
+            // builds("flast", v => flast = v);
+            builddec("coeffVirt", v => coeffVirt = v);
+            buildi("safe", v => safe = v);
+
+            buildb("virtOnlyDisabled", v => virtOnlyDisabled = v);
+            buildb("noAddEnd", v => noAddEnd = v);
+            buildb("noAddAll", v => noAddAll = v);
+            buildb("virtAlignSelected", v => virtAlignSelected = v);
+            buildb("virtAlignPrec", v => virtAlignPrec = v);
+            buildb("coeffVirtAuto", v => coeffVirtAuto = v);
+            buildb("coeffVirtAdjust", v => coeffVirtAdjust = v);
+
+            buildb("removeEpsilon", v => removeEpsilon = v);
+            buildb("forceCoeffVirt", v => forceCoeffVirt = v);
+            buildb("lissage", v => lissage = v);
+            buildb("cumul", v => cumul = v);
+            buildb("reSort", v => reSort = v);
+            buildb("noAdd", v => noAdd = v);
+            buildb("auto", v => auto = v);
+
+            builddec("pas", v => pas = v);
+            builddec("v", vv => v = vv);
+            builddec("dv", v => dv = v);
+            builddec("d0", v => d0 = v);
+            builddec("a", v => a = v);
+            builddec("aa", v => aa = v);
+            builddec("vepsilon", v => vepsilon = v);
+            builddec("aepsilon", v => aepsilon = v);
+
+
+            //builddec("dcoeffp", v => dcoeffp = v);
+            //builddec("dcoeffm", v => dcoeffm = v);
+            //builddec("dconvergence", v => dconvergence = v);
+            //builddec("dconvergence0", v => dconvergence0 = v);
+            //builddec("dconvergence01", v => dconvergence01 = v);
+            //builddec("dconvdeltap", v => dconvdeltap = v);
+            //builddec("dconvdeltam", v => dconvdeltam = v);
+
+            //builddec("danticonvergence", v => danticonvergence = v);
+            //builddec("danticonvergence0", v => danticonvergence0 = v);
+            //builddec("danticonvergence01", v => danticonvergence01 = v);
+            //builddec("danticonvdeltap", v => danticonvdeltap = v);
+            //builddec("danticonvdeltam", v => danticonvdeltam = v);
+            buildb("linkconv", v => _linkconv = v);
+            buildi("serialp", v => serialp = v);
+            buildi("serialm", v => serialm = v);
+            buildi("serialAlt", v => serialAlt = v);
+            buildi("elastique", v => serialElastique = v);
+            builddec("coeffElastique1", v => coeffElastique1 = v);
+            builddec("coeffElastique2", v => coeffElastique2 = v);
+            buildi("serial", v => _nbSameDirection = v);
+            buildi("serialBox", v => _nbSameDirectionBox = v);
+            buildi("serialAltC", v => _nbAlt = v);
+            buildi("serialAltH", v => _nbAltHisto = v);
+            builddec("elastiqueC", v => _nbElastique = v);
+            builddec("elastiqueC2", v => _nbElastique2 = v);
+
+
+            builddec("coeffOld", v => coeffOld = v);
+            buildb("oldAsZero", v => oldAsZero = v);
+            buildb("coeffOldAuto", v => coeffOldAuto = v);
+            buildi("coeffOldAutoLevel", v => coeffOldAutoLevel = v);
+            builddec("epsilon", v => epsilon = v);
+
+            buildbn("lastDelta", v => lastDelta = v);
+
+            builddec("coeffStaticp", v => coeffStaticp = v);
+            builddec("coeffStaticm", v => coeffStaticm = v);
+
+            builddec("coeffStaticpRetour", v => coeffStaticpRetour = v);
+            builddec("coeffStaticmRetour", v => coeffStaticmRetour = v);
+
+            builddec("currentStaticp", v => currentStaticp = v);
+            builddec("currentStaticm", v => currentStaticm = v);
+            builddec("rapportmp", v => rapportmp = v);
+
+
+            HistoValue last = null;
+            var xhisto = XMLTool.NodeLookUp(child, "histo");
+            if (xhisto != null)
+            {
+                foreach (XmlElement sub in xhisto.ChildNodes)
+                {
+                    var _nevw = new HistoValue(sub.InnerText, last);
+                    histo.Add(_nevw);
+                    last = _nevw;
+                }
+            }
+            else
+            {
+
+                if (File.Exists(Path))
+                {
+                    var lines = File.ReadAllLines(Path);
+                    for (int i = 0; i < lines.GetLength(0); i++)
+                    {
+                        try
+                        {
+                            var line = lines[i];
+
+                            if (string.IsNullOrEmpty(line))
+                                continue;
+                            var _nevw = new HistoValue(line, last);
+                            histo.Add(_nevw);
+                            last = _nevw;
+                        }
+                        catch (Exception ex)
+                        {
+                            misc.log(string.Format("impossible de lire la ligne n° {0}:{1}", i + 1, lines[i]), ex);
+                            throw;
+                        }
+                    }
+                    indexDiff = histo.Count;
+
+                    //if (histo.Count >0 )
+                    //    coeffVirt = getCoeff(histo[histo.Count -1]);
+
+
+                }
+
+                if (File.Exists(PathDiff))
+                {
+                    var histoDiff = new List<HistoValue>();
+                    var lines = File.ReadAllLines(PathDiff);
+                    for (int i = 0; i < lines.GetLength(0); i++)
+                    {
+                        try
+                        {
+                            var line = lines[i];
+                            if (string.IsNullOrEmpty(line))
+                                continue;
+
+                            var _nevw = new HistoValue(line, last);
+                            histoDiff.Add(_nevw);
+                            last = _nevw;
+                        }
+                        catch (Exception ex)
+                        {
+                            misc.log(string.Format("impossible de lire la ligne n° {0}:{1}", i + 1, lines[i]), ex);
+                            throw;
+                        }
+
+                    }
+
+                    if (mode == dbMode.full)
+                    {
+                        histo.AddRange(histoDiff);
+                        indexDiff = histo.Count;
+                    }
+                    else
+                    {
+                        indexDiff = histo.Count - histoDiff.Count;
+                    }
+
+                }
+
+
+
+                if (mode == dbMode.full && File.Exists(PathDiff))
+                    File.Delete(PathDiff);
+
+                if (histo.Count > 0)
+                {
+                    int index = histo.Count - 1;
+                    decimal current = histo[index].coeff;
+                    //coeffVirt = getCoeff(current);
+                    bool? sens = null;
+
+                    int nbSerie = 0;
+                    // decimal delta = 0m;
+
+                    var rr = 1;
+                    //if (dcoeffp > 0)
+                    //    rr = dcoeffm / dcoeffp;
+                    if (rr > 0)
+                    {
+                        while (true)
+                        {
+                            index--;
+                            if (index < 0)
+                                break;
+                            var aux = histo[index].coeff;
+                            var _sens = current > aux;
+                            if (sens == null)
+                            {
+                                sens = _sens;
+                                lastAutoDirection = !_sens;
+
+                                // delta = current - aux;
+                            }
+
+
+                            if (sens != _sens)
+                                break;
+                            current = aux;
+                            nbSerie++;
+
+                        }
+
+                        //_nbSameDirection = nbSerie;
+                        //dcoeffp = Math.Abs(delta); dcoeffm = dcoeffp * rr;
+
+                    }
+                }
+            }
+
+            checkCoeffOld();
+            //if (histoDiff.Count > 0)
+            //    coeffVirt = getCoeff(histo[histo.Count - 1]); 
+
+        }
+
+        public void checkCoeffOld()
+        {
+            if (coeffOldAuto)
+            {
+                coeffOld = (decimal)Math.Pow(coeffVirt, coeffOldAutoLevel);
+            }
+        }
+
+        public override void save(XmlWriter w)
+        {
+            base.save(w);
+            writeStart("v");
+            write("name", name);
+            write("mode", mode);
+            write("serial", _nbSameDirection);
+            write("serialBox", _nbSameDirectionBox);
+            write("serialAltC", _nbAlt);
+            write("serialAltH", _nbAltHisto);
+            write("elastiqueC", _nbElastique);
+            write("elastiqueC2", _nbElastique2);
+            write("lastDelta", lastDelta);
+
+            write("serialAlt", serialAlt);
+            write("elastique", serialElastique);
+            write("coeffElastique1", coeffElastique1);
+            write("coeffElastique2", coeffElastique2);
+            write("fdata", fdata);
+            write("fdiff", fdiff);
+            write("fdiffTmp", fdiffTmp);
+
+            write("coeffVirt", coeffVirt);
+            write("safe", safe);
+
+            write("virtOnlyDisabled", virtOnlyDisabled);
+            write("noAddEnd", noAddEnd);
+            write("noAddAll", noAddAll);
+            write("virtAlignSelected", virtAlignSelected);
+            write("virtAlignPrec", virtAlignPrec);
+            write("coeffVirtAuto", coeffVirtAuto);
+            write("coeffVirtAdjust", coeffVirtAdjust);
+
+            write("removeEpsilon", removeEpsilon);
+            write("forceCoeffVirt", forceCoeffVirt);
+            write("lissage", lissage);
+            write("cumul", cumul);
+            write("reSort", reSort);
+            write("noAdd", noAdd);
+            write("auto", auto);
+
+            write("pas", pas);
+            write("v", v);
+            write("dv", dv);
+            write("d0", d0);
+            write("a", a);
+            write("aa", aa);
+            write("aepsilon", aepsilon);
+            write("vepsilon", vepsilon);
+            write("rapportmp", rapportmp);
+
+            //write("dcoeffp", dcoeffp);
+            //write("dcoeffm", dcoeffm);
+            //write("dconvergence", dconvergence);
+            //write("dconvergence0", dconvergence0);
+            //write("dconvergence01", dconvergence01);
+            //write("dconvdeltap", dconvdeltap);
+            //write("dconvdeltam", dconvdeltam);
+
+            //write("danticonvergence", danticonvergence);
+            //write("danticonvergence0", danticonvergence0);
+            //write("danticonvergence01", danticonvergence01);
+            //write("danticonvdeltap", danticonvdeltap);
+            //write("danticonvdeltam", danticonvdeltam);
+            write("linkconv", linkconv);
+            write("serialp", serialp);
+            write("serialm", serialm);
+
+
+
+            write("coeffOld", coeffOld);
+            write("oldAsZero", oldAsZero);
+            write("coeffOldAuto", coeffOldAuto);
+
+            write("coeffOldAutoLevel", coeffOldAutoLevel);
+            write("epsilon", epsilon);
+
+            write("coeffStaticp", coeffStaticp);
+            write("coeffStaticm", coeffStaticm);
+            write("coeffStaticpRetour", coeffStaticpRetour);
+            write("coeffStaticmRetour", coeffStaticmRetour);
+            write("currentStaticp", currentStaticp);
+            write("currentStaticm", currentStaticm);
+
+
+
+            var sb = new StringBuilder();
+            var sbDiff = new StringBuilder();
+
+
+
+
+            //if (modeDiff)
+            //{
+            //    histoDiff = null;
+            //}
+            //else
+            //{
+            //    if (histoDiff != null)
+            //    {
+            //        histo.AddRange(histoDiff);
+            //        histoDiff = null;
+            //    }
+
+            //    if (File.Exists(PathDiff))
+            //        File.Delete(PathDiff);
+            //}
+
+            int count = histo.Count;
+            HistoValue last = null;
+            for (int i = 0; i < count; i++)
+            {
+                histo[i].write(sb);
+                //var v = Math.Round(histo[i].coeff, 10);
+                //var sc = v.ToString();
+                //var v2 = Math.Round(1000m * histo[i].delta, 10);
+                //var sc2 = v2.ToString();
+
+                //var v3 = Math.Round(1000m * histo[i].conv, 10);
+                //var sc3 = v3.ToString();
+
+                //sb.Append(sc);
+                //sb.Append("|");
+                //sb.Append(sc2);
+                //sb.Append("|");
+                //sb.AppendLine(sc3);
+
+                if (i >= indexDiff)
+                {
+                    histo[i].writeDiff(sbDiff, last);
+                    //sbDiff.Append(sc);
+                    //sbDiff.Append("|");
+                    //sbDiff.Append(sc2);
+                    //sbDiff.Append("|");
+                    //sbDiff.AppendLine(sc3);
+                }
+                last = histo[i];
+            }
+
+
+            if (!string.IsNullOrEmpty(fdata))
+            {
+                AsyncFileWriter.Instance.post(Path, sb.ToString());
+                if (mode == dbMode.diff)
+                    AsyncFileWriter.Instance.post(PathDiff, sbDiff.ToString());
+                else
+                    AsyncFileWriter.Instance.post(PathDiffTmp, sbDiff.ToString());
+
+
+                if (mode == dbMode.full && File.Exists(PathDiff))
+                    File.Delete(PathDiff);
+            }
+
+
+            writeEnd();
+        }
+        /// <summary>
+        /// nb consecutif dans le même sens pour info
+        /// </summary>
+        public int Serial { get { return _nbSameDirection; } set { _nbSameDirection = value; } }
+        /// <summary>
+        /// nb même sens borné pour calcul
+        /// </summary>
+        public int SerialBox { get { return _nbSameDirectionBox; } }
+        /// <summary>
+        /// nb allez-retours pour calcul
+        /// </summary>
+        public int Alt { get { return _nbAlt; } }
+        /// <summary>
+        /// nb allez/retour consécutifs pour info
+        /// </summary>
+        public int AltHisto { get { return _nbAltHisto; } }
+        /// <summary>
+        /// Position de l'élastique. Positif : tend à agrandir le delta. du à plusieurs séries dans le même sens. Négatif : tend à diminuer le delta. du à plusieurs allez-retours consécutifs
+        /// </summary>
+        public decimal Elastique { get { return _nbElastique; } }
+        public decimal Elastique2 { get { return _nbElastique2; } }
+        public decimal dv = 0;
+        public decimal dx = 0m;
+        //  public decimal da;
+        public decimal AccelerationRapport { get { return dv / epsilon; } }
+        public decimal VitesseRapport { get { return dx / epsilon; } }
+        public decimal danticonvergenceMin
+        {
+            get
+            {
+                // return danticonvergence01;
+                return epsilon;
+                //decimal ret = 1;
+                //try
                 //{
-                //    misc.log("Pas pu entrer pour générer les stats !!!!!!");
-                //    return;
+                //    var aux = epsilon / v;
+                //    if (aux < ret)
+                //        ret = aux;
+                //}
+                //catch
+                //{
+                //}
+                //return ret;
+            }
+        }
+
+        private void verifMaxV()
+        {
+
+            var _dxmax = (coeffVirt - 1) * d0;
+            var _dx = v * pas;
+            if (_dx > _dxmax)
+            {
+                var vv = _dxmax / pas;
+                misc.log("verifMaxV {0}->{1}", v.FormatE(4), vv.FormatE(4));
+                v = vv;
+            }
+        }
+
+        private void verifMaxA()
+        {
+            var _dxmax = (coeffVirt - 1) * d0;
+            var _dx = 2 * a * pas * pas;
+
+            if (_dx > _dxmax)
+            {
+                var aa = _dxmax / (2 * pas * pas);
+                misc.log("verifMaxA {0}->{1}", a.FormatE(4), aa.FormatE(4));
+                a = aa;
+            }
+        }
+
+        //private void verifHaut()
+        //{
+        //    var _dxmax = (coeffVirt - 1) * d0;
+        //    var _dx = v * pas;
+        //    if (_dx > _dxmax)
+        //    {
+        //        v = _dxmax / pas;
+        //    }
+
+        //    //_dx = vv * pas;
+        //    //if (_dx > _dxmax)
+        //    //{
+        //    //    vv = _dxmax / pas;
+        //    //}
+
+        //    _dx = 2 * a * pas * pas;
+
+        //    if (_dx > _dxmax)
+        //    {
+        //        a = _dxmax / (2 * pas * pas);
+        //    }
+
+        //}
+
+        private void verifBas()
+        {
+            var dx = v * pas;
+            if (dx < epsilon)
+            {
+                //dx = epsilon;
+                v = epsilon / pas;
+            }
+
+            //dx = vv * pas;
+            //if (dx < epsilon)
+            //{
+            //    dx = epsilon;
+            //    vv = epsilon / pas;
+            //}
+
+            var dv = a * pas;
+            if (dv < vepsilon)
+            {
+                // dv = vepsilon;
+                a = vepsilon / pas;
+               
+            }
+
+            if (a < aepsilon)
+                a = aepsilon;
+
+            if (coeffVirt < 1)
+                coeffVirt = 1;
+        }
+        private decimal _v0;
+        public void calcAuto(bool selectedByCoeff)
+        {
+            var _c0 = coeffVirt;
+            _v0 = v;
+            // vv = v;
+            var dv0 = dv;
+            var _a0 = a;
+
+            if (-_nbSameDirectionBox > serialm)
+                _nbSameDirectionBox = -serialm;
+            if (_nbSameDirectionBox > serialp)
+                _nbSameDirectionBox = serialp;
+
+            if (-_nbElastique > serialElastique)
+                _nbElastique = -serialElastique;
+            if (_nbElastique > serialElastique)
+                _nbElastique = serialElastique;
+
+
+            if (-_nbElastique2 > serialElastique)
+                _nbElastique2 = -serialElastique;
+            if (_nbElastique2 > serialElastique)
+                _nbElastique2 = serialElastique;
+
+
+            if (_nbAlt < 0)
+                _nbAlt = 0;
+            if (_nbAlt > serialAlt)
+                _nbAlt = serialAlt;
+
+            var ecart0 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
+
+            var last = lastAutoDirection;
+            var lastDelta_ = this.lastDelta;
+            lastAutoDirection = selectedByCoeff;
+
+            if (last.HasValue)
+            {
+                if (last != selectedByCoeff || selectedByCoeff)
+                {
+                    _nbSameDirection = 0;
+                    _nbAlt++;
+
+                    if (last != selectedByCoeff)
+                        _nbAltHisto++;
+                    else _nbAltHisto = 0; 
+
+                    //if (_nbAltHisto > 1)
+                    //{
+                    if (selectedByCoeff)
+                    {
+                        _nbElastique--;
+                        _nbElastique2 -= coeffElastique2;
+
+
+
+                    }
+                    else
+                    {
+                        _nbElastique -= rapportmp;
+                        _nbElastique2 -= rapportmp * coeffElastique2;
+
+
+                    }
+
+                    if (last != selectedByCoeff)
+                    {
+                        if (_nbAltHisto > 1)
+                        {
+                            if (currentStaticp >= coeffStaticpRetour)
+                                currentStaticp /= coeffStaticpRetour;
+                            if (currentStaticm >= coeffStaticmRetour)
+                                currentStaticm /= coeffStaticmRetour;
+                        }
+                    }
+
+                    else
+                    {
+                        if (coeffStaticpRetour > 1 && currentStaticp > coeffStaticpRetour)
+                            currentStaticp /= coeffStaticpRetour;
+                        currentStaticm *= coeffStaticm;
+                    }
+
+
+
+                    // }
+                    if (_nbSameDirectionBox > 0 && selectedByCoeff)
+                        _nbSameDirectionBox--;
+                    if (_nbSameDirectionBox < 0 && !selectedByCoeff)
+                        _nbSameDirectionBox++;
+
+                }
+                else
+                {
+                    _nbAlt--;
+                    _nbAltHisto = 0;
+
+                    if (selectedByCoeff)
+                    {
+                        _nbSameDirectionBox--;
+                        // _nbSameDirection--;
+                        _nbElastique += coeffElastique1 * rapportmp;
+                        _nbElastique2 += rapportmp;
+                    }
+                    else
+                    {
+                        _nbElastique += coeffElastique1;
+                        _nbElastique2++;
+                        _nbSameDirectionBox++;
+                        // _nbSameDirection++;
+                    }
+                }
+
+                if (selectedByCoeff)
+                {
+                    _nbSameDirection--;
+                }
+                else
+                {
+                    _nbSameDirection++;
+                }
+            }
+
+            if (!auto)
+                return;
+
+            var lastProduct = linkProduct;
+
+
+            var c0 = v;
+            //verifHaut();
+            //verifBas();
+
+
+            if (last.HasValue)
+            {
+                var aux = a;
+
+
+
+
+                lastDelta = null;
+                if (last != selectedByCoeff || selectedByCoeff) // if (_nbAltHisto > 1)
+                {
+                    if (_nbAlt > serialAlt || _nbElastique < -serialElastique || _nbElastique2 < -serialElastique)
+                    {
+                        lastDelta = false;
+                    }
+                }
+                else if (!selectedByCoeff)
+                {
+                    bool applyanti = false;
+
+                    if (Math.Abs(_nbSameDirection) > 1)
+                    {
+                        //if (selectedByCoeff)
+                        //{
+                        //    //if (coeffStaticpRetour > 1 && currentStaticp > coeffStaticpRetour)
+                        //    //    currentStaticp /= coeffStaticpRetour;
+                        //    //currentStaticm *= coeffStaticm;
+                        //}
+                        //else
+                        //{
+                        //    if (coeffStaticmRetour > 1 && currentStaticm > coeffStaticmRetour)
+                        //        currentStaticm /= coeffStaticmRetour;
+                        //    currentStaticp *= coeffStaticp;
+                        //}
+
+                        if (selectedByCoeff && -_nbSameDirectionBox > serialm)
+                            applyanti = true;
+                        else if (!selectedByCoeff && _nbSameDirectionBox > serialp)
+                            applyanti = true;
+                        else if (_nbElastique > serialElastique)
+                            applyanti = true;
+                        else if (_nbElastique2 > serialElastique)
+                            applyanti = true;
+                    }
+                    if (applyanti)
+                        lastDelta = true;
+                    else
+                        lastDelta = null;
+                    if (_linkconv)
+                        calcConv();
+
+
+                }
+
+
+
+                bool onAugmente = lastDelta.HasValue && (lastDelta_ == null || lastDelta_ == lastDelta);
+                if (onAugmente)
+                {
+                    a *= (1 + aa);
+                    //verifHaut();
+                    //verifBas();
+                }
+                else
+                {
+                    var ecart1 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
+                    if (ecart1 < ecart0)
+                    {
+                        if (a > aepsilon)
+                        {
+                            a /= (1 + aa);
+                            if (a < aepsilon)
+                                a = aepsilon;
+                        }
+
+                        //verifHaut();
+                        //verifBas();
+
+                    }
+                }
+
+                //if (c0 == v || !onAugmente)
+                //{
+
+                //    var ecart1 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
+                //    if (ecart1 < ecart0)
+                //    {
+                //        a /= (1 + aa);
+                //        if (a < aepsilon)
+                //            a = aepsilon;
+
+                //    }
+                //}
+                //else
+                //{
+                //    a *= (1 + aa);
+                //    verifHaut();
+                //    verifBas();
+
                 //}
 
 
-                File.WriteAllText(BUILDING_STATE, "BUILDING");
-                bool generDistrib = step % 10 == 0;
+                // vv += pas * a;
 
-                if (_albumSortMode.createCourant)
+
+
+                verifMaxA();
+
+                if (lastDelta.HasValue)
                 {
-                    var unselected = m_listQL.FindAll(t => !t.Enabled);
-                    new StatBuilder(unselected).gener3("courant3.txt", (step % 10 == 0));
-                    var stat = new StatBuilder(unselected) { Loupe = 1 };
-                    stat.gener4("courant4.txt");
-                    stat = new StatBuilder(unselected) { Loupe = 2 };
-                    stat.gener4("courant4.txt");
-                    //stat = new StatBuilder(unselected) { Loupe = 3 };
-                    //stat.gener4("courant4.txt");
+                    //verifMaxA();
+                    if (false == lastDelta)
+                    {
+                        var _v = _v0 - pas * a;
+                        var limit = _v0 / vv;
+                        if (_v < limit)
+                            _v = limit;
+                        v = _v;
+
+                        if (_linkconv)
+                            calcConv();
+
+                    }
+                    else if (true == lastDelta)
+                    {
+                        var deltav = pas * a;
+                        var limit = _v0 * (vv-1);
+                        var limit2 = vepsilon / pas;
+
+                        if (limit < limit2)
+                            limit = limit2; 
+
+
+                        if (deltav > limit)
+                            deltav = limit;
+
+                        v = _v0 + deltav;
+
+                    }
+
+                    //  verifMaxV();
+                    //verifHaut();
+                    //verifBas();
                 }
 
-                if (_albumSortMode.createInter)
-                {
-                    var unselected = m_listQL.FindAll(t => !t.Enabled || t.ClassementProvisoireRecent); //  ( CalcDate.getLastModif(t.DatesClassement) > _albumSortMode.lastModif && t.ClassementProvisoire));
-                    new StatBuilder(unselected).gener3("stats3.txt", (step % 10 == 0));
-                    var stat = new StatBuilder(unselected) { Loupe = 1 };
-                    stat.gener4("stats4.txt");
-                    stat = new StatBuilder(unselected) { Loupe = 2 };
-                    stat.gener4("stats4.txt");
-                    //stat = new StatBuilder(unselected) { Loupe = 3 };
-                    //stat.gener4("courant4.txt");
-                }
 
-                if (_albumSortMode.createAll)
-                {
-                    new StatBuilder(m_listQL).gener3("all.txt", generDistrib);
+                verifMaxV();
 
 
-                    //  new StatBuilder(m_listQL).gener3(generDistrib);
-                    var stat = new StatBuilder(m_listQL) { Loupe = 1 };
-                    stat.gener4("all.txt");
-                    stat = new StatBuilder(m_listQL) { Loupe = 2 };
-                    stat.gener4("all.txt");
-                    //stat = new StatBuilder(m_listQL) { Loupe = 3 };
-                    //stat.gener4("stats4.txt");
-                }
-
-
+                misc.log("convergence {0:0.##}->{1:0.######}", c0, v);
+                misc.log("evol convergence {0:0.######}->{1:0.######}", aux, a);
             }
-            catch (Exception ex)
-            {
-                logger.log(ex.ToString());
-            }
-            finally
-            {
-                lock (_lockStat)
-                {
-                    buildingStat = false;
-                    File.WriteAllText(BUILDING_STATE, "FREE");
-                }
-                if (rappel != null)
-                    rappel();
-            }
-        }
 
-        public void builStats(Action rappel)
-        {
-            lock (_lockStat)
-            {
-                if (buildingStat)
-                {
-                    misc.log("stats building by _lockStat 0");
-                    return;
-                }
+            string montee = selectedByCoeff ? "down" : "up";
 
-            }
-            new Thread(() => _buildStat(rappel)).Start();
+            verifBas();
 
-        }
-
-
-        public DynamicStat generStat(string className, bool onlyDisabled)
-        {
-            var list = m_listQL;
-            if (onlyDisabled)
-                list = m_listQL.FindAll(t => !t.Enabled);
+            if (selectedByCoeff)
+                coeffVirt -= pas * v * rapportmp / currentStaticp;
             else
-                list = m_listQL.FindAll(t => !t.Enabled || t.ClassementProvisoireRecent);
-            return new DynamicStatBuilder(list).gener(className);
+                coeffVirt += pas * v / currentStaticm;
+
+
+            if (selectedByCoeff)
+            {
+                verifMaxA();
+                verifMaxV();
+                verifBas();
+
+                coeffVirt = _c0 - pas * v * rapportmp / currentStaticp;
+            }
+
+
+
+
+            //verifHaut();
+            //verifBas();
+            dx = Math.Abs(coeffVirt - _c0);
+
+
+            dv = Math.Abs(v - _v0);
+            if (dv == 0)
+                dv = dv0 * (a / _a0);
+
+
+
+            // da = Math.Abs(a - _a0);
+            misc.log("{0} {1:0.### ###} {2:0.### ###}->{3:0.### ###}", montee, dx, c0, coeffVirt);
+            checkCoeffOld();
+
+            histo.Add(new HistoValue(coeffVirt, dx, a, v / currentStaticm, dv, v));
+
+
+
         }
 
-        public List<Piece> getTracks(string className, bool onlyDisabled)
+        public decimal CoeffT { get { return (decimal)Math.Pow(coeffVirt, safe); } }
+        public decimal CoeffOld
         {
-            var list = m_listQL;
-            if (onlyDisabled)
-                list = m_listQL.FindAll(t => !t.Enabled);
-            else
-                list = m_listQL.FindAll(t => !t.Enabled || t.ClassementProvisoireRecent);
-            return new DynamicStatBuilder(list).getPieces(className);
+            get { return coeffOld; }
+            set { coeffOld = value; checkCoeffOld(); }
         }
 
+        public bool CoeffOldAuto
+        {
+            get { return coeffOldAuto; }
+            set { coeffOldAuto = value; checkCoeffOld(); }
+        }
 
+        private decimal getCoeff(decimal coeffT) { return Math.Pow(coeffT, (1.0m / safe)); }
 
-        //public void timeRanking()
+        //private void makeDelta(bool sens, decimal delta)
         //{
-        //    logger.log("timeRanking");
-        //    foreach (var piece in allClassed)
-        //        piece.Rank.TimeRest = -1;
-        //    foreach (var piece in allClassed)
-        //        ListSelection.setTuningDateValues(piece);
 
-
-        //}
-
-        ///// <summary>
-        ///// redirection des index metier de la table m�tier vers la table locale
-        ///// Copie des valeurs pertinentes(classlist)
-        ///// </summary>
-        ///// <remarks></remarks>
-        //public void eraseGrouping()
-        //{
-        //    thCommentGo = false;
-        //    thGroupingGo = false;
-        //    logger.log("eraseGrouping");
-        //    foreach (Piece piece in listPieceInAlbum)
-        //    {
-        //        piece.setGrouping("", false);
-        //        piece.Comment = "";
-        //    }
-        //}
-        //public void writeGrouping()
-        //{
-        //    logger.log("writeGrouping");
-        //    var list = new List<Piece>(listPieceInAlbum);
-        //    // list.Sort(new CPieceComparerByQualityAndLength());
-        //    list.Sort(new AllPieceComparer2());
-
-        //    var writeGrouping = CConf.ConfGen.WriteGrouping;
-        //    foreach (Piece piece in list)
-        //    {
-        //        try
-        //        {
-        //            piece.writeGrouping(writeGrouping);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            logger.log("writeGrouping::" + ex.ToString());
-        //        }
-
-        //    }
-        //}
-
-
-        //private bool thGroupingGo;
-        //private bool thCommentGo;
-
-        //public bool GroupinGO
-        //{
-        //    set
-        //    {
-        //        thGroupingGo = value;
-        //        if (value)
-        //        {
-        //        }
-        //    }
-        //}
-        //public bool CommentGo
-        //{
-        //    set
-        //    {
-        //        thCommentGo = value;
-        //        if (value)
-        //        {
-        //        }
-        //    }
-        //}
-
-
-
-        //private void writeGroupingAsync()
-        //{
-        //    var writeGrouping = CConf.ConfGen.WriteGrouping;
-        //    foreach (Piece piece in listPieceInAlbum)
-        //    {
-        //        try
-        //        {
-        //            if (!thGroupingGo)
-        //                return;
-        //            piece.writeGrouping(writeGrouping);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            misc.log("writeGrouping::" + ex.ToString());
-        //        }
-
-        //    }
-        //}
-
-        //private void writeCommentAsync()
-        //{
-        //    var writeComment = CConf.ConfGen.WriteComment;
-        //    foreach (Piece piece in listPiece)
-        //    {
-        //        try
-        //        {
-        //            if (!thCommentGo)
-        //                return;
-        //            piece.writeComment(writeComment);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            misc.log("writeComment::" + ex.ToString());
-        //        }
-        //    }
-        //}
-
-        //public void writeGrouping(Piece piece)
-        //{
-        //    var writeGrouping = CConf.ConfGen.WriteGrouping;
-        //    piece.writeGrouping(writeGrouping);
-
-        //}
-        // private bool _sortByAlbum = true;
-        //   public bool SortByAlbum { get { return _albumSortMode.Enabled; } }
-
-        private ConfAlbumSort _albumSortMode;
-        public ConfAlbumSort SortAlbumMode { set { _albumSortMode = value; } get { return _albumSortMode; } }
-
-        private bool _albumVirtual = CConf.ConfGen.AlbumVirtual;
-        public bool AlbumVirtual { get { return _albumVirtual; } set { _albumVirtual = value; } }
-
-        //public void writeComment()
-        //{
-        //    logger.log("writeComment");
-        //    var list = new List<Piece>(listPiece);
-        //    list.Sort(new CPieceComparerByQualityAndLength());
-
-        //    var writeComment = CConf.ConfGen.WriteComment;
-        //    foreach (Piece piece in list)
-        //    {
-        //        try
-        //        {
-        //            piece.writeComment(writeComment);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            logger.log("writeComment::" + ex.ToString());
-        //        }
-        //    }
-
-
-
-
-        //}
-
-        //public void writeComment(Piece piece)
-        //{
-        //    var writeComment = CConf.ConfGen.WriteComment;
         //    try
         //    {
-        //        piece.writeComment(writeComment);
+        //        decimal coeffT = coeffVirt - 1; // CoeffT;
+        //        while (histo.Count >= NB_HISTO)
+        //            histo.RemoveAt(0);
+
+
+        //        string montee = sens ? "up" : "down";
+
+
+        //        var c0 = coeffT;
+        //        if (sens)
+        //        {
+        //            var limit = coeffT + epsilon;
+        //            coeffT *= (1 + delta);
+        //            if (coeffT < limit)
+        //                coeffT = limit;
+        //        }
+        //        else
+        //        {
+        //            var limit = coeffT - epsilon;
+        //            if (delta > 1)
+        //                coeffT = 0;
+        //            else
+        //                coeffT *= (1 - delta);
+        //            if (coeffT > limit)
+        //                coeffT = limit;
+        //        }
+
+        //        if (coeffT < 0)
+        //            coeffT = 0;
+
+
+
+        //        // var coeff = getCoeff(coeffT); // (decimal)Math.Pow((double)coeffT, (1.0 / (double)safe));
+
+        //        misc.log("{0} {1:0.######} {2:0.######}->{3:0.######}", montee, delta, c0, coeffT);
+
+        //        dx = Math.Abs(coeffT - c0);
+        //        coeffVirt = coeffT + 1; // coeff;
+
+        //        checkCoeffOld();
+        //        histo.Add(new HistoValue(coeffVirt, dx, dv, dcoeffp, danticonvergence));
         //    }
-        //    catch (Exception ex)
+        //    catch
         //    {
-        //        logger.log("writeComment::" + ex.ToString());
         //    }
+
+
+
+        //}
+
+        //public HistoStat calcStat(selectedCoeff motif, int nb)
+        //{
+        //    var stat = new HistoStat();
+        //    int _nb = 0;
+        //    int count = histo.Count;
+        //    for (int i = count - 1; i >= 0; i--)
+        //    {
+        //        var h = histo[i];
+
+        //        // min 
+        //        if (h < stat.min.absolute)
+        //            stat.min.absolute = h;
+        //        // calcul du plus faible qui n'a pas fonctionné
+
+        //        if (h < stat.min.relative)
+        //        {
+        //            if (i + 1 < count)
+        //            {
+        //                var suivant = histo[i + 1];
+        //                if (suivant < h)
+        //                    stat.min.relative = h;
+        //            }
+        //            else
+        //            {
+        //                if (motif > selectedCoeff.noCoeff || motif == selectedCoeff.none)
+        //                    stat.min.relative = h;
+        //            }
+        //        }
+
+        //        //max
+        //        if (h > stat.max.absolute)
+        //            stat.max.absolute = h;
+        //        // calcul du max qui fonctionne
+        //        if (h > stat.max.relative)
+        //        {
+        //            if (i + 1 < count)
+        //            {
+        //                var suivant = histo[i + 1];
+        //                if (suivant > h)
+        //                    stat.max.relative = h;
+        //            }
+        //            else
+        //            {
+        //                if (motif <= selectedCoeff.noCoeff)
+        //                    stat.max.relative = h;
+        //            }
+        //        }
+
+        //        _nb++;
+        //        if (_nb >= nb)
+        //            break;
+        //    }
+
+        //    return stat;
+        //}
+
+        //private decimal calcMin(int nb, bool sens)
+        //{
+        //    decimal min = CoeffT;
+        //    int _nb = 0;
+        //    int count = histo.Count;
+        //    for (int i = count - 1; i >= 0; i--)
+        //    {
+        //        var h = histo[i];
+
+        //        if ((sens && h > min) || (!sens && h < min))
+        //        {
+        //            // calcul du max qui fonctionne
+        //            if (sens)
+        //            {
+        //                if (i + 1 < count)
+        //                {
+        //                    var suivant = histo[i + 1];
+        //                    if (suivant > h)
+        //                        min = h;
+        //                }
+        //            }
+        //            // calcul du plus faible qui n'a pas fonctionné
+        //            else
+        //                if (i + 1 < count)
+        //                {
+        //                    var suivant = histo[i + 1];
+        //                    if (suivant < h)
+        //                        min = h;
+        //                }
+        //        }
+
+        //        _nb++;
+        //        if (_nb >= nb)
+        //            break;
+        //    }
+        //    return min;
+        //}
+
+        //public decimal coeffTMin(int nb)
+        //{
+        //    return calcMin(nb, false);
+        //}
+
+        //public decimal coeffTMax(int nb)
+        //{
+        //    return calcMin(nb, true);
         //}
 
 
 
-        #region "rot"
-        private CLegacyListWriter m_listWriter;
-        private CLegacyListWriter m_listWriterAlb;
-        private CLegacyListWriter listWriterAll;
-        // Private m_rotTotalDuration As Integer = 0
-
-        // private int m_rotPeriod = 0;
-        public static object Lock { get { return _lock; } }
-        public void createRot(string a_baseName, params IListWriter[] writers)
-        {
-            lock (_lock)
-            {
-                var conf = CConf.ConfGen;
-
-                logger.log("Clegacy:createRot {0}", a_baseName);
-                List<Piece> l_list = new List<Piece>(m_listTrackClassed);
-                List<Piece> l_listAlb = new List<Piece>(allClassedInAlbumEnabled);
-                var l_all = new List<Piece>(listPieceInAlbum);
-                //  List<Piece> source = null;
-                ////  if (SortByAlbum)
-                //      source = allClassedInAlbumEnabled;
-                //  else
-                //      source = m_listTrackClassed;
-                //  foreach (Piece l_piece in source)
-                //  {
-                //      //if (l_piece.belongsTo(a_baseName))
-                //      //{
-                //      l_list.Add(l_piece);
-                //      // }
-                //  }
-
-
-
-
-
-                listWriterAll = new CLegacyListWriter(l_all);
-
-
-
-
-
-
-                //      m_listWriter.reset();
-                m_listWriter = new CLegacyListWriter(l_list);
-                foreach (IListWriter writer in writers)
-                    m_listWriter.addWriter(writer);
-                //    logger.log("fin creation des writers 0");
-                if (conf.Modes.Count > 0 && conf.Listes.Count > 0)
-                {
-                    foreach (var mode in conf.Modes) //  Enum.GetValues(typeof(datesMode)))
-                    {
-                        foreach (Piece piece in allClassed)
-                        {
-                            piece.Rank.TimeRest = -1;
-                        }
-
-                        foreach (Piece piece in allClassed)
-                        {
-                            ListSelection.setTuningDateValues(piece, mode.item);
-                        }
-                        foreach (var duration in conf.Listes)
-                        {
-                            m_listWriter.writeGen(mode, duration, "g", false, false);
-                            if (conf.GenE)
-                                m_listWriter.writeGen(mode, duration, "e", true, false);
-                        }
-                    }
-                }
-
-                if (conf.GenCheck)
-                    m_listWriter.writeCheckClassement(0);
-
-                for (int precision = conf.PrecisionMin.item; precision <= conf.PrecisionMax.item && precision > 0; precision++)
-                {
-                    m_listWriter.writePrecisionClassement("g", precision, false, conf.PrecisionMin.extend);
-                    if (conf.GenE)
-                        m_listWriter.writePrecisionClassement("e", precision, true, conf.PrecisionMin.extend);
-                }
-                m_listWriterAlb = new CLegacyListWriter(l_listAlb);
-
-                foreach (IListWriter writer in writers)
-                    m_listWriterAlb.addWriter(writer);
-
-                //  logger.log("fin creation des writers alb");
-                if (conf.Modes.Count > 0 && conf.Listes.Count > 0)
-                {
-                    foreach (var mode in conf.Modes) //  Enum.GetValues(typeof(datesMode)))
-                    {
-
-                        foreach (Piece piece in allClassed)
-                        {
-                            piece.Rank.TimeRest = -1;
-                        }
-
-                        foreach (Piece piece in allClassed)
-                        {
-                            ListSelection.setTuningDateValues(piece, mode.item);
-                        }
-                        foreach (var duration in conf.Listes)
-                        {
-                            m_listWriterAlb.writeGen(albums, mode, duration, "g", false);
-                        }
-                    }
-                }
-
-                foreach (IListWriter writer in writers)
-                    listWriterAll.addWriter(writer);
-                listWriterAll.writeGen(albums, null, null, "all", false);
-                //  misc.log("Clegacy:fin createRot {0}", a_baseName);
-                return;
-
-                writeRot(1);
-
-                m_listWriter.writeCheckClassement(1);
-
-                m_listWriter.reset();
-                writeRotMin(-1);
-                writeRotMin(10);
-                writeRotMin(1);
-            }
-        }
-        private void writeRotMin(int a_nbHour)
-        {
-            logger.log("----------------------");
-            m_listWriter.writeRotMin(a_nbHour);
-        }
-        private void writeRot(int a_base)
-        {
-            m_listWriter.writeRot(a_base);
-
-        }
-        #endregion
     }
-}
+    public class CalcMedianne
+    {
+
+        const decimal PRECISION = 0.0000001m;
+        const decimal EPSILON = 0.0000000000001m;
+        const decimal EPSILON_LOG = EPSILON;
+        private static int index;
+        public static int Index { get { return index; } }
 
 
 
-]]></content>
+        public static DecimalIndex getMedianne(IList<decimal> list, decimal coeffMedianne)
+        {
+            return new DecimalIndex() { d = getMedianne_(list, coeffMedianne), index = index };
+        }
+
+
+
+        private static decimal getLn(decimal rapport)
+        {
+            if (rapport <= 0)
+                return 0m;
+            return Convert.ToDecimal(10 + Math.Log10(rapport));
+        }
+        private static decimal getRapport(decimal ln)
+        {
+            return Convert.ToDecimal(Math.Pow(10, ln - 10));
+        }
+
+        private static DecimalIndex calcmedianneVirt(IList<decimal> _list, decimal coeffMedianne, bool quasi)
+        {
+
+            int count = _list.Count;
+
+            DecimalIndex ret = new DecimalIndex() { d = 0m, index = 0 }; // 0m; // decimal ret = int.MinValue;
+            for (int i = 0; i < count; i++)
+            {
+                if (i > 0)
+                {
+
+                    _list.RemoveAt(count - i);
+                }
+
+                var aux = getMedianne_(_list, coeffMedianne);
+                if (aux == 0m)
+                    continue;
+                // aux = getLn(aux);
+                //decimal coeff = 1; 
+                //if (count >2)
+                //coeff = (decimal)(count - 2 - i) / (decimal)(count - 2); 
+                decimal coeff = 1 - (decimal)i / (decimal)count; // (decimal)count - i / (decimal)count;
+                if (quasi)
+                    coeff *= coeff;
+                aux = aux * coeff;
+                if (aux > ret.d)
+                {
+                    ret.d = aux;
+                    ret.index = index;
+                }
+
+                if (_list[count - i - 1] > 0m)
+                    break;
+
+
+            }
+
+            //     if (ret == int.MinValue)
+            //         return 0m;
+            return ret;
+        }
+
+
+        public static decimal getMedianneLight0(IList<decimal> list, decimal coeffMedianne, bool quasi)
+        {
+            if (list.Count == 1)
+                return getMedianne_(list, coeffMedianne);
+            decimal ret = 0m;
+            int count = list.Count;
+
+            List<decimal> _list = new List<decimal>(list);
+            // ret = getMedianne_(_list, coeffMedianne);
+            decimal nb = 0m;
+            for (int i = 0; i < count - 1; i++)
+            {
+                if (i > 0)
+                    _list.RemoveAt(count - i);
+                var aux = getMedianne_(_list, coeffMedianne);
+                decimal coeff = count - 1 - i;
+                if (quasi)
+                    coeff *= coeff;
+                ret += aux * coeff;
+                nb += coeff;
+
+
+            }
+            ret /= nb;
+
+
+            return ret;
+        }
+        private static decimal getMedianne_(IList<decimal> list, decimal coeffMedianne)
+        {
+            index = 0;
+            if (list == null)
+                throw new ArgumentException("liste nulle");
+            int count = list.Count;
+            if (count == 0)
+                throw new ArgumentException("liste vide");
+            if (coeffMedianne < 0 || coeffMedianne > 1)
+                throw new ArgumentException("coeffMedianne doit être compris entre 0 et 1, valeur:" + coeffMedianne);
+            if (count == 1)
+                return list[0];
+            if (coeffMedianne == 0)
+                return list[0];
+            if (coeffMedianne == 1)
+            {
+                index = count - 1;
+                return list[count - 1];
+            }
+
+            var medianne = coeffMedianne * (count - 1);
+
+            index = (int)medianne;
+            int i1 = index + 1;
+            var val0 = list[index];
+            var val1 = list[i1];
+            if (Math.Abs(medianne - Convert.ToDecimal(index)) < PRECISION)
+                return val0;
+            if (Math.Abs(medianne - i1) < PRECISION)
+            {
+                index = i1;
+                return val1;
+            }
+
+            var dx = medianne - index;
+
+
+            // var ret = val0 + pente * dx;
+
+
+            // moyenne avec calcul de log
+            var log0 = Math.Log(val0 + EPSILON_LOG);
+            var log1 = Math.Log(val1 + EPSILON_LOG);
+            // pente = log1 - log0;
+            var log = log0 + (log1 - log0) * dx;
+            return Math.Exp(log) - EPSILON_LOG;
+
+
+        }
+
+        //public static int getEquiv(IList<double> listRef, double target, int i0, int i1)
+        //{
+        //    var val0 = listRef[i0]; 
+        //     var val1 = listRef[i1]; 
+        //    if (i1 - i0 == 1)
+        //    {
+        //        // on prend le plus proche
+        //        var delta0 = target - val0;
+        //        var delta1 = val1 - target; 
+
+        //        if (delta0 <= delta1)
+        //            return i0;
+        //        return i1; 
+        //    }
+
+        //    int imiddle = (i0 + i1) / 2;
+        //    if (imiddle == i0)
+        //        imiddle++; 
+        //    var vmiddle = listRef[imiddle];
+
+        //    if (vmiddle == target)
+        //        return imiddle;
+        //    if (Math.Abs(vmiddle - target) < PRECISION)
+        //        return imiddle;
+
+        //    if (vmiddle < target)
+        //        return getEquiv(listRef, target, imiddle, i1);
+        //    return getEquiv(listRef, target, i0, imiddle); 
+
+
+        //}
+    }
+}]]></content>
   </file>
 </db>
