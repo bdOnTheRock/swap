@@ -1,143 +1,4 @@
 <db path="C:\Bernard\db1\pdb4">
-  <file path="\pdb.util\Math.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Math0 = System.Math;
-
-namespace pdb.util
-{
-    public static class Math
-    {
-        static readonly double max;
-        static readonly double min;
-        static Math()
-        {
-            max = Convert.ToDouble(decimal.MaxValue);
-            min = -max;
-        }
-        public static decimal TotalMilliseconds(this TimeSpan ts)
-        {
-            return ts.TotalMilliseconds.toDecimal();
-        }
-
-        public static decimal TotalDays(this TimeSpan ts)
-        {
-            return ts.TotalDays.toDecimal();
-        }
-        public static double toDouble(this decimal x)
-        {
-            return Convert.ToDouble(x);
-        }
-
-        public static decimal toDecimal(this double x)
-        {
-            try
-            {
-                return Convert.ToDecimal(x);
-            }
-            catch
-            {
-                if (x >= max)
-                    return decimal.MaxValue;
-                if (x <= min)
-                    return decimal.MinValue;
-                return decimal.Zero;
-            }
-        }
-        public static decimal toDecimal(this long x)
-        {
-            return Convert.ToDecimal(x);
-        }
-        public static decimal Abs(decimal x)
-        {
-            return Math0.Abs(x);
-        }
-        public static double Abs(double x)
-        {
-            return Math0.Abs(x);
-        }
-
-        public static int Abs(int x)
-        {
-            return Math0.Abs(x);
-        }
-
-        public static decimal Exp(decimal d)
-        {
-            return Math0.Exp(d.toDouble()).toDecimal();
-        }
-
-        public static decimal Log(decimal d)
-        {
-            return Math0.Log(d.toDouble()).toDecimal();
-        }
-
-        public static decimal Log10(decimal d)
-        {
-            return Math0.Log10(d.toDouble()).toDecimal();
-        }
-
-        public static decimal Log(decimal x, decimal y)
-        {
-            return Math0.Log(x.toDouble(), y.toDouble()).toDecimal();
-        }
-
-        public static decimal Pow(decimal x, decimal y)
-        {
-            return Math0.Pow(x.toDouble(), y.toDouble()).toDecimal();
-        }
-
-        public static double PowD(double x, double y)
-        {
-            return Math0.Pow(x, y);
-        }
-
-
-        //  public static int Pow(int x, int y)
-        //{
-        //    return (int)Math0.Pow(x,y); 
-        //}
-
-      
-     
-
-       
-
-        public static decimal Round(decimal x, int nbDec)
-        {
-            return Math0.Round(x, nbDec);
-        }
-        public static double Round(double x, int nbDec, MidpointRounding mode)
-        {
-            return Math0.Round(x, nbDec, mode); 
-        }
-        public static double Round(double x)
-        {
-            return Math0.Round(x); 
-        }
-
-        public static int Min(int x, int y)
-        {
-            return Math0.Min(x, y);
-        }
-
-        public static double Floor(double x)
-        {
-            return Math0.Floor(x); 
-        }
-
-        public static decimal Max(decimal x, decimal y)
-        {
-            return Math0.Max(x, y); 
-        }
-
-
-    }
-}
-]]></content>
-  </file>
   <file path="\pdb.util\Medianne.cs">
     <content><![CDATA[using System;
 using System.Collections;
@@ -1493,7 +1354,7 @@ namespace pdb.util
             {
                 // dv = vepsilon;
                 a = vepsilon / pas;
-               
+
             }
 
             if (a < aepsilon)
@@ -1548,7 +1409,7 @@ namespace pdb.util
 
                     if (last != selectedByCoeff)
                         _nbAltHisto++;
-                    else _nbAltHisto = 0; 
+                    else _nbAltHisto = 0;
 
                     //if (_nbAltHisto > 1)
                     //{
@@ -1572,10 +1433,18 @@ namespace pdb.util
                     {
                         if (_nbAltHisto > 1)
                         {
-                            if (currentStaticp >= coeffStaticpRetour)
+                            if (currentStaticp > 1)
+                            {
                                 currentStaticp /= coeffStaticpRetour;
-                            if (currentStaticm >= coeffStaticmRetour)
+                                if (currentStaticp < 1)
+                                    currentStaticp = 1;
+                            }
+                            if (currentStaticm > 1)
+                            {
                                 currentStaticm /= coeffStaticmRetour;
+                                if (currentStaticm < 1)
+                                    currentStaticm = 1;
+                            }
                         }
                     }
 
@@ -1762,11 +1631,11 @@ namespace pdb.util
                     else if (true == lastDelta)
                     {
                         var deltav = pas * a;
-                        var limit = _v0 * (vv-1);
+                        var limit = _v0 * (vv - 1);
                         var limit2 = vepsilon / pas;
 
                         if (limit < limit2)
-                            limit = limit2; 
+                            limit = limit2;
 
 
                         if (deltav > limit)
@@ -1832,7 +1701,7 @@ namespace pdb.util
 
         }
 
-        public decimal CoeffT { get { return (decimal)Math.Pow(coeffVirt, safe); } }
+        //public decimal CoeffT { get { return (decimal)Math.Pow(coeffVirt, safe); } }
         public decimal CoeffOld
         {
             get { return coeffOld; }
