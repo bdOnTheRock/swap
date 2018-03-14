@@ -1,4 +1,137 @@
 <db path="C:\Bernard\db1\pdb4">
+  <file path="\pdb.player\Vue\Memento.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+using System.Windows;
+using pdb.gen.Tuning;
+using System.Xml;
+using pdb.util;
+
+namespace pdb.player.Vue
+{
+    [Serializable]
+    class Memento
+    {
+        [NonSerialized]
+        const string FILE_CONF = "confAlbum.xml";
+        [NonSerialized]
+        const string PATH = TuningBase.DIR_CONF + "memento.dat";
+        [NonSerialized]
+        const string PATH_CONF = TuningBase.DIR_CONF + FILE_CONF;
+        [NonSerialized]
+        const string SOV_CONF = TuningBase.DIR_CONF + "sov\\";
+        [NonSerialized]
+        private static volatile Memento _instance;
+        [NonSerialized]
+        private FileRotator fileRotator;
+        public WindowPos winPos = null;
+        public CmpPos cmpPos = null;
+        public string selectedPlaylist = "";
+        public Dictionary<string, object> dict = new Dictionary<string, object>();
+        [NonSerialized]
+        public ConfAlbumSort confAlbum;
+
+
+        private Memento()
+        {
+            fileRotator = new FileRotator(); 
+        }
+        public static Memento Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+
+                    var formater = new BinaryFormatter();
+                    try
+                    {
+                        using (Stream st = new FileStream(PATH, FileMode.Open))
+                        {
+                            _instance = (Memento)(formater.Deserialize(st));
+                        }
+                        var doc = new XmlDocument();
+                        doc.Load(PATH_CONF);
+                        var conf = new ConfAlbumSort(doc.DocumentElement);
+
+                        _instance.confAlbum = conf;
+                    }
+                    catch (Exception ex)
+                    {
+                        misc.log(ex.ToString());
+                        throw;
+                    }
+
+
+                }
+
+                if (_instance == null)
+                    _instance = new Memento();
+
+                _instance.fileRotator = new FileRotator(); 
+                return _instance;
+
+            }
+        }
+        public void save()
+        {
+            var formater = new BinaryFormatter();
+            using (Stream st = new FileStream(PATH, FileMode.Create))
+            {
+                formater.Serialize(st, this);
+            }
+            if (this.confAlbum != null)
+            {
+                fileRotator.save(PATH_CONF, SOV_CONF, 100);
+                var settings = new XmlWriterSettings();
+                settings.Indent = true;
+                settings.Encoding = Encoding.UTF8;
+                using (XmlWriter writer = XmlWriter.Create(PATH_CONF, settings))
+                {
+                    this.confAlbum.save(writer);
+                }
+            }
+        }
+    }
+    [Serializable]
+    class WindowPos
+    {
+        public double Top;
+        public double Left;
+        public double Width;
+        public double Height;
+    }
+    [Serializable]
+    class CmpPos
+    {
+        public Length cdBib;
+        public Length cdMain;
+        public Length cdAlbum;
+        public Length cdClassement;
+    }
+
+    [Serializable]
+    public class Length
+    {
+        public double value;
+        public GridUnitType unit;
+        public Length(GridLength ihm)
+        {
+            value = ihm.Value;
+            unit = ihm.GridUnitType;
+        }
+        public GridLength toGrid()
+        {
+            return new GridLength(value, unit);
+        }
+    }
+}
+]]></content>
+  </file>
   <file path="\pdb.util\Medianne.cs">
     <content><![CDATA[using System;
 using System.Collections;
@@ -476,7 +609,7 @@ namespace pdb.util
             if (motif == selectedCoeff.none)
                 return;
             var coeffPrisEncompte = motif > selectedCoeff.noCoeff;
-            if (_min == _main || _min.coeffVirt == 1m)
+            if (_min == _main || (_min.coeffVirt == 1m && !_min.coeffOldSwap))
             {
                 _main.calcAuto(coeffPrisEncompte);
             }
@@ -577,6 +710,9 @@ namespace pdb.util
         public decimal serialElastique = 1m;
         public decimal coeffElastique1 = 1m;
         public decimal coeffElastique2 = 1m;
+
+        public decimal coeffElastique1r = 1m;
+        public decimal coeffElastique2r = 1m;
 
         /// <summary>
         /// pas de calcul
@@ -705,6 +841,7 @@ namespace pdb.util
 
         public bool oldAsZero;
         private bool coeffOldAuto;
+        public bool coeffOldSwap;
         public int coeffOldAutoLevel;
 
         public bool linkconv { get { return _linkconv; } set { _linkconv = value; calcProduct(); } }
@@ -797,6 +934,7 @@ namespace pdb.util
             virtAlignSelected = o.virtAlignSelected;
             virtAlignPrec = o.virtAlignPrec;
             coeffVirtAuto = o.coeffVirtAuto;
+
             coeffVirtAdjust = o.coeffVirtAdjust;
             removeEpsilon = o.removeEpsilon;
             forceCoeffVirt = o.forceCoeffVirt;
@@ -828,6 +966,10 @@ namespace pdb.util
             coeffElastique1 = o.coeffElastique1;
             coeffElastique2 = o.coeffElastique2;
 
+            coeffElastique1r = o.coeffElastique1r;
+            coeffElastique2r = o.coeffElastique2r;
+
+
             _nbSameDirection = o._nbSameDirection;
             _nbSameDirectionBox = o._nbSameDirectionBox;
             _nbAlt = o._nbAlt;
@@ -837,6 +979,7 @@ namespace pdb.util
 
             coeffOld = o.coeffOld;
             coeffOldAuto = o.coeffOldAuto;
+            coeffOldSwap = o.coeffOldSwap;
             oldAsZero = o.oldAsZero;
             coeffOldAutoLevel = o.coeffOldAutoLevel;
             epsilon = o.epsilon;
@@ -911,6 +1054,8 @@ namespace pdb.util
             buildi("elastique", v => serialElastique = v);
             builddec("coeffElastique1", v => coeffElastique1 = v);
             builddec("coeffElastique2", v => coeffElastique2 = v);
+            builddec("coeffElastique1r", v => coeffElastique1r = v);
+            builddec("coeffElastique2r", v => coeffElastique2r = v);
             buildi("serial", v => _nbSameDirection = v);
             buildi("serialBox", v => _nbSameDirectionBox = v);
             buildi("serialAltC", v => _nbAlt = v);
@@ -922,6 +1067,7 @@ namespace pdb.util
             builddec("coeffOld", v => coeffOld = v);
             buildb("oldAsZero", v => oldAsZero = v);
             buildb("coeffOldAuto", v => coeffOldAuto = v);
+            buildb("coeffOldSwap", v => coeffOldSwap = v);
             buildi("coeffOldAutoLevel", v => coeffOldAutoLevel = v);
             builddec("epsilon", v => epsilon = v);
 
@@ -1099,6 +1245,8 @@ namespace pdb.util
             write("elastique", serialElastique);
             write("coeffElastique1", coeffElastique1);
             write("coeffElastique2", coeffElastique2);
+            write("coeffElastique1r", coeffElastique1r);
+            write("coeffElastique2r", coeffElastique2r);
             write("fdata", fdata);
             write("fdiff", fdiff);
             write("fdiffTmp", fdiffTmp);
@@ -1152,8 +1300,10 @@ namespace pdb.util
 
 
             write("coeffOld", coeffOld);
+
             write("oldAsZero", oldAsZero);
             write("coeffOldAuto", coeffOldAuto);
+            write("coeffOldSwap", coeffOldSwap);
 
             write("coeffOldAutoLevel", coeffOldAutoLevel);
             write("epsilon", epsilon);
@@ -1366,6 +1516,11 @@ namespace pdb.util
         private decimal _v0;
         public void calcAuto(bool selectedByCoeff)
         {
+            var coeffVirt0 = coeffVirt;
+            if (coeffOldSwap)
+            {
+                coeffVirt = coeffOld;
+            }
             var _c0 = coeffVirt;
             _v0 = v;
             // vv = v;
@@ -1415,7 +1570,7 @@ namespace pdb.util
                     //{
                     if (selectedByCoeff)
                     {
-                        _nbElastique--;
+                        _nbElastique -= coeffElastique1r;
                         _nbElastique2 -= coeffElastique2;
 
 
@@ -1423,7 +1578,7 @@ namespace pdb.util
                     }
                     else
                     {
-                        _nbElastique -= rapportmp;
+                        _nbElastique -= rapportmp - coeffElastique1r;
                         _nbElastique2 -= rapportmp * coeffElastique2;
 
 
@@ -1474,12 +1629,12 @@ namespace pdb.util
                         _nbSameDirectionBox--;
                         // _nbSameDirection--;
                         _nbElastique += coeffElastique1 * rapportmp;
-                        _nbElastique2 += rapportmp;
+                        _nbElastique2 += coeffElastique2r * rapportmp;
                     }
                     else
                     {
                         _nbElastique += coeffElastique1;
-                        _nbElastique2++;
+                        _nbElastique2 += coeffElastique2r;
                         _nbSameDirectionBox++;
                         // _nbSameDirection++;
                     }
@@ -1693,9 +1848,17 @@ namespace pdb.util
 
             // da = Math.Abs(a - _a0);
             misc.log("{0} {1:0.### ###} {2:0.### ###}->{3:0.### ###}", montee, dx, c0, coeffVirt);
-            checkCoeffOld();
+
 
             histo.Add(new HistoValue(coeffVirt, dx, a, v / currentStaticm, dv, v));
+
+            checkCoeffOld();
+
+            if (coeffOldSwap)
+            {
+                coeffOld = coeffVirt;
+                coeffVirt = coeffVirt0;
+            }
 
 
 
