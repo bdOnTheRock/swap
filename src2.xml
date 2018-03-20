@@ -1,37 +1,28 @@
-D1	0.1
-E1	=K1-D1*N1
-J1	2
-K1	0.015
-N1	==C740
-01	8
-
---------------
-E2	=SI(C2=0;E1;$D$1*(C2-$C$2)+$K$1)
-F2	=SI(B2=0;F1;B2)
-I2	=SI(A3<A2;0;A2)
-
---------------
-
-J3	=SI(B3<B2;1;SI(B3>B2;-1;J2))
+=SI(C10=0;G9;$D$1*(C10-$C$2)+$M$1)	=SI($F10>$B10;$F10;$B10)	=SI($A10<$A9;$B10;I9)	10	=SI(A11<A10;0;A10)	=SI(B10<B9;1;SI(B10>B9;-1;L9))			=C10/B10	=G11-H11
+	
 
 
-
-
-
-
-
-
-
+ Global source As String
 Sub borne()
+refreshDyn
+Borne_ ("c")
+Borne_ ("d")
+End Sub
+
+
+
+Sub Borne_(ByVal src As String)
 '
 ' borne Macro
 '
 ' Touche de raccourci du clavier: Ctrl+b
 '
 
-refreshDyn
 
-courant = Sheets("_c").Cells(1, 12).Value
+
+
+source = "_" & src
+courant = Sheets(source).Cells(1, 12).Value
 Dim last As Integer
 last = courant
 
@@ -39,14 +30,14 @@ Dim i As Integer
 
 For i = courant To 10000
 
- If Sheets("_c").Cells(i, 1) <= 0 Then
+ If Sheets(source).Cells(i, 1) <= 0 Then
  Exit For
 
  End If
   last = i
 Next
 
-Sheets("_c").Cells(1, 13).Value = Sheets("_c").Cells(last, 2)
+Sheets(source).Cells(1, 13).Value = Sheets(source).Cells(last, 2)
 
 borneP10 = 10 * Int(last / 10)
 If borneP10 < last Then borneP10 = borneP10 + 10
@@ -67,16 +58,16 @@ borneM5C = borneP50 - 550
 
 
 
-calc "cXX", last - 20, last
-calc "cV", last - 50, last
-calc "c", courant, last
-calc "cC", last - 100, last
-calc "cCV", borneMCV, last
-calc "c2C", borneP20 - 220, last
-calc "c5C", borneM5C, last
-calc "cM5C", borneP100 - 1600, last
+calc (src & "XX"), last - 20, last
+calc (src & "V"), last - 50, last
+calc src, courant, last
+calc (src & "C"), last - 100, last
+calc (src & "CV"), borneMCV, last
+calc (src & "2C"), borneP20 - 220, last
+calc (src & "5C"), borneM5C, last
+calc (src & "M5C"), borneP100 - 1600, last
 'calc "c5M", borneP100 - 5100, last
-calc "c5M", last - 5000, last
+calc (src & "5M"), last - 5000, last
 
 
     
@@ -84,7 +75,7 @@ calc "c5M", last - 5000, last
 End Sub
 
 Sub calc(ByVal sheet As String, ByVal borneM As Integer, ByVal borneP As Integer)
-    
+    On Error GoTo errorHandler
     If borneM < 2 Then borneM = 2
     'Sheets(sheet).Select
     
@@ -93,36 +84,41 @@ Sub calc(ByVal sheet As String, ByVal borneM As Integer, ByVal borneP As Integer
     setBorne 2, "K", borneM, borneP, sheet
     setBorne 3, "H", borneM, borneP, sheet
     setBorne 4, "G", borneM, borneP, sheet
+     setBorne 5, "D", borneM, borneP, sheet
     
     setBorneX 1, borneM, sheet
     setBorneX 2, borneM, sheet
     
-    setBorneY 1, 0, borneM, borneP, sheet, False
-    setBorneY 8, 7, borneM, borneP, sheet, True
+    setBorneY 1, 0, 0, borneM, borneP, sheet, False
+    setBorneY 4, 8, 7, borneM, borneP, sheet, True
+    
+errorHandler:
 
 End Sub
 
 
 Sub setBorne(ByVal index As Integer, ByVal col As String, ByVal borneM As Integer, ByVal borneP As Integer, ByVal sheet As String)
 
-Sheets(sheet).SeriesCollection(index).Values = "=_c!$" + col + "$" + CStr(borneM) + ":$" + col + "$" + CStr(borneP)
+Sheets(sheet).SeriesCollection(index).Values = "=" + source + "!$" + col + "$" + CStr(borneM) + ":$" + col + "$" + CStr(borneP)
 
 End Sub
 
 Sub setBorneX(ByVal index As Integer, ByVal borneM As Integer, ByVal sheet As String)
 
-Sheets(sheet).SeriesCollection(index).XValues = "=_c!$H$" + CStr(borneM) + ":$H$10000"
+Sheets(sheet).SeriesCollection(index).XValues = "=" + source + "!$J$" + CStr(borneM) + ":$J$10000"
 
 End Sub
 
-Sub setBorneY(ByVal col As Integer, ByVal col2 As Integer, ByVal borneM As Integer, ByVal borneP As Integer, ByVal sheet As String, ByVal secondAxe As Boolean)
-Min = Sheets("_c").Cells(borneM, col)
+Sub setBorneY(ByVal col As Integer, ByVal col2 As Integer, ByVal col3 As Integer, ByVal borneM As Integer, ByVal borneP As Integer, ByVal sheet As String, ByVal secondAxe As Boolean)
+Min = Sheets(source).Cells(borneM, col)
 Max = Min
 
 For i = borneM To borneP
-    y = Sheets("_c").Cells(i, col)
+    y = Sheets(source).Cells(i, col)
     y2 = y
-    If col2 > 0 Then y2 = Sheets("_c").Cells(i, col2)
+    y3 = y
+    If col2 > 0 Then y2 = Sheets(source).Cells(i, col2)
+    If col3 > 0 Then y3 = Sheets(source).Cells(i, col3)
     If y > Max Then
             Max = y
         Else:
@@ -138,11 +134,19 @@ For i = borneM To borneP
         End If
     
     End If
+    If y3 > Max Then
+            Max = y3
+        Else:
+            If y3 > 0 And y3 < Min Then
+            Min = y3
+        End If
+    
+    End If
     
 Next
 
 If Min = Max Then GoTo Ex
-Delta = (Max - Min) / Sheets("_c").Cells(1, 17)
+Delta = (Max - Min) / Sheets(source).Cells(1, 17)
 coeff = 1
 While Delta < 1
     Delta = Delta * 10
@@ -191,3 +195,26 @@ End If
 Ex:
 End Sub
 
+Sub writefile(ByVal content As String)
+Dim fso As Object
+Set fso = CreateObject("Scripting.FileSystemObject")
+Dim oFile As Object
+Set oFile = fso.CreateTextFile("C:\Bernard\db1\PieceDb3Ref\pdb.player\busyExcel.txt")
+oFile.WriteLine content
+oFile.Close
+Set fso = Nothing
+Set oFile = Nothing
+
+End Sub
+
+                    
+Sub refreshDyn()
+'
+' refreshDyn Macro
+'
+' Touche de raccourci du clavier: Ctrl+q
+
+   ActiveWorkbook.Connections("un").refresh
+   ActiveWorkbook.Connections("deux").refresh
+'
+End Sub
