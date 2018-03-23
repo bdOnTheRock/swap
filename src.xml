@@ -1,1119 +1,626 @@
-<db path="C:\Bernard\db1\pdb4">
-  <file path="\PieceDb.Consolid\albums\AlbumMedianne.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Linq;
-using pdb.gen.auto;
-using pdb.gen.medianne;
-using pdb.gen.Tuning;
-using pdb.util;
-using Math = pdb.util.Math;
-
-namespace pdb.gen.albums
-{
-    class AlbumMedianne
-    {
-        const decimal PRECISION = 0.0000001m;
-        const decimal EPSILON = 0.0000000000001m;
-        const decimal EPSILON_LOG = EPSILON;
-        private static int index;
-        public static int Index { get { return index; } }
-
-
-        public static DecimalIndex getMedianne(IList<Piece> list,bool main, decimal coeffMedianne)
-        {
-            return new DecimalIndex() { d = getMedianne_(list,main, coeffMedianne), index = index };
-        }
-
-        //public static DecimalIndex getMedianne(IEnumerable list, decimal coeffMedianne)
-        //{
-        //    var _list = new List<decimal>();
-        //    foreach (object o in list)
-        //    {
-        //        _list.Add(Convert.ToDecimal(o));
-        //    }
-        //    return getMedianne(_list, coeffMedianne);
-        //}
-
-        //public static DecimalIndex getMedianne(List<decimal> list, decimal coeffMedianne)
-        //{
-        //    return new DecimalIndex() { d = getMedianne_(list, coeffMedianne), index = index };
-        //}
-
-        //public static DecimalIndex getMedianneLight(List<decimal> list, List<Piece> pieces, ConfMedianne mode, bool signal)
-        //{
-        //    DecimalIndex ret0 = new DecimalIndex();
-        //    DecimalIndex ret = ret0;
-        //    try
-        //    {
-
-
-        //        var _zero = mode.zero;
-        //        var medianne = getMedianne_(list, mode.medianne);
-        //        ret0.d = medianne;
-        //        ret0.index = index;
-
-        //        if (list.Count == 1)
-        //            return ret0;
-
-        //        if (mode.safe == 0)
-        //        {
-        //            return calcmedianneVirt(list, mode, 0, 0);
-        //        }
-
-        //        int indexV = 0;
-        //        int nbAdd = 0;
-
-        //        int count = list.Count;
-
-        //        if (mode.safe > 0)
-        //        {
-
-        //            int i0 = count - 1;
-        //            int _nbNoAdd = 0;
-
-        //            for (int i = 0; i < count; i++)
-        //            {
-        //                if (list[i] <= _zero)
-        //                {
-        //                    i0 = i;
-        //                    _nbNoAdd = count - i0;
-        //                    break;
-        //                }
-        //            }
-        //            if (i0 == 0)
-        //                return ret0;
-
-        //            //for (int i00 = 1; i00 <= i0; i00++)
-        //            //{
-        //            //    decimal coeff = (decimal)i00 / (decimal)i0;
-        //            List<decimal> _list = new List<decimal>(list);
-        //            //for (int i = i00; i < count; i++)
-        //            //    _list[i] = 0m;
-        //            //liste partielle originale
-        //            //  List<decimal> _list0 = new List<decimal>(_list);
-        //            int _count = System.Math.Min(count, i0 + mode.safe);
-        //            decimal[] virt = new decimal[_count];
-        //            _nbNoAdd = System.Math.Min(mode.safe, _nbNoAdd);
-        //            if (mode.noAdd)
-        //            {
-
-        //                decimal _coeff = 1m;
-        //                for (int j = _nbNoAdd - 1; j >= 0; j--)
-        //                {
-        //                    if (j < count)
-        //                    {
-        //                        _coeff /= mode.coeffVirt;
-        //                        _list[j] = _list[j] * _coeff;
-        //                    }
-        //                }
-        //            }
-        //            else if (mode.lissage || mode.removeEpsilon || mode.cumul)
-        //            {
-        //                for (int i = 0; i < i0; i++)
-        //                {
-        //                    decimal _coeff = 1m;
-        //                    decimal _base = _list[i];
-        //                    for (int j = i + 1; j < _count; j++)
-        //                    {
-        //                        _coeff /= mode.coeffVirt;
-        //                        virt[j] = System.Math.Max(virt[j], _base * _coeff); //     += _base * _coeff;
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                decimal courant = _list[0];
-        //                for (int i = 1; i < _count; i++)
-        //                {
-        //                    if (_list[i] <= _zero)
-        //                    {
-        //                        courant /= mode.coeffVirt;
-        //                        virt[i] = courant;
-        //                    }
-        //                    else
-        //                        courant = _list[i];
-        //                }
-        //            }
-
-        //            decimal value = int.MaxValue;
-        //            int ii = 0;
-        //            if (mode.noAdd)
-        //            {
-        //                //for (ii = 1; ii < count && ii < _count; ii++)
-        //                //{
-        //                //    var calc = virt[ii];
-        //                //    if (calc > 0m)
-        //                //        list[ii] = calc;
-        //                //}
-        //            }
-        //            else
-        //            {
-        //                for (ii = 1; ii < count && ii < _count; ii++)
-        //                {
-        //                    value = _list[ii];
-        //                    var calc = virt[ii];
-        //                    if (value < calc)
-        //                    {
-        //                        if (mode.lissage || value <= _zero)
-        //                        {
-        //                            if (value <= _zero)
-        //                                nbAdd++;
-        //                            value = calc;
-        //                            _list[ii] = value;
-        //                        }
-
-        //                    }
-        //                    else
-        //                        indexV = ii;
-        //                }
-        //                if (mode.removeEpsilon)
-        //                {
-        //                    // j'ai 5 virtuel alors que j'ai deux safe
-        //                    ///xx---
-        //                    int nb = 0;
-        //                    for (int i = indexV + 1; i < _count; i++)
-        //                    {
-        //                        nb++;
-        //                        if (nb <= mode.safe)
-        //                            continue;
-        //                        _list[i] = 0m;
-        //                    }
-
-        //                }
-        //                if (mode.removeFirst)
-        //                {
-        //                    for (int i = 0; i < nbAdd; i++)
-        //                    {
-        //                        _list[i] = 0m;
-        //                    }
-        //                }
-        //            }
-
-        //            for (int i = 0; i < _list.Count && i < pieces.Count; i++)
-        //                pieces[i].setClassementVirtuel(_list[i]);
-
-        //            if (mode.deleteFirst)
-        //            {
-        //                for (int i = 0; i < nbAdd; i++)
-        //                {
-        //                    _list.RemoveAt(0);
-        //                }
-        //            }
-
-        //            if (mode.reSort || mode.removeFirst || mode.noAdd)
-        //            {
-        //                _list.Sort();
-        //                _list.Reverse();
-        //                pieces.Sort(new PieceCmp());
-        //            }
-
-
-
-        //            if (mode.noAdd)
-        //                nbAdd = _nbNoAdd;
-
-        //            ret = calcmedianneVirt(_list, mode, nbAdd, System.Math.Min(i0, mode.safe));
-        //            if (mode.expEnabled != 0)
-        //            {
-        //                int _nb = pieces.Count<Piece>(p => !p.Enabled);
-        //                decimal _c = (decimal)_nb / (decimal)count;
-        //                _c = Math.Pow(_c, mode.expEnabled);
-        //                ret.d *= _c;
-        //            }
-
-
-        //        }
-        //        else
-        //            ret = calcmedianneVirt(list, mode, 0, 0);
-
-        //        //if (ret < ret0)
-        //        //    ret = ret0; 
-
-
-
-        //    }
-        //    finally
-        //    {
-        //        if (signal)
-        //        {
-        //            try
-        //            {
-        //                pieces[ret.index].MedianneLight = true;
-        //                pieces[ret.indexBorder].Border = true;
-        //                pieces[ret.indexBorderEffect].BorderEffect = true;
-        //                pieces[ret.indexBorderMin].BorderMin = true;
-
-        //            }
-        //            catch { }
-        //        }
-        //    }
-
-        //    return ret;
-        //}
-
-        public static void buildVirtual(List<PieceExtended> pieces, ConfMedianne mode)
-        {
-            if (mode.combine && mode.simple)
-            {
-            }
-        }
-
-        public static void buildVirtual(ConfMedianne mode, ConfMedianneVirt modeVirt, bool main)
-        {
-            var coeffEnabled = modeVirt.CoeffOld;
-            var _coeffVirt = modeVirt.coeffVirt;
-            var safe = modeVirt.safe;
-        }
-
-        public static int buildVirtual(List<PieceExtended> pieces, ConfMedianne mode, ConfMedianneVirt modeVirt, bool main, bool combine,ref int i0)
-        {
-            var coeffEnabled = modeVirt.CoeffOld;
-
-            var _coeffVirt = modeVirt.coeffVirt;
-            var safe = modeVirt.safe;
-            if (combine)
-            {
-                coeffEnabled = mode.Main.CoeffOld * mode.Min.CoeffOld; 
-                _coeffVirt = mode.Main.coeffVirt * mode.Min.coeffVirt;
-                safe = (int)Math.Max(mode.Main.safe, mode.Min.safe);
-            }
-
-           
-         //   var coeff = 1 / coeffEnabled; 
-            int count = pieces.Count;
-            PieceClassementComparer cmp = new PieceClassementComparer(false);
-            pieces.Sort(cmp);
-            //if (coeffEnabled != 1)
-            //{
-            if (coeffEnabled > 1)
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var p = pieces[i];
-                    //  var rapportClassement = p.RapportClassement;
-                    if (coeffEnabled != 1m && p.Enabled && (!modeVirt.oldAsZero || !p.LastClassementRecent))
-                    {
-                        p.setCoeff(coeffEnabled, main);
-                        //rapportClassement /= coeffEnabled;
-                    }
-
-                    //p.setClassementVirtuel(rapportClassement);
-                    //if (!main)
-                    //    p.setClassementVirtuel2(rapportClassement);
-                }
-            }
-
-            cmp = new PieceClassementComparer(false, main);
-            pieces.Sort(cmp);
-            // }
-
-            int indexV = 0;
-            int nbAdd = 0;
-
-
-           // List<Piece> _pieces = pieces;
-            var _zero = mode.zero;
-
-
-            //if (modeVirt.safe > 0)
-            //{
-            i0 = count - 1;
-            int _nbNoAdd = 0;
-
-
-
-
-            if (modeVirt.virtOnlyDisabled || mode.removeLast == removeLast.unselected)
-            {
-                _nbNoAdd = pieces.Count(p => p.Enabled);  // || p.VirtualClassement == 0m);
-                if (_nbNoAdd > 0)
-                    _nbNoAdd--;
-            }
-            else if (modeVirt.noAddAll)
-                _nbNoAdd = pieces.Count;
-            else
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var pp = pieces[i];
-                    if (pp.VirtualClassement == 0m)
-                    {
-                        i0 = i;
-                        _nbNoAdd = count - i0;
-                        break;
-                    }
-                }
-            }
-
-            if (modeVirt.noAddEnd)
-            {
-                // var nb1 = pieces.Count<Piece>(p => p.Enabled);
-                // morceaux déjà notés
-                var nb2 = pieces.Count<PieceExtended>(p => !p.Enabled && p.RapportClassement > 0);
-                _nbNoAdd = _nbNoAdd - nb2;
-                if (_nbNoAdd < 0)
-                    _nbNoAdd = 0;
-            }
-            //if (i0 == 0)
-            //    return 0;
-            //}
-
-            //for (int i00 = 1; i00 <= i0; i00++)
-            //{
-            //    decimal coeff = (decimal)i00 / (decimal)i0;
-            //List<decimal> _list = new List<decimal>();
-            //for (int i = 0; i < pieces.Count; i++)
-            //    _list.Add(pieces[i].getVirtual(main));
-            //for (int i = i00; i < count; i++)
-            //    _list[i] = 0m;
-            //liste partielle originale
-            //  List<decimal> _list0 = new List<decimal>(_list);
-            int _count = System.Math.Min(count, i0 + safe);
-            decimal[] virt = new decimal[_count];
-            _nbNoAdd = System.Math.Min(safe, _nbNoAdd);
-           
-            if (modeVirt.noAdd)
-            {
-                if (_coeffVirt > 1)
-                {
-                    // var coeffEnabled = modeVirt.coeffOld; 
-
-                    if (count < safe && modeVirt.coeffVirtAuto)
-                    {
-                        if (modeVirt.coeffVirtAdjust)
-                            _coeffVirt = Math.Pow(coeffEnabled, 1.0m / (count + 1.0m));
-                        else
-                        {
-                            // ex 2^10 = 1024
-                            // je veux obtenir 1024 avec 3
-                            _coeffVirt = Math.Pow(_coeffVirt, (decimal)safe / (decimal)count);
-                        }
-                    }
-
-                    decimal _coeff = 1m;
-                    decimal prec = 0m;
-                    if (modeVirt.virtAlignPrec)
-                    {
-                        if (_nbNoAdd < pieces.Count)
-                            prec = pieces[_nbNoAdd].Value;
-                    }
-
-                    for (int j = _nbNoAdd - 1; j >= 0; j--)
-                    {
-                        if (j < pieces.Count)
-                        {
-
-                            if (!modeVirt.virtOnlyDisabled || !pieces[j].Enabled)
-                            {
-                                _coeff *= _coeffVirt;
-                                var cand = pieces[j].Value / _coeff;
-                                if (modeVirt.virtAlignPrec)
-                                {
-                                    if (cand < prec)
-                                        cand = prec + EPSILON;
-                                }
-
-                                if (modeVirt.virtAlignSelected && modeVirt.virtOnlyDisabled)
-                                {
-                                    // quel serait le score s'il était coché
-                                    var vu = pieces[j].Value / coeffEnabled;
-                                    // en plus une petite marge
-                                    //  vu *= mode.coeffVirt; 
-                                    if (cand < vu)
-                                        cand = vu;
-                                }
-                                pieces[j].Value = cand;
-                                pieces[j].EffectMain = coeffEnabled < _coeff; 
-                            }
-                            else if (modeVirt.forceCoeffVirt)
-                                _coeff /= _coeffVirt;
-                            prec = pieces[j].Value;
-                        }
-                    }
-                }
-
-            }
-            else if (modeVirt.lissage || modeVirt.removeEpsilon || modeVirt.cumul)
-            {
-                if (_coeffVirt > 1)
-                {
-                    for (int i = 0; i < i0; i++)
-                    {
-                        decimal _coeff = 1m;
-                        decimal _base = pieces[i].Value;
-                        for (int j = i + 1; j < _count; j++)
-                        {
-                            _coeff /= _coeffVirt;
-                            virt[j] = System.Math.Max(virt[j], _base * _coeff); //     += _base * _coeff;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (_coeffVirt > 1)
-                {
-                    decimal courant = pieces[0].Value;
-                    for (int i = 1; i < _count; i++)
-                    {
-                        if (pieces[i].Value <= _zero)
-                        {
-                            courant /= _coeffVirt;
-                            virt[i] = courant;
-                        }
-                        else
-                            courant = pieces[i].Value;
-                    }
-                }
-            }
-
-            decimal value = int.MaxValue;
-            int ii = 0;
-            if (modeVirt.noAdd)
-            {
-                //for (ii = 1; ii < count && ii < _count; ii++)
-                //{
-                //    var calc = virt[ii];
-                //    if (calc > 0m)
-                //        list[ii] = calc;
-                //}
-            }
-            else
-            {
-                for (ii = 1; ii < count && ii < _count; ii++)
-                {
-                    value = pieces[ii].Value;
-                    var calc = virt[ii];
-                    if (value < calc)
-                    {
-                        if (modeVirt.lissage || value <= _zero)
-                        {
-                            if (value <= _zero)
-                                nbAdd++;
-                            value = calc;
-                            pieces[ii].Value = value;
-                        }
-
-                    }
-                    else
-                        indexV = ii;
-                }
-                if (modeVirt.removeEpsilon)
-                {
-                    // j'ai 5 virtuel alors que j'ai deux safe
-                    ///xx---
-                    int nb = 0;
-                    for (int i = indexV + 1; i < _count; i++)
-                    {
-                        nb++;
-                        if (nb <= safe)
-                            continue;
-                        pieces[i].Value = 0m;
-                    }
-
-                }
-                if (mode.removeFirst)
-                {
-                    for (int i = 0; i < nbAdd; i++)
-                    {
-                        pieces[i].Value = 0m;
-                    }
-                }
-            }
-
-            //for (int i = 0; i < _list.Count && i < pieces.Count; i++)
-            //{
-            //    pieces[i].setValue(_list[i], main); 
-            //    //if (main)
-            //    //    pieces[i].setClassementVirtuel(_list[i]);
-            //    //else
-            //    //    pieces[i].setClassementVirtuel2(_list[i]);
-            //}
-
-            if (mode.deleteFirst)
-            {
-                for (int i = 0; i < nbAdd; i++)
-                {
-                    pieces.RemoveAt(0);
-                }
-            }
-
-            if (modeVirt.reSort || mode.removeFirst || modeVirt.noAdd)
-            {
-                //_list.Sort();
-                //_list.Reverse();
-                if (main)
-                    pieces.Sort(new PieceCmp());
-                else
-                    pieces.Sort(new PieceCmp2());
-            }
-
-
-
-            if (modeVirt.noAdd)
-                nbAdd = _nbNoAdd;
-            //}
-            return nbAdd;
-        }
-
-        public static DecimalIndex getMedianneLight(List<PieceExtended> pieces, ConfMedianne mode, ConfMedianneVirt modeVirt, bool main, bool combine)
-        {
-
-            DecimalIndex ret0 = new DecimalIndex();
-            DecimalIndex ret = ret0;
-            try
-            {
-                var _zero = mode.zero;
-
-
-                foreach (PieceExtended p in pieces)
-                    p.UseMain = main;
-
-                var medianne = getMedianne_(pieces, mode.medianne); 
-                ret0.d = medianne;
-                ret0.index = index;
-                ret = ret0;
-                //if (pieces.Count == 1)
-                //    return ret0;
-
-                int i0 = 0;
-                int count = pieces.Count;
-                int nbAdd = buildVirtual(pieces, mode, modeVirt, main, combine, ref i0);
-                //if (mode.combine && mode.simple)
-                //{
-                //    int i1 = 0;
-                //    buildVirtual(pieces, mode, mode.Min, false, ref i1);
-                //    foreach (var p in pieces)
-                //    {
-                //        p.setClassementVirtuelCombine();
-                //    }
-                //}
-                ret = calcmedianneVirt(pieces, mode, modeVirt, main, nbAdd, System.Math.Min(i0, modeVirt.safe));
-                if (mode.expEnabled != 0)
-                {
-                    int _nb = pieces.Count<PieceExtended>(p => !p.Enabled);
-                    decimal _c = (decimal)_nb / (decimal)count;
-                    _c = Math.Pow(_c, mode.expEnabled);
-                    ret.d *= _c;
-                }
-
-
-              
-
-            }
-            finally
-            {
-
-               
-            }
-
-            return ret;
-        }
-
-
-
-
-        private class PieceCmp : IComparer<PieceExtended>
-        {
-            private static PieceTrackNumberComparerE tn = new PieceTrackNumberComparerE();
-            public int Compare(PieceExtended x, PieceExtended y)
-            {
-                int cmp = x.VirtualClassement.CompareTo(y.VirtualClassement);
-                if (cmp != 0)
-                    return -cmp;
-                return tn.Compare(x, y);
-            }
-        }
-
-        private class PieceCmp2 : IComparer<PieceExtended>
-        {
-            private static PieceTrackNumberComparerE tn = new PieceTrackNumberComparerE();
-            public int Compare(PieceExtended x, PieceExtended y)
-            {
-                int cmp = x.VirtualClassement2.CompareTo(y.VirtualClassement2);
-                if (cmp != 0)
-                    return -cmp;
-                return tn.Compare(x, y);
-            }
-        }
-
-
-
-
-        //private static DecimalIndex calcmedianneVirt(IList<decimal> list, ConfMedianne conf, int nbAdd, int nbDel)
-        //{
-        //    var _list = new List<decimal>(list);
-        //    int count = _list.Count;
-
-        //    DecimalIndex ret = new DecimalIndex() { d = 0m, index = 0 }; // 0m; // decimal ret = int.MinValue;
-        //    int _nbSupp = 0;
-        //    bool beginBorder = false;
-        //    for (int i = 0; i < count; i++)
-        //    {
-
-        //        if (i > 0)
-        //        {
-
-        //            _list.RemoveAt(count - i);
-
-        //        }
-
-        //        var aux = getMedianne_(_list, conf.medianne);
-        //        if (aux == 0m)
-        //            continue;
-        //        if (!beginBorder)
-        //        {
-        //            beginBorder = true;
-        //            ret.indexBorder = count - i - 1;
-        //        }
-        //        // aux = getLn(aux);
-        //        //decimal coeff = 1; 
-        //        //if (count >2)
-        //        //coeff = (decimal)(count - 2 - i) / (decimal)(count - 2); 
-        //        decimal coeff = 1 - (decimal)i / (decimal)count; // (decimal)count - i / (decimal)count;
-        //        if (conf.removeFirst && !conf.deleteFirst && i > nbDel)
-        //        {
-        //            coeff = 1 - (decimal)(i - nbDel) / (decimal)count;
-        //        }
-        //        if (conf.quasi)
-        //            coeff *= coeff;
-        //        aux = aux * coeff;
-        //        if (aux > ret.d)
-        //        {
-        //            ret.d = aux;
-        //            ret.index = index;
-        //            ret.indexBorderEffect = count - i - 1;
-        //        }
-
-        //        if (_list[count - i - 1] > conf.zero)
-        //        {
-
-        //            if (conf.removeLast == removeLast.non)
-        //                break;
-        //            _nbSupp++;
-        //            if (conf.removeLast == removeLast.virtuel && _nbSupp >= nbAdd)
-        //                break;
-        //        }
-
-
-        //    }
-
-        //    //     if (ret == int.MinValue)
-        //    //         return 0m;
-        //    return ret;
-        //}
-
-
-        private static DecimalIndex calcmedianneVirt(IList<PieceExtended> list, ConfMedianne conf, ConfMedianneVirt confc)
-        {
-            var _list = new List<PieceExtended>(list);
-            var classes = _list.FindAll(p => p.VirtualClassement > conf.zero);
-
-            if (confc.oldAsZero)
-                classes = _list.FindAll(p => p.LastClassementRecent);
-
-            int count = _list.Count;
-
-            int nbEnabled = classes.Count<PieceExtended>(p => p.Enabled);
-            int nbDisabled = classes.Count<PieceExtended>(p => !p.Enabled);
-            int nbdispo = System.Math.Min(nbEnabled, nbDisabled);
-
-
-            DecimalIndex ret = new DecimalIndex() { d = 0m, index = 0 }; // 0m; // decimal ret = int.MinValue;
-            int _nbSupp = 0;
-           
-            bool beginBorder = false;
-            for (int i = 0; i < count; i++)
-            {
-                if (i > 0)                                  
-                    _list.RemoveAt(count - i);
-
-                var aux = getMedianne_(_list, conf.medianne);
-                if (aux == 0m)
-                    continue;
-                if (!beginBorder)
-                {
-                    beginBorder = true;
-                    ret.indexBorder = count - i - 1;
-                }
-              
-                decimal coeff = 1 - (decimal)i / (decimal)count; // (decimal)count - i / (decimal)count;
-             
-                if (conf.quasi)
-                    coeff *= coeff;
-                aux = aux * coeff;
-                if (aux > ret.d)
-                {
-                    ret.d = aux;
-                    ret.index = index;
-                    ret.indexBorderEffect = count - i - 1;
-                }
-
-                ret.indexBorderMin = count - i - 1;
-                var p = _list[count - i - 1];
-
-                if (p.VirtualClassement > conf.zero && (!confc.oldAsZero || p.LastClassementRecent))
-                {
-                    // je regarde si le morceau est désactivé
-                    // si c'est coché, je ne regarde pas quand je considère qu'on peut supprimmer les morceaux activé
-                    if (p.Enabled)
-                        nbEnabled--;
-                    else
-                        nbDisabled--;
-                    nbdispo--;
-
-                    if (!p.Enabled || !conf.removeEnabled || conf.removeLast == removeLast.unselected)
-                    {
-                        //bool priseEncompte = true || nbEnabled <= 0 || !conf.removeEnabled || conf.removeLast == removeLast.unselected;
-                        //if (priseEncompte)
-                        //{
-                        if ((conf.removeLast == removeLast.non || conf.removeLast == removeLast.unselected) && nbEnabled < 0)
-                            break;
-
-                        if (conf.removeLast == removeLast.unselected) //&& (nbEnabled <= 0 ||  nbDisabled <=0))
-                        {
-                            if (nbdispo < 0)
-                                break;
-                        }
-                        _nbSupp++;
-                    }
-                }
-
-
-            }
-
-            //     if (ret == int.MinValue)
-            //         return 0m;
-            return ret;
-        }
-
-        private static DecimalIndex calcmedianneVirt(IList<PieceExtended> list, ConfMedianne conf, ConfMedianneVirt confc,bool main, int nbAdd, int nbDel)
-        {
-            var _list = new List<PieceExtended>(list);
-            var classes = _list.FindAll(p => p.VirtualClassement > conf.zero);
-
-            if (confc.oldAsZero)
-                classes = _list.FindAll(p => p.LastClassementRecent);
-
-            int count = _list.Count;
-
-            int nbEnabled = classes.Count<PieceExtended>(p => p.Enabled);
-            int nbDisabled = classes.Count<PieceExtended>(p => !p.Enabled);
-            int nbdispo = System.Math.Min(nbEnabled, nbDisabled);
-
-
-            DecimalIndex ret = new DecimalIndex() { d = 0m, index = 0 }; // 0m; // decimal ret = int.MinValue;
-            int _nbSupp = 0;
-            //int _nbSuppDisabled = 0;
-            //int _nbSuppEnabled = 0;
-            bool beginBorder = false;
-            for (int i = 0; i < count; i++)
-            {
-
-                if (i > 0)
-                {
-                    //var d = _list[count - i];
-                    //if (d.Enabled)
-                    //    nbEnabled--;
-                    //else
-                    //    nbDisabled--;
-
-                    _list.RemoveAt(count - i);
-
-                }
-
-                var aux = getMedianne_(_list,conf.medianne);
-                if (aux == 0m)
-                    continue;
-                if (!beginBorder)
-                {
-                    beginBorder = true;
-                    ret.indexBorder = count - i - 1;
-                }
-                // aux = getLn(aux);
-                //decimal coeff = 1; 
-                //if (count >2)
-                //coeff = (decimal)(count - 2 - i) / (decimal)(count - 2); 
-                decimal coeff = 1 - (decimal)i / (decimal)count; // (decimal)count - i / (decimal)count;
-                if (conf.removeFirst && !conf.deleteFirst && i > nbDel)
-                {
-                    coeff = 1 - (decimal)(i - nbDel) / (decimal)count;
-                }
-                if (conf.quasi)
-                    coeff *= coeff;
-                aux = aux * coeff;
-                if (aux > ret.d)
-                {
-                    ret.d = aux;
-                    ret.index = index;
-                    ret.indexBorderEffect = count - i - 1;
-                }
-
-                ret.indexBorderMin = count - i - 1;
-                var p = _list[count - i - 1];
-
-                if (p.VirtualClassement > conf.zero && (!confc.oldAsZero || p.LastClassementRecent))
-                {
-                    // je regarde si le morceau est désactivé
-                    // si c'est coché, je ne regarde pas quand je considère qu'on peut supprimmer les morceaux activé
-                    if (p.Enabled)
-                        nbEnabled--;
-                    else
-                        nbDisabled--;
-                    nbdispo--;
-
-                    if (!p.Enabled || !conf.removeEnabled || conf.removeLast == removeLast.unselected)
-                    {
-                        //bool priseEncompte = true || nbEnabled <= 0 || !conf.removeEnabled || conf.removeLast == removeLast.unselected;
-                        //if (priseEncompte)
-                        //{
-                        if ((conf.removeLast == removeLast.non || conf.removeLast == removeLast.unselected) && nbEnabled < 0)
-                            break;
-
-                        if (conf.removeLast == removeLast.unselected) //&& (nbEnabled <= 0 ||  nbDisabled <=0))
-                        {
-                            if (nbdispo < 0)
-                                break;
-                        }
-
-                        _nbSupp++;
-                        if (conf.removeLast == removeLast.virtuel && _nbSupp >= nbAdd)
-                            break;
-                        // }
-
-
-                    }
-                }
-
-
-            }
-
-            //     if (ret == int.MinValue)
-            //         return 0m;
-            return ret;
-        }
-
-      
-
-        //private static decimal getMedianne_(IList<PieceExtended> list, bool main, decimal coeffMedianne)
-        //{
-        //    var l = new List<decimal>();
-        //    foreach (PieceExtended p in list)
-        //    {
-        //        if (main)
-        //            l.Add(p.VirtualClassement); 
-        //        else
-        //            l.Add(p.VirtualClassement2); 
-        //    }
-
-        //    return CalcMedianne.getMedianneDec(l, coeffMedianne); 
-        //}
-
-        private static decimal getMedianne_(IList<Piece> list, bool main, decimal coeffMedianne)
-        {
-            var l = new List<decimal>();
-            foreach (Piece p in list)
-            {
-                if (main)
-                    l.Add(p.VirtualClassement);
-                else
-                    l.Add(p.VirtualClassement2);
-            }
-
-            return CalcMedianne.getMedianneDec(l, coeffMedianne);
-        }
-
-
-        private static decimal getMedianne_(IList<PieceExtended> list, decimal coeffMedianne)
-        {
-            index = 0;
-            if (list == null)
-                throw new ArgumentException("liste nulle");
-            int count = list.Count;
-            if (count == 0)
-                throw new ArgumentException("liste vide");
-            if (coeffMedianne < 0 || coeffMedianne > 1)
-                throw new ArgumentException("coeffMedianne doit être compris entre 0 et 1, valeur:" + coeffMedianne);
-            if (count == 1)
-                return list[0].Value;
-            if (coeffMedianne == 0)
-                return list[0].Value;
-            if (coeffMedianne == 1)
-            {
-                index = count - 1;
-                return list[count - 1].Value;
-            }
-
-            var medianne = coeffMedianne * (count - 1);
-
-            index = (int)medianne;
-            int i1 = index + 1;
-            var val0 = list[index].Value;
-            var val1 = list[i1].Value;
-            if (Math.Abs(medianne - Convert.ToDecimal(index)) < PRECISION)
-                return val0;
-            if (Math.Abs(medianne - i1) < PRECISION)
-            {
-                index = i1;
-                return val1;
-            }
-            if (val1 < PRECISION)
-            {
-                index = i1;
-                return val1;
-            }
-            var dx = medianne - index;
-
-
-            // var ret = val0 + pente * dx;
-
-
-            // moyenne avec calcul de log
-            var log0 = Math.Log(val0 + EPSILON_LOG);
-            var log1 = Math.Log(val1 + EPSILON_LOG);
-            // pente = log1 - log0;
-            var log = log0 + (log1 - log0) * dx;
-            return Math.Exp(log) - EPSILON_LOG;
-
-
-        }
-
-    }
-}
-]]></content>
-  </file>
-  <file path="\PieceDb.Consolid\albums\PieceExtended.cs">
-    <content><![CDATA[using pdb.util;
-
-namespace pdb.gen.albums
-{
-    public class PieceExtended : IValue
-    {
-        private Piece piece;
-        private PieceSupInfo main;
-        private PieceSupInfo min;
-        private PieceSupInfo combine;
-        private bool _useMain;
-        private bool effectMain;
-
-
-        public PieceExtended(Piece piece)
-        {
-            this.piece = piece;
-            var cl = piece.RapportClassement;
-            this.main = new PieceSupInfo(cl);
-            this.min = new PieceSupInfo(cl);
-
-        }
-
-        public decimal VirtualClassement { get { return main.Value; } }
-        public decimal VirtualClassement2 { get { return min.Value; } }
-
-        public bool getCauseUp(bool? natureCause)
-        {
-            if (true == natureCause)
-                return min.getCoeff(piece.RapportClassement) > 1;
-            if (false == natureCause)
-                return main.getCoeff(piece.RapportClassement) > 1;
-            return min.getCoeff(piece.RapportClassement) > 1 || main.getCoeff(piece.RapportClassement) > 1;
-        }
-
-        public decimal CoeffVirtuel { get { return main.getCoeff(piece.RapportClassement); } }
-        public decimal CoeffVirtuel2 { get { return min.getCoeff(piece.RapportClassement); } }
-        public decimal getVirtual(bool main)
-        {
-            if (main)
-                return this.main.Value;
-            else
-                return this.min.Value;
-        }
-        public Piece Piece { get { return piece; } }
-        public bool Enabled { get { return piece.Enabled; } }
-
-        public bool LastClassementRecent { get { return piece.LastClassementRecent; } }
-        public decimal RapportClassement { get { return piece.RapportClassement; } }
-
-
-        public void setCoeff(decimal coeff, bool main)
-        {
-            var value0 = piece.RapportClassement; 
-            if (main)
-                this.main.setCoeff(coeff, value0); 
-            else
-                this.min.setCoeff(coeff, value0); 
-        }
-
-        public void setValue(decimal value, bool main)
-        {
-            if (main)
-                this.main.Value = value;
-            else
-                this.min.Value = value;
-        }
-
-        public void finalyse()
-        {
-            this.piece.setClassementVirtuel(this.main.Value);
-            this.piece.setClassementVirtuel2(this.min.Value);
-        }
-
-        public override string ToString()
-        {
-            return string.Format("{0} enabled={1} coeff1={2} coeff2={3} {4}", pdb.gen.Piece.getClassementEquiv(RapportClassement), Enabled, CoeffVirtuel, CoeffVirtuel2, Piece);
-        }
-
-
-        public decimal Value
-        {
-            get
-            {
-                if (_useMain)
-                    return main.Value;
-                return min.Value;
-            }
-
-            set
-            {
-                if (_useMain)
-                    main.Value = value;
-                else
-                    min.Value = value;
-            }
-        }
-
-        public bool UseMain { get { return _useMain; } set { _useMain = value; } }
-        public bool EffectMain { get { return effectMain; } set { effectMain = value; } }
-    }
-
-    class PieceSupInfo
-    {
-
-
-        //  public readonly decimal value0;
-        private decimal value;
-
-        public PieceSupInfo(decimal value)
-        {
-            this.value = value;
-            //  this.value0 = value;
-        }
-
-        public decimal getCoeff(decimal value0)
-        {
-            if (value <= 0) return 1m; return value0 / value;
-        }
-
-        public void setCoeff(decimal coeff, decimal value0)
-        {
-            if (value0 > 0)
-                this.value = value0 / value;
-
-        }
-
-        public decimal Value { get { return value; } set { this.value = value; } }
-    }
-}
-]]></content>
-  </file>
+<?xml version="1.0" encoding="utf-8"?>
+<db version="3" seq_piece="43679">
+  <pieces>
+    <piece id="40967">
+      <classement>
+        <version date="23/03/2018 17:48:46" value="002.1" />
+      </classement>
+    </piece>
+    <piece id="41058">
+      <classement>
+        <version date="23/03/2018 16:12:21" value="00030.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:12:26</date>
+      </dates>
+    </piece>
+    <piece id="41489">
+      <classement>
+        <version date="23/03/2018 13:11:31" value="000002322.4" />
+      </classement>
+      <duration>242007</duration>
+    </piece>
+    <piece id="41663">
+      <classement>
+        <version date="23/03/2018 12:01:46" value="00000435.1" />
+      </classement>
+    </piece>
+    <piece id="41832">
+      <classement>
+        <version date="23/03/2018 18:08:30" value="000025.4" />
+      </classement>
+    </piece>
+    <piece id="41835" />
+    <piece id="41915">
+      <classement>
+        <version date="23/03/2018 15:39:03" value="000001550.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 15:39:45</date>
+      </dates>
+      <disabled />
+    </piece>
+    <piece id="41933">
+      <classement>
+        <version date="23/03/2018 17:00:29" value="000002340.1" />
+      </classement>
+    </piece>
+    <piece id="41943">
+      <classement>
+        <version date="23/03/2018 18:20:05" value="000002112.1" />
+      </classement>
+    </piece>
+    <piece id="42047">
+      <classement>
+        <version date="23/03/2018 11:59:28" value="000033.1" />
+      </classement>
+    </piece>
+    <piece id="42085">
+      <classement>
+        <version date="23/03/2018 18:07:30" value="000002243.2" />
+      </classement>
+      <duration>150839</duration>
+    </piece>
+    <piece id="42255">
+      <classement>
+        <version date="23/03/2018 16:00:45" value="00024.1" />
+      </classement>
+    </piece>
+    <piece id="42285">
+      <classement>
+        <version date="23/03/2018 17:04:37" value="0000111.4" />
+      </classement>
+    </piece>
+    <piece id="42317">
+      <classement>
+        <version date="23/03/2018 18:10:54" value="00015.3" />
+      </classement>
+    </piece>
+    <piece id="42322">
+      <classement>
+        <version date="23/03/2018 16:29:43" value="001.5" />
+      </classement>
+    </piece>
+    <piece id="42323">
+      <classement>
+        <version date="23/03/2018 15:25:42" value="00031.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:19:13</date>
+      </dates>
+    </piece>
+    <piece id="42326">
+      <classement>
+        <version date="23/03/2018 11:53:46" value="00014.1" />
+      </classement>
+    </piece>
+    <piece id="42328">
+      <classement>
+        <version date="23/03/2018 16:13:30" value="00033.3" />
+      </classement>
+    </piece>
+    <piece id="42329">
+      <classement>
+        <version date="23/03/2018 18:30:25" value="00042.1" />
+      </classement>
+    </piece>
+    <piece id="42429">
+      <classement>
+        <version date="23/03/2018 18:33:54" value="00044.3" />
+      </classement>
+    </piece>
+    <piece id="42431">
+      <classement>
+        <version date="23/03/2018 17:50:58" value="000043.3" />
+      </classement>
+    </piece>
+    <piece id="42466">
+      <classement>
+        <version date="23/03/2018 15:59:53" value="0000153.3" />
+      </classement>
+    </piece>
+    <piece id="42504">
+      <classement>
+        <version date="23/03/2018 18:28:45" value="0005.4" />
+      </classement>
+    </piece>
+    <piece id="42518">
+      <classement>
+        <version date="23/03/2018 17:35:45" value="000002100.2" />
+      </classement>
+      <dates>
+        <date>23/03/2018 17:07:05</date>
+      </dates>
+    </piece>
+    <piece id="42534">
+      <classement>
+        <version date="23/03/2018 16:21:55" value="0000105.2" />
+      </classement>
+    </piece>
+    <piece id="42550">
+      <classement>
+        <version date="23/03/2018 18:32:07" value="0014.3" />
+      </classement>
+    </piece>
+    <piece id="42555">
+      <classement>
+        <version date="23/03/2018 15:25:42" value="0000144.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:34:10</date>
+      </dates>
+    </piece>
+    <piece id="42565">
+      <classement>
+        <version date="23/03/2018 13:10:38" value="0000101.4" />
+      </classement>
+      <dates>
+        <date>23/03/2018 13:07:33</date>
+      </dates>
+    </piece>
+    <piece id="42576">
+      <classement>
+        <version date="23/03/2018 10:28:41" value="00023.3" />
+      </classement>
+    </piece>
+    <piece id="42590">
+      <classement>
+        <version date="23/03/2018 17:44:36" value="00000343.2" />
+      </classement>
+    </piece>
+    <piece id="42606">
+      <classement>
+        <version date="23/03/2018 18:13:08" value="00025.3" />
+      </classement>
+    </piece>
+    <piece id="42614">
+      <classement>
+        <version date="23/03/2018 10:27:17" value="00021.3" />
+      </classement>
+    </piece>
+    <piece id="42617">
+      <classement>
+        <version date="23/03/2018 15:59:10" value="000034.1" />
+      </classement>
+    </piece>
+    <piece id="42620">
+      <classement>
+        <version date="23/03/2018 18:18:01" value="00032.3" />
+      </classement>
+    </piece>
+    <piece id="42624">
+      <classement>
+        <version date="23/03/2018 16:28:45" value="00005.5" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:27:21</date>
+      </dates>
+    </piece>
+    <piece id="42638">
+      <classement>
+        <version date="23/03/2018 15:29:24" value="000050.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 15:29:37</date>
+      </dates>
+    </piece>
+    <piece id="42641">
+      <classement>
+        <version date="23/03/2018 11:34:49" value="0000140.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 11:34:52</date>
+        <date>23/03/2018 10:50:31</date>
+        <date>23/03/2018 10:37:37</date>
+      </dates>
+    </piece>
+    <piece id="42654">
+      <classement>
+        <version date="23/03/2018 12:31:18" value="0000125.3" />
+      </classement>
+    </piece>
+    <piece id="42683">
+      <classement>
+        <version date="23/03/2018 10:24:38" value="00014.3" />
+      </classement>
+    </piece>
+    <piece id="42705">
+      <classement>
+        <version date="23/03/2018 16:10:43" value="0003.5" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:10:03</date>
+      </dates>
+    </piece>
+    <piece id="42708">
+      <classement>
+        <version date="23/03/2018 16:05:19" value="0000200.3" />
+      </classement>
+    </piece>
+    <piece id="42710">
+      <classement>
+        <version date="23/03/2018 15:54:10" value="0000123.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 15:51:35</date>
+      </dates>
+    </piece>
+    <piece id="42712">
+      <classement>
+        <version date="23/03/2018 15:57:05" value="000024.4" />
+      </classement>
+    </piece>
+    <piece id="42734">
+      <classement>
+        <version date="23/03/2018 16:53:37" value="0000110.4" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:47:38</date>
+        <date>23/03/2018 16:39:52</date>
+        <date>23/03/2018 16:36:35</date>
+      </dates>
+    </piece>
+    <piece id="42738">
+      <classement>
+        <version date="23/03/2018 17:42:07" value="000002334.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 17:39:53</date>
+        <date>23/03/2018 17:11:57</date>
+      </dates>
+    </piece>
+    <piece id="42739">
+      <classement>
+        <version date="23/03/2018 18:27:17" value="00023.1" />
+      </classement>
+    </piece>
+    <piece id="42809">
+      <classement>
+        <version date="23/03/2018 11:58:18" value="000022.5" />
+      </classement>
+    </piece>
+    <piece id="42820">
+      <classement>
+        <version date="23/03/2018 11:54:52" value="00011.2" />
+      </classement>
+    </piece>
+    <piece id="42834">
+      <classement>
+        <version date="23/03/2018 11:47:45" value="0000131.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 11:42:34</date>
+      </dates>
+    </piece>
+    <piece id="42843">
+      <classement>
+        <version date="23/03/2018 11:51:26" value="00012.1" />
+      </classement>
+    </piece>
+    <piece id="42846">
+      <classement>
+        <version date="23/03/2018 17:37:08" value="0000151.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 17:09:31</date>
+      </dates>
+    </piece>
+    <piece id="42849">
+      <classement>
+        <version date="23/03/2018 15:25:42" value="0004.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:07:42</date>
+      </dates>
+    </piece>
+    <piece id="42858">
+      <classement>
+        <version date="23/03/2018 12:30:03" value="0000124.3" />
+      </classement>
+    </piece>
+    <piece id="42870">
+      <classement>
+        <version date="23/03/2018 15:55:34" value="0000143.3" />
+      </classement>
+    </piece>
+    <piece id="42939">
+      <classement>
+        <version date="23/03/2018 16:02:49" value="0004.4" />
+      </classement>
+    </piece>
+    <piece id="42943">
+      <classement>
+        <version date="23/03/2018 10:48:04" value="0000133.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 10:33:26</date>
+      </dates>
+    </piece>
+    <piece id="42944">
+      <classement>
+        <version date="23/03/2018 15:43:30" value="00022.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 15:44:31</date>
+      </dates>
+    </piece>
+    <piece id="42972">
+      <classement>
+        <version date="23/03/2018 18:16:41" value="00020.1" />
+      </classement>
+    </piece>
+    <piece id="43000">
+      <classement>
+        <version date="23/03/2018 16:01:46" value="00010.2" />
+      </classement>
+    </piece>
+    <piece id="43078">
+      <classement>
+        <version date="23/03/2018 16:16:49" value="0004.5" />
+      </classement>
+    </piece>
+    <piece id="43084">
+      <classement>
+        <version date="23/03/2018 16:21:03" value="00034.3" />
+      </classement>
+    </piece>
+    <piece id="43101">
+      <classement>
+        <version date="23/03/2018 15:37:27" value="0000115.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 15:34:11</date>
+      </dates>
+    </piece>
+    <piece id="43108">
+      <classement>
+        <version date="23/03/2018 11:56:39" value="0000150.3" />
+      </classement>
+    </piece>
+    <piece id="43127">
+      <classement>
+        <version date="23/03/2018 12:46:46" value="00000333.2" />
+      </classement>
+      <dates>
+        <date>23/03/2018 13:09:48</date>
+      </dates>
+    </piece>
+    <piece id="43183">
+      <classement>
+        <version date="23/03/2018 11:49:19" value="00010.4" />
+      </classement>
+      <dates>
+        <date>23/03/2018 11:44:46</date>
+      </dates>
+    </piece>
+    <piece id="43197">
+      <classement>
+        <version date="23/03/2018 15:35:46" value="00000513.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 15:31:54</date>
+      </dates>
+    </piece>
+    <piece id="43199">
+      <classement>
+        <version date="23/03/2018 10:20:51" value="00000405.4" />
+      </classement>
+      <dates>
+        <date>23/03/2018 10:31:07</date>
+      </dates>
+    </piece>
+    <piece id="43203">
+      <classement>
+        <version date="23/03/2018 17:43:15" value="00000345.4" />
+      </classement>
+    </piece>
+    <piece id="43206">
+      <classement>
+        <version date="23/03/2018 13:05:05" value="0000132.3" />
+      </classement>
+    </piece>
+    <piece id="43212">
+      <classement>
+        <version date="23/03/2018 17:02:31" value="0000113.2" />
+      </classement>
+    </piece>
+    <piece id="43224" />
+    <piece id="43249">
+      <classement>
+        <version date="23/03/2018 16:31:39" value="0011.2" />
+      </classement>
+    </piece>
+    <piece id="43255">
+      <classement>
+        <version date="23/03/2018 16:23:06" value="00043.3" />
+      </classement>
+    </piece>
+    <piece id="43263">
+      <classement>
+        <version date="23/03/2018 13:03:54" value="0000120.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 12:38:02</date>
+      </dates>
+    </piece>
+    <piece id="43278">
+      <classement>
+        <version date="23/03/2018 15:49:14" value="0000103.2" />
+      </classement>
+    </piece>
+    <piece id="43310">
+      <classement>
+        <version date="23/03/2018 12:28:52" value="01.3" />
+      </classement>
+    </piece>
+    <piece id="43311">
+      <classement>
+        <version date="23/03/2018 17:52:08" value="0005.3" />
+      </classement>
+    </piece>
+    <piece id="43327">
+      <classement>
+        <version date="23/03/2018 15:25:42" value="00012.4" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:56:13</date>
+        <date>23/03/2018 16:50:12</date>
+        <date>23/03/2018 16:42:26</date>
+      </dates>
+    </piece>
+    <piece id="43339">
+      <classement>
+        <version date="23/03/2018 13:03:05" value="0000141.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 12:35:48</date>
+      </dates>
+    </piece>
+    <piece id="43344">
+      <dates>
+        <date>23/03/2018 10:35:27</date>
+      </dates>
+    </piece>
+    <piece id="43364">
+      <classement>
+        <version date="23/03/2018 12:26:47" value="000042.3" />
+      </classement>
+    </piece>
+    <piece id="43367">
+      <classement>
+        <version date="23/03/2018 13:13:02" value="0000114.1" />
+      </classement>
+    </piece>
+    <piece id="43385">
+      <classement>
+        <version date="23/03/2018 11:52:31" value="00013.1" />
+      </classement>
+    </piece>
+    <piece id="43397">
+      <classement>
+        <version date="23/03/2018 12:33:27" value="0000134.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 12:33:34</date>
+      </dates>
+    </piece>
+    <piece id="43432">
+      <classement>
+        <version date="23/03/2018 11:37:47" value="00010.3" />
+      </classement>
+      <dates>
+        <date>23/03/2018 10:44:08</date>
+        <date>23/03/2018 10:39:47</date>
+      </dates>
+    </piece>
+    <piece id="43435">
+      <classement>
+        <version date="23/03/2018 18:09:47" value="000044.3" />
+      </classement>
+    </piece>
+    <piece id="43443">
+      <classement>
+        <version date="23/03/2018 18:04:59" value="00000530.3" />
+      </classement>
+    </piece>
+    <piece id="43445">
+      <classement>
+        <version date="23/03/2018 18:23:13" value="00035.1" />
+      </classement>
+    </piece>
+    <piece id="43446">
+      <classement>
+        <version date="23/03/2018 10:25:58" value="00015.1" />
+      </classement>
+    </piece>
+    <piece id="43449">
+      <classement>
+        <version date="23/03/2018 18:15:08" value="00041.3" />
+      </classement>
+    </piece>
+    <piece id="43461">
+      <classement>
+        <version date="23/03/2018 11:40:17" value="00011.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 11:39:56</date>
+      </dates>
+    </piece>
+    <piece id="43486">
+      <classement>
+        <version date="23/03/2018 18:31:19" value="0000055.5" />
+      </classement>
+    </piece>
+    <piece id="43512">
+      <duration>56750</duration>
+    </piece>
+    <piece id="43526">
+      <classement>
+        <version date="23/03/2018 18:04:05" value="0000122.1" />
+      </classement>
+    </piece>
+    <piece id="43530">
+      <classement>
+        <version date="23/03/2018 17:45:25" value="0000121.1" />
+      </classement>
+    </piece>
+    <piece id="43533">
+      <classement>
+        <version date="23/03/2018 15:47:10" value="0000102.2" />
+      </classement>
+    </piece>
+    <piece id="43555">
+      <classement>
+        <version date="23/03/2018 18:25:44" value="0000104.4" />
+      </classement>
+    </piece>
+    <piece id="43557">
+      <classement>
+        <version date="23/03/2018 16:14:54" value="0004.2" />
+      </classement>
+    </piece>
+    <piece id="43581">
+      <classement>
+        <version date="23/03/2018 16:59:19" value="000035.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 16:58:38</date>
+        <date>23/03/2018 16:52:38</date>
+        <date>23/03/2018 16:44:51</date>
+      </dates>
+    </piece>
+    <piece id="43587">
+      <classement>
+        <version date="23/03/2018 17:47:34" value="0000124.1" />
+      </classement>
+    </piece>
+    <piece id="43589">
+      <classement>
+        <version date="23/03/2018 15:58:01" value="000031.4" />
+      </classement>
+    </piece>
+    <piece id="43602">
+      <classement>
+        <version date="23/03/2018 17:46:21" value="0000114.4" />
+      </classement>
+    </piece>
+    <piece id="43624">
+      <classement>
+        <version date="23/03/2018 18:06:31" value="000032.4" />
+      </classement>
+    </piece>
+    <piece id="43639">
+      <classement>
+        <version date="23/03/2018 15:41:51" value="000035.3" />
+      </classement>
+    </piece>
+    <piece id="43652">
+      <classement>
+        <version date="23/03/2018 11:35:51" value="0000113.1" />
+      </classement>
+      <dates>
+        <date>23/03/2018 10:41:57</date>
+      </dates>
+    </piece>
+  </pieces>
 </db>
