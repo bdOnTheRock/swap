@@ -1,1287 +1,563 @@
 <db path="C:\Bernard\db1\pdb4">
-  <file path="\PieceDb.Consolid\auto\CalcAuto.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using pdb.util;
-using Math = pdb.util.Math;
+  <file path="\pdb.sln">
+    <content><![CDATA[
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb", "pdb.csproj", "{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.it", "pieceDb.iT\pdb.it.csproj", "{CF5DB63F-4790-4351-9050-B30DED32F052}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.obj", "PieceDb.obj\pdb.obj.csproj", "{9B849072-2B8E-4CE4-8AD7-D173724A9644}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.db", "PieceDb.Db\pdb.db.csproj", "{43D27B47-E615-451D-AD25-67C5B8447C4A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.gen", "PieceDb.Consolid\pdb.gen.csproj", "{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.gen.it", "PieceDb.iT.listGen\pdb.gen.it.csproj", "{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testMoveTree", "testMoveTree\testMoveTree.csproj", "{FF82B72D-A119-4B53-9D35-2269FF6E5384}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "podcast", "podcast\podcast.csproj", "{CF22411A-0D1B-4301-9087-DFBCF85AB16A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.util", "pdb.util\pdb.util.csproj", "{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hello", "WPF\hello\hello.csproj", "{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.podcast", "pdb.podcast\pdb.podcast.csproj", "{6503C759-0373-4B68-A28B-1CB5FF0E6208}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "grant", "grant\grant.csproj", "{5E84FD2F-0954-4D9B-AF17-36F857490C6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testSDK", "testSDK\testSDK.csproj", "{30459276-DDC7-4BF5-AF55-CDD7211FD791}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "purgeZique", "purgeZique\purgeZique.csproj", "{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.daemon", "pdb.daemon\pdb.daemon.csproj", "{D69D572F-67C8-47E8-93B0-CC33FA4BC704}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "podcastCopy", "podcastCopy\podcastCopy.csproj", "{F916911A-B4FF-4B0A-BA80-B8349E3E0130}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testFormar", "testFormar\testFormar.csproj", "{32A79657-7A1F-4F72-99D8-4406838182F2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.ordo", "pdb.ordo\pdb.ordo.csproj", "{30823D1D-851C-456B-AC4C-B0BEEC173361}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "engine", "engine", "{B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vlc", "vlc", "{C7DF1F85-A6D6-4771-8870-2CC0F2A0041E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine", "engine\pdb.player.engine\pdb.player.engine.csproj", "{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine.build", "engine\pdb.player.engine.build\pdb.player.engine.build.csproj", "{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine.vlc.pluginI", "engine\vlc\pdb.player.engine.vlc.pluginI\pdb.player.engine.vlc.pluginI.csproj", "{610EF011-6738-49D6-8426-4B162726D57E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine.vlc.plugin", "engine\vlc\pdb.player.engine.vlc.plugin\pdb.player.engine.vlc.plugin.csproj", "{3CD9378E-BE8C-4E38-B362-51363357988C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testStats", "testStats\testStats.csproj", "{07095C40-49A3-4001-8671-4285D9633596}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2001", "2001\2001.csproj", "{37020161-0E95-46F0-9FD1-DE43C491FA08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player", "pdb.player\pdb.player.csproj", "{4166FA60-B33F-4496-9352-EDD8F3214021}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testmatchalbum", "..\testmatchalbum\testmatchalbum.csproj", "{B901D21E-A546-4628-9136-B8D5E3FF4A1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine.mp", "..\pdb.player.engine.mp\pdb.player.engine.mp.csproj", "{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|x64.ActiveCfg = Debug|x64
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|x64.Build.0 = Debug|x64
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|x86.ActiveCfg = Debug|x86
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|x86.Build.0 = Debug|x86
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|x64.ActiveCfg = Release|x64
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|x64.Build.0 = Release|x64
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|x86.ActiveCfg = Release|x86
+		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|x86.Build.0 = Release|x86
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|x64.ActiveCfg = Debug|x64
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|x64.Build.0 = Debug|x64
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|x86.ActiveCfg = Debug|x86
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|x86.Build.0 = Debug|x86
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|x64.ActiveCfg = Release|x64
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|x64.Build.0 = Release|x64
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|x86.ActiveCfg = Release|x86
+		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|x86.Build.0 = Release|x86
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|x64.ActiveCfg = Debug|x64
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|x64.Build.0 = Debug|x64
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|x86.ActiveCfg = Debug|x86
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|x86.Build.0 = Debug|x86
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|x64.ActiveCfg = Release|x64
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|x64.Build.0 = Release|x64
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|x86.ActiveCfg = Release|x86
+		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|x86.Build.0 = Release|x86
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|x64.ActiveCfg = Debug|x64
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|x64.Build.0 = Debug|x64
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|x86.ActiveCfg = Debug|x86
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|x86.Build.0 = Debug|x86
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|x64.ActiveCfg = Release|x64
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|x64.Build.0 = Release|x64
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|x86.ActiveCfg = Release|x86
+		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|x86.Build.0 = Release|x86
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|x64.ActiveCfg = Debug|x64
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|x64.Build.0 = Debug|x64
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|x86.ActiveCfg = Debug|x86
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|x86.Build.0 = Debug|x86
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|x64.ActiveCfg = Release|x64
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|x64.Build.0 = Release|x64
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|x86.ActiveCfg = Release|x86
+		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|x86.Build.0 = Release|x86
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|x64.ActiveCfg = Debug|x64
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|x64.Build.0 = Debug|x64
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|x86.ActiveCfg = Debug|x86
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|x86.Build.0 = Debug|x86
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|x64.ActiveCfg = Release|x64
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|x64.Build.0 = Release|x64
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|x86.ActiveCfg = Release|x86
+		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|x86.Build.0 = Release|x86
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|x64.ActiveCfg = Debug|x64
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|x86.ActiveCfg = Debug|x86
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|x86.Build.0 = Debug|x86
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|Any CPU.ActiveCfg = Release|x86
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|Mixed Platforms.Build.0 = Release|x86
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|x64.ActiveCfg = Release|x64
+		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|x86.ActiveCfg = Release|x86
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|x64.ActiveCfg = Debug|x64
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|x86.ActiveCfg = Debug|x86
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|x86.Build.0 = Debug|x86
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|Any CPU.ActiveCfg = Release|x86
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|Mixed Platforms.Build.0 = Release|x86
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|x64.ActiveCfg = Release|x64
+		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|x86.ActiveCfg = Release|x86
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|x64.ActiveCfg = Debug|x64
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|x64.Build.0 = Debug|x64
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|x86.ActiveCfg = Debug|x86
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|x86.Build.0 = Debug|x86
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|x64.ActiveCfg = Release|x64
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|x64.Build.0 = Release|x64
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|x86.ActiveCfg = Release|x86
+		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|x86.Build.0 = Release|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|x64.ActiveCfg = Debug|x64
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|x86.ActiveCfg = Debug|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|x86.Build.0 = Debug|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|Any CPU.ActiveCfg = Release|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|Mixed Platforms.Build.0 = Release|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|x64.ActiveCfg = Release|x64
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|x86.ActiveCfg = Release|x86
+		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|x86.Build.0 = Release|x86
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|x64.ActiveCfg = Debug|x64
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|x64.Build.0 = Debug|x64
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|x86.ActiveCfg = Debug|x86
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|x86.Build.0 = Debug|x86
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|Any CPU.ActiveCfg = Release|x64
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|Mixed Platforms.Build.0 = Release|x86
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|x64.ActiveCfg = Release|x64
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|x64.Build.0 = Release|x64
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|x86.ActiveCfg = Release|x86
+		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|x86.Build.0 = Release|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|x64.ActiveCfg = Debug|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|x86.ActiveCfg = Debug|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|x86.Build.0 = Debug|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|Any CPU.ActiveCfg = Release|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|Mixed Platforms.Build.0 = Release|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|x64.ActiveCfg = Release|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|x86.ActiveCfg = Release|x86
+		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|x86.Build.0 = Release|x86
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|x64.ActiveCfg = Debug|x64
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|x86.ActiveCfg = Debug|x86
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|x86.Build.0 = Debug|x86
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|Any CPU.ActiveCfg = Release|x86
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|Mixed Platforms.Build.0 = Release|x86
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|x64.ActiveCfg = Release|x64
+		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|x86.ActiveCfg = Release|x86
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|x64.ActiveCfg = Debug|x64
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|x86.ActiveCfg = Debug|x86
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|x86.Build.0 = Debug|x86
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|Any CPU.ActiveCfg = Release|x86
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|Mixed Platforms.Build.0 = Release|x86
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|x64.ActiveCfg = Release|x64
+		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|x86.ActiveCfg = Release|x86
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|x64.ActiveCfg = Debug|x64
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|x86.ActiveCfg = Debug|x86
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|x86.Build.0 = Debug|x86
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|Mixed Platforms.Build.0 = Release|x86
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|x64.ActiveCfg = Release|x64
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|x64.Build.0 = Release|x64
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|x86.ActiveCfg = Release|x86
+		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|x86.Build.0 = Release|x86
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|x64.ActiveCfg = Debug|x64
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|x86.ActiveCfg = Debug|x86
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|x86.Build.0 = Debug|x86
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|Any CPU.ActiveCfg = Release|x86
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|Mixed Platforms.Build.0 = Release|x86
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|x64.ActiveCfg = Release|x64
+		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|x86.ActiveCfg = Release|x86
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|x64.ActiveCfg = Debug|x64
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|x86.ActiveCfg = Debug|x86
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|x86.Build.0 = Debug|x86
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|Any CPU.ActiveCfg = Release|x86
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|Mixed Platforms.Build.0 = Release|x86
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|x64.ActiveCfg = Release|x64
+		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|x86.ActiveCfg = Release|x86
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|x64.ActiveCfg = Debug|x64
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|x64.Build.0 = Debug|x64
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|x86.ActiveCfg = Debug|x86
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|x86.Build.0 = Debug|x86
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|x64.ActiveCfg = Release|x64
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|x64.Build.0 = Release|x64
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|x86.ActiveCfg = Release|x86
+		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|x86.Build.0 = Release|x86
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|x64.ActiveCfg = Release|Any CPU
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|x86.ActiveCfg = Release|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|x64.ActiveCfg = Release|Any CPU
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|x86.ActiveCfg = Release|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Release|x64.ActiveCfg = Release|Any CPU
+		{610EF011-6738-49D6-8426-4B162726D57E}.Release|x86.ActiveCfg = Release|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|x86.ActiveCfg = Debug|x86
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|x86.Build.0 = Debug|x86
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|x64.ActiveCfg = Release|Any CPU
+		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|x86.ActiveCfg = Release|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{07095C40-49A3-4001-8671-4285D9633596}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{07095C40-49A3-4001-8671-4285D9633596}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Release|Any CPU.Build.0 = Release|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Release|x64.ActiveCfg = Release|Any CPU
+		{07095C40-49A3-4001-8671-4285D9633596}.Release|x86.ActiveCfg = Release|Any CPU
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|x64.ActiveCfg = Debug|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|x86.ActiveCfg = Debug|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|x86.Build.0 = Debug|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|Any CPU.ActiveCfg = Release|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|Mixed Platforms.Build.0 = Release|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|x64.ActiveCfg = Release|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|x86.ActiveCfg = Release|x86
+		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|x86.Build.0 = Release|x86
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|x64.ActiveCfg = Debug|x86
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|x86.ActiveCfg = Debug|x86
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|x86.Build.0 = Debug|x86
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|x64.ActiveCfg = Release|x86
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|x86.ActiveCfg = Release|x86
+		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|x86.Build.0 = Release|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|x64.ActiveCfg = Debug|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|x86.ActiveCfg = Debug|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|x86.Build.0 = Debug|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|Any CPU.ActiveCfg = Release|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|Mixed Platforms.Build.0 = Release|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|x64.ActiveCfg = Release|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|x86.ActiveCfg = Release|x86
+		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|x86.Build.0 = Release|x86
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|x64.ActiveCfg = Release|Any CPU
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|x86.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C7DF1F85-A6D6-4771-8870-2CC0F2A0041E} = {B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}
+		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D} = {B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}
+		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54} = {B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}
+		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154} = {B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}
+		{610EF011-6738-49D6-8426-4B162726D57E} = {C7DF1F85-A6D6-4771-8870-2CC0F2A0041E}
+		{3CD9378E-BE8C-4E38-B362-51363357988C} = {C7DF1F85-A6D6-4771-8870-2CC0F2A0041E}
+	EndGlobalSection
+EndGlobal
+]]></content>
+  </file>
+  <file path="\engine\pdb.player.engine.build\pdb.player.engine.build.csproj">
+    <content><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>pdb.player.engine.build</RootNamespace>
+    <AssemblyName>pdb.player.engine.build</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Class1.cs" />
+    <Compile Include="PlayerBuilder.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\pdb.player.engine.mp\pdb.player.engine.mp.csproj">
+      <Project>{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}</Project>
+      <Name>pdb.player.engine.mp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\pdb.player.engine\pdb.player.engine.csproj">
+      <Project>{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}</Project>
+      <Name>pdb.player.engine</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\vlc\pdb.player.engine.vlc.pluginI\pdb.player.engine.vlc.pluginI.csproj">
+      <Project>{610EF011-6738-49D6-8426-4B162726D57E}</Project>
+      <Name>pdb.player.engine.vlc.pluginI</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>]]></content>
+  </file>
+  <file path="\engine\pdb.player.engine.build\PlayerBuilder.cs">
+    <content><![CDATA[using pdb.player.engine.vlc.pluginI;
+using pdb.player.engine.mp;
 
-namespace pdb.gen.auto
+namespace pdb.player.engine.build
 {
-    public partial class ConfMedianneVirt : TuningBase
+    public class PlayerBuilder
     {
-        public bool linkconv { get { return _linkconv; } set { _linkconv = value; calcProduct(); } }
-
-        private void calcProduct()
+        private static IPlayerEngine player;
+        private static IPlayerEngineList playerList; 
+        public static IPlayerEngine create(string type)
         {
-            this.linkProduct = calcProduct(this.v, this.a);
+            if (player == null)
+                player = new VlcWrapper(); // MpWrapper(); // new VlcWrapper();
+            return player;
         }
 
-        public decimal calcProduct(decimal dcoeffp, decimal dconvergence)
-        {
-            var linkProduct = this.linkProduct;
-            try
-            {
-                linkProduct = dcoeffp / dconvergence;
-                // 1 0,9 -> 10
-                // 0.1 0,99 
-            }
-            catch
-            {
-            }
-
-            return linkProduct;
-        }
-
-        private void calcConv()
-        {
-            this.a = calcConv(this.v, this.linkProduct);
-        }
-
-        public decimal LinkProduct
-        {
-            get
-            {
-                if (linkProduct == 0m)
-                    calcProduct();
-                return linkProduct;
-            }
-            set
-            {
-                linkProduct = value;
-                calcConv();
-
-            }
-        }
-
-        public decimal calcConv(decimal dcoeffp, decimal linkProduct)
-        {
-            var dconvergence = this.a;
-            try
-            {
-                // 1- conv = coeff / prod
-                dconvergence = dcoeffp / linkProduct; //1/10
-            }
-            catch
-            {
-
-            }
-            return dconvergence;
-        }
-
-        public void checkCoeffOld()
-        {
-            if (coeffOldAuto)
-            {
-                coeffOld = (decimal)pdb.util.Math.Pow(coeffVirt, coeffOldAutoLevel);
-            }
-        }
-
-        private void verifMaxV()
-        {
-
-            var _dxmax = (coeffVirt - 1) * d0;
-            var _dx = v * pas;
-            if (_dx > _dxmax)
-            {
-                var vv = _dxmax / pas;
-                misc.log("verifMaxV {0}->{1}", v.FormatE(4), vv.FormatE(4));
-                v = vv;
-            }
-        }
-
-        private void verifMaxA()
-        {
-            var _dxmax = (coeffVirt - 1) * d0;
-            var _dx = 2 * a * pas * pas;
-
-            if (_dx > _dxmax)
-            {
-                var aa = _dxmax / (2 * pas * pas);
-                misc.log("verifMaxA {0}->{1}", a.FormatE(4), aa.FormatE(4));
-                a = aa;
-            }
-        }
-
-        private void verifBas()
-        {
-            var dx = v * pas;
-            if (dx < epsilon)
-            {
-                //dx = epsilon;
-                v = epsilon / pas;
-            }
-
-            //dx = vv * pas;
-            //if (dx < epsilon)
-            //{
-            //    dx = epsilon;
-            //    vv = epsilon / pas;
-            //}
-
-            var dv = a * pas;
-            if (dv < vepsilon)
-            {
-                // dv = vepsilon;
-                a = vepsilon / pas;
-
-            }
-
-            if (a < aepsilon)
-                a = aepsilon;
-
-            if (coeffVirt < 1)
-                coeffVirt = 1;
-        }
-        private decimal _v0;
-        public bool calcAuto(bool selectedByCoeff)
-        {
-            var coeffVirt0 = coeffVirt;
-            if (coeffOldSwap)
-            {
-                coeffVirt = coeffOld;
-            }
-            var _c0 = coeffVirt;
-            _v0 = v;
-            // vv = v;
-            var dv0 = dv;
-            var _a0 = a;
-
-            if (-_nbSameDirectionBox > serialm)
-                _nbSameDirectionBox = -serialm;
-            if (_nbSameDirectionBox > serialp)
-                _nbSameDirectionBox = serialp;
-
-            if (-_nbElastique > serialElastique)
-                _nbElastique = -serialElastique;
-            if (_nbElastique > serialElastique)
-                _nbElastique = serialElastique;
-
-
-            if (-_nbElastique2 > serialElastique)
-                _nbElastique2 = -serialElastique;
-            if (_nbElastique2 > serialElastique)
-                _nbElastique2 = serialElastique;
-
-
-            if (_nbAlt < 0)
-                _nbAlt = 0;
-            if (_nbAlt > serialAlt)
-                _nbAlt = serialAlt;
-
-            var ecart0 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
-
-            var last = lastAutoDirection;
-            var lastDelta_ = this.lastDelta;
-            lastAutoDirection = selectedByCoeff;
-
-            if (last.HasValue)
-            {
-                if (last != selectedByCoeff ||  (checkFall && selectedByCoeff))
-                {
-                    if (last != selectedByCoeff)
-                    {
-                        _nbAltHisto++;
-                        _nbSameDirection = 0;
-                        _nbAlt++;
-                    }
-                    else _nbAltHisto = 0;
-
-                    //if (_nbAltHisto > 1)
-                    //{
-                    if (selectedByCoeff)
-                    {
-                        _nbElastique -= coeffElastique1r;
-                        _nbElastique2 -= coeffElastique2;
-                    }
-                    else
-                    {
-                        _nbElastique -= rapportmp * coeffElastique1r;
-                        _nbElastique2 -= rapportmp * coeffElastique2;
-                    }
-
-                    if (last != selectedByCoeff)
-                    {
-                        if (_nbAltHisto > 1)
-                        {
-                            if (currentStaticp > 1)
-                            {
-                                currentStaticp /= coeffStaticpRetour;
-                                if (currentStaticp < 1)
-                                    currentStaticp = 1;
-                            }
-                            if (currentStaticm > 1)
-                            {
-                                currentStaticm /= coeffStaticmRetour;
-                                if (currentStaticm < 1)
-                                    currentStaticm = 1;
-                            }
-                        }
-                    }
-
-                    else
-                    {
-                        if (coeffStaticpRetour > 1 && currentStaticp > coeffStaticpRetour)
-                            currentStaticp /= coeffStaticpRetour;
-                        currentStaticm *= coeffStaticm;
-                    }
-
-
-
-                    // }
-                    if (_nbSameDirectionBox > 0 && selectedByCoeff)
-                        _nbSameDirectionBox--;
-                    if (_nbSameDirectionBox < 0 && !selectedByCoeff)
-                        _nbSameDirectionBox++;
-
-                }
-                else
-                {
-                    _nbAlt--;
-                    _nbAltHisto = 0;
-
-                    if (selectedByCoeff)
-                    {
-                        _nbSameDirectionBox--;
-                        // _nbSameDirection--;
-                        _nbElastique += coeffElastique1 * rapportmp;
-                        _nbElastique2 += coeffElastique2r * rapportmp;
-                    }
-                    else
-                    {
-                        _nbElastique += coeffElastique1;
-                        _nbElastique2 += coeffElastique2r;
-                        _nbSameDirectionBox++;
-                        // _nbSameDirection++;
-                    }
-                }
-
-                if (selectedByCoeff)
-                {
-                    _nbSameDirection--;
-                }
-                else
-                {
-                    _nbSameDirection++;
-                }
-            }
-
-            if (!auto)
-                return false;
-
-            var lastProduct = linkProduct;
-
-
-            var c0 = v;
-            //verifHaut();
-            //verifBas();
-
-
-            if (last.HasValue)
-            {
-                var aux = a;
-
-
-
-
-                lastDelta = null;
-                if (last != selectedByCoeff) // if (_nbAltHisto > 1)
-                {
-                    if (_nbAlt > serialAlt || _nbElastique < -serialElastique || _nbElastique2 < -serialElastique)
-                    {
-                        lastDelta = false;
-                    }
-                }
-                else if (checkFall && selectedByCoeff)
-                {
-                }
-                else 
-                {
-                    bool applyanti = false;
-
-                    if (Math.Abs(_nbSameDirection) > 1)
-                    {
-                        //if (selectedByCoeff)
-                        //{
-                        //    //if (coeffStaticpRetour > 1 && currentStaticp > coeffStaticpRetour)
-                        //    //    currentStaticp /= coeffStaticpRetour;
-                        //    //currentStaticm *= coeffStaticm;
-                        //}
-                        //else
-                        //{
-                        //    if (coeffStaticmRetour > 1 && currentStaticm > coeffStaticmRetour)
-                        //        currentStaticm /= coeffStaticmRetour;
-                        //    currentStaticp *= coeffStaticp;
-                        //} 
-                        if (coeffStaticRetourLarge)
-                        {
-
-                            if (currentStaticm > 1)
-                            {
-                                currentStaticm /= coeffStaticmRetour;
-                                if (currentStaticm < 1)
-                                    currentStaticm = 1;
-                            }
-
-                            //if (coeffStaticmRetour > 1 && currentStaticm > coeffStaticmRetour)
-                            //    currentStaticm /= coeffStaticmRetour;
-                            currentStaticp *= coeffStaticp;
-                        }
-
-                        if (selectedByCoeff && -_nbSameDirectionBox > serialm)
-                            applyanti = true;
-                        else if (!selectedByCoeff && _nbSameDirectionBox > serialp)
-                            applyanti = true;
-                        else if (_nbElastique > serialElastique)
-                            applyanti = true;
-                        else if (_nbElastique2 > serialElastique)
-                            applyanti = true;
-                    }
-                    if (applyanti)
-                        lastDelta = true;
-                    else
-                        lastDelta = null;
-                    if (_linkconv)
-                        calcConv();
-
-
-                }
-
-
-
-                bool onAugmente = lastDelta.HasValue && (lastDelta_ == null || lastDelta_ == lastDelta);
-                if (onAugmente)
-                {
-                    a *= (1 + aa);
-                    //verifHaut();
-                    //verifBas();
-                }
-                else
-                {
-                    var ecart1 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
-                    if (ecart1 < ecart0)
-                    {
-                        if (a > aepsilon)
-                        {
-                            a /= (1 + aa);
-                            if (a < aepsilon)
-                                a = aepsilon;
-                        }
-
-                        //verifHaut();
-                        //verifBas();
-
-                    }
-                }
-
-                //if (c0 == v || !onAugmente)
-                //{
-
-                //    var ecart1 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
-                //    if (ecart1 < ecart0)
-                //    {
-                //        a /= (1 + aa);
-                //        if (a < aepsilon)
-                //            a = aepsilon;
-
-                //    }
-                //}
-                //else
-                //{
-                //    a *= (1 + aa);
-                //    verifHaut();
-                //    verifBas();
-
-                //}
-
-
-                // vv += pas * a;
-
-
-
-                verifMaxA();
-
-                if (lastDelta.HasValue)
-                {
-                    //verifMaxA();
-                    if (false == lastDelta)
-                    {
-                        var _v = _v0 - pas * a;
-                        var limit = _v0 / vv;
-                        if (_v < limit)
-                            _v = limit;
-                        v = _v;
-
-                        if (_linkconv)
-                            calcConv();
-
-                    }
-                    else if (true == lastDelta)
-                    {
-                        var deltav = pas * a;
-                        var limit = _v0 * (vv - 1);
-                        var limit2 = vepsilon / pas;
-
-                        if (limit < limit2)
-                            limit = limit2;
-
-
-                        if (deltav > limit)
-                            deltav = limit;
-
-                        v = _v0 + deltav;
-
-                    }
-
-                    //  verifMaxV();
-                    //verifHaut();
-                    //verifBas();
-                }
-
-
-                verifMaxV();
-
-
-                misc.log("convergence {0:0.##}->{1:0.######}", c0, v);
-                misc.log("evol convergence {0:0.######}->{1:0.######}", aux, a);
-            }
-
-            string montee = selectedByCoeff ? "down" : "up";
-
-            verifBas();
-
-            if (selectedByCoeff)
-                coeffVirt -= pas * v * rapportmp / currentStaticp;
-            else
-                coeffVirt += pas * v / currentStaticm;
-
-
-            if (selectedByCoeff)
-            {
-                verifMaxA();
-                verifMaxV();
-
-                verifBas();
-                coeffVirt = _c0 - pas * v * rapportmp / currentStaticp;
-                verifBas();
-            }
-
-
-
-
-            //verifHaut();
-            //verifBas();
-            dx = Math.Abs(coeffVirt - _c0);
-            if (_c0 > 0)
-                dcoeff = 1 + dx / _c0;
-
-
-            dv = Math.Abs(v - _v0);
-            if (dv == 0)
-                dv = dv0 * (a / _a0);
-
-
-
-            // da = Math.Abs(a - _a0);
-            misc.log("{0} {1:0.### ###} {2:0.### ###}->{3:0.### ###}", montee, dx, c0, coeffVirt);
-
-
-            histo.Add(new HistoValue(coeffVirt, dx, a, v / currentStaticm, dv, v));
-
-            checkCoeffOld();
-
-            if (coeffOldSwap)
-            {
-                coeffOld = coeffVirt;
-                coeffVirt = coeffVirt0;
-            }
-
-            return dx != 0;
-        }
-
+        //public static IPlayerEngineList createEngineList(string type)
+        //{
+        //    if (playerList == null)
+        //        playerList = new VlcWrapperList();
+        //    return playerList;
+        //}
+
+        public static IPlayerEngine Player { get { return player; } }
+        public static IPlayerEngineList PlayerList { get { return playerList; } }
     }
 }
 ]]></content>
   </file>
-  <file path="\PieceDb.Consolid\auto\ConfMedianneVirt.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Xml;
-using pdb.util;
-using Math = pdb.util.Math;
-using StringBuilder = pdb.util.StringBuilder;
-
-namespace pdb.gen.auto
-{
-    public partial class ConfMedianneVirt : TuningBase
-    {
-        [NonSerialized]
-        const string PATH_DYN = "..\\dynamic";
-        private string Path { get { return string.Format("{0}{1}", DIR_CONF, fdata); } }
-        private string PathDiff { get { return string.Format("{0}{1}", DIR_CONF, fdiff); } }
-        private string PathDiffTmp { get { return string.Format("{0}{1}", DIR_CONF, fdiffTmp); } }
-        // private string PathLastFull { get { return string.Format("{0}{1}", DIR_CONF, flast); } }
-        const string PATH_DYN_DIFF = "..\\dynamic_diff";
-
-
-        const int NB_HISTO = 1000000;
-        public int safe;
-        public decimal coeffVirt = 1m;
-
-
-
-        public string name;
-
-
-        /// <summary>
-        /// lié au mode db
-        /// </summary>
-        public dbMode mode;
-        /// <summary>
-        /// fichier ou est consigné l'historique courant
-        /// </summary>
-        public string fdata;
-        /// <summary>
-        /// fichier ou est consigné l'incrémental de l'historique
-        /// </summary>
-        public string fdiff;
-        /// <summary>
-        /// fichier ou est consigné l'incrémental de l'historique en mode full en vue de la sauvegarfe
-        /// </summary>
-        public string fdiffTmp;
-        ///// <summary>
-        ///// fichier ou est consigné la dernière sauvegarde full de l'historique
-        ///// </summary>
-        //public string flast;
-
-        public int indexDiff = 0;
-
-        public bool virtOnlyDisabled;
-        public bool noAddEnd;
-        public bool noAddAll;
-        public bool virtAlignSelected;
-        public bool virtAlignPrec;
-        public bool coeffVirtAuto;
-        public bool coeffVirtAdjust;
-
-        public bool removeEpsilon;
-
-        public bool forceCoeffVirt;
-        public bool lissage;
-        public bool cumul;
-
-        public bool reSort;
-        public bool noAdd;
-
-
-        public bool auto;
-
-        public int serialp = 1;
-        public int serialm = 1;
-        public int serialAlt = 1;
-        public decimal serialElastique = 1m;
-        public decimal coeffElastique1 = 1m;
-        public decimal coeffElastique2 = 1m;
-
-        public decimal coeffElastique1r = 1m;
-        public decimal coeffElastique2r = 1m;
-
-        /// <summary>
-        /// pas de calcul
-        /// </summary>
-        public decimal pas = 0.1m;
-        /// <summary>
-        /// vitesse : augmentation ou diminution du coeff virtuel
-        /// </summary>
-        public decimal v;
-
-        /// <summary>
-        /// variation de la vitesse en proportion
-        /// </summary>
-        public decimal vv = 1.1m;
-
-        ///// <summary>
-        ///// Vitesse virtuelle : pour calculer l'accélaration en tenant compte des contraintes en simulant un augmentation. Mauvaise idée. toujours egal à v en cas de contrainte
-        ///// </summary>
-        //private decimal vv;
-        /// <summary>
-        /// borne visant à limiter le delta entre deux pas
-        /// </summary>
-        public decimal d0 = 0.01m;
-        //  public decimal dcoeffm;
-
-
-        /// <summary>
-        /// accélération : augmentation ou diminution de la vitesse
-        /// </summary>
-        public decimal a;
-        //public decimal a0 =0.01m;
-        //public decimal dconvergence01;
-        /// <summary>
-        /// variation de l'accélération en proportion
-        /// </summary>
-        public decimal aa = 0.01m;
-        /// <summary>
-        ///accélaration plancher
-        /// </summary>
-        public decimal aepsilon = 0.001m;
-
-        /// <summary>
-        /// ecart min entre deux positions
-        /// </summary>
-        private decimal epsilon = 0.001m * 0.001m;
-        /// <summary>
-        /// ecart de vitesse entre deux positions
-        /// </summary>
-        private decimal vepsilon = 0.001m * 0.001m;
-
-        private bool? lastDelta;
-        private bool? lastAutoDirection;
-        /// <summary>
-        /// nb consecutif dans le même sens pour info
-        /// </summary>
-        private int _nbSameDirection;
-        /// <summary>
-        /// nb même sens borné pour calcul
-        /// </summary>
-        private int _nbSameDirectionBox;
-        /// <summary>
-        /// nb allez/retour pour calcul
-        /// </summary>
-        private int _nbAlt;
-        /// <summary>
-        /// bilan même sens vs allez-retour. Quand trop grand on agrandit le delta, quand trop petit on diminue
-        /// </summary>
-        private decimal _nbElastique;
-
-        /// <summary>
-        /// bilan même sens vs allez-retour. Quand trop grand on agrandit le delta, quand trop petit on diminue
-        /// </summary>
-        private decimal _nbElastique2;
-        /// <summary>
-        /// nb allez/retour consécutifs pour info
-        /// </summary>
-        private int _nbAltHisto;
-
-        /// <summary>
-        /// Quand plusieurs montées consécutives : application d'un coeff à la vitesse pour accélérer la reprise à la normale
-        /// </summary>
-        private decimal coeffStaticp = 1;
-        /// <summary>
-        /// Quand plusieurs descentes consécutives : application d'un coeff à la vitesse pour accélérer la reprise à la normale
-        /// </summary>
-        private decimal coeffStaticm = 1;
-
-        /// <summary>
-        /// Après plusieurs montées consécutives : retour au coeff nominal 
-        /// </summary>
-        private decimal coeffStaticpRetour = 1;
-        /// <summary>
-        /// Quand plusieurs descentes consécutives : retour au coeff nominal 
-        /// </summary>
-        private decimal coeffStaticmRetour = 1;
-
-        /// <summary>
-        /// Retour mode large
-        /// </summary>
-        private bool coeffStaticRetourLarge; 
-
-        /// <summary>
-        /// Valeur courante du coeff corrigeant les situations anormales du point de vue des montées consécutives
-        /// </summary>
-        private decimal currentStaticp = 1;
-        /// <summary>
-        /// Valeur courante du coeff corrigeant les situations anormales du point de vue des descentes consécutives
-        /// </summary>
-        private decimal currentStaticm = 1;
-        public decimal CurrentStaticm { get { return currentStaticm; } }
-
-        /// <summary>
-        /// On gere spécifiquement le cas des descentes consécutives
-        /// </summary>
-        public bool checkFall; 
-
-        /// <summary>
-        /// Rapport de vitesse négative / vitesse positive
-        /// </summary>
-        private decimal rapportmp = 1m;
-        /// <summary>
-        /// anti atténuation
-        /// </summary>
-        //public decimal danticonvergence = 1m;
-        //public decimal danticonvergence0;
-        //public decimal danticonvergence01;
-
-        //public decimal danticonvdeltap = 1m;
-        //public decimal danticonvdeltam = 1m;
-        private bool _linkconv;
-        private decimal linkProduct;
-        private List<HistoValue> histo = new List<HistoValue>();
-        //  private List<decimal> histoDiff = new List<decimal>();
-
-        private decimal coeffOld = 1m;
-
-        public bool oldAsZero;
-        private bool coeffOldAuto;
-        public bool coeffOldSwap;
-        public int coeffOldAutoLevel;
-        private bool use;
-
-
-        public bool Use { get { return use; } }
-
-        public ConfMedianneVirt()
-        { }
-
-        public ConfMedianneVirt(ConfMedianneVirt o, bool raz)
-            : this(o)
-        {
-            if (raz)
-            {
-                // safe = 0;
-                coeffOld = 1;
-                coeffVirt = 1;
-            }
-        }
-        public ConfMedianneVirt(ConfMedianneVirt o)
-        {
-            name = o.name;
-            mode = o.mode;
-            fdata = o.fdata;
-            fdiff = o.fdiff;
-            fdiffTmp = o.fdiffTmp;
-            //  flast = o.flast;
-            safe = o.safe;
-            coeffVirt = o.coeffVirt;
-            virtOnlyDisabled = o.virtOnlyDisabled;
-            noAddEnd = o.noAddEnd;
-            noAddAll = o.noAddAll;
-            virtAlignSelected = o.virtAlignSelected;
-            virtAlignPrec = o.virtAlignPrec;
-            coeffVirtAuto = o.coeffVirtAuto;
-
-            coeffVirtAdjust = o.coeffVirtAdjust;
-            removeEpsilon = o.removeEpsilon;
-            forceCoeffVirt = o.forceCoeffVirt;
-            lissage = o.lissage;
-            cumul = o.cumul;
-            reSort = o.reSort;
-            noAdd = o.noAdd;
-            auto = o.auto;
-            //dcoeffp = o.dcoeffp;
-            //dcoeffm = o.dcoeffm;
-            //dconvergence = o.dconvergence;
-            //dconvdeltap = o.dconvdeltap;
-            //dconvdeltam = o.dconvdeltam;
-            //danticonvergence = o.danticonvergence;
-            //danticonvdeltap = o.danticonvdeltap;
-            //danticonvdeltam = o.danticonvdeltam;
-
-            pas = o.pas;
-            v = o.v;
-            d0 = o.d0;
-            a = o.a;
-            aa = o.aa;
-            aepsilon = o.aepsilon;
-            _linkconv = o._linkconv;
-            serialp = o.serialp;
-            serialm = o.serialm;
-            serialAlt = o.serialAlt;
-            serialElastique = o.serialElastique;
-            coeffElastique1 = o.coeffElastique1;
-            coeffElastique2 = o.coeffElastique2;
-
-            coeffElastique1r = o.coeffElastique1r;
-            coeffElastique2r = o.coeffElastique2r;
-
-
-            _nbSameDirection = o._nbSameDirection;
-            _nbSameDirectionBox = o._nbSameDirectionBox;
-            _nbAlt = o._nbAlt;
-            _nbAltHisto = o._nbAltHisto;
-            _nbElastique = o._nbElastique;
-            _nbElastique2 = o._nbElastique2;
-
-            coeffOld = o.coeffOld;
-            coeffOldAuto = o.coeffOldAuto;
-            coeffOldSwap = o.coeffOldSwap;
-            oldAsZero = o.oldAsZero;
-            coeffOldAutoLevel = o.coeffOldAutoLevel;
-            epsilon = o.epsilon;
-
-            //dconvergence0 = o.dconvergence0;
-            //dconvergence01 = o.dconvergence01;
-            //danticonvergence0 = o.danticonvergence0;
-            //danticonvergence01 = o.danticonvergence01;
-
-            lastDelta = o.lastDelta;
-            use = o.use;
-            coeffStaticRetourLarge = o.coeffStaticRetourLarge;
-            this.checkFall = o.checkFall; 
-            histo = new List<HistoValue>(o.histo);
-
-        }
-        public ConfMedianneVirt(XmlElement parent, XmlElement child)
-            : base(parent, child)
-        {
-            var str = "";
-            builds("mode", v => str = v);
-            if (!string.IsNullOrEmpty(str))
-                mode = (dbMode)Enum.Parse(typeof(dbMode), str);
-            builds("name", v => name = v);
-            builds("fdata", v => fdata = v);
-            builds("fdiff", v => fdiff = v);
-            builds("fdiffTmp", v => fdiffTmp = v);
-            // builds("flast", v => flast = v);
-            builddec("coeffVirt", v => coeffVirt = v);
-            buildi("safe", v => safe = v);
-
-            buildb("virtOnlyDisabled", v => virtOnlyDisabled = v);
-            buildb("noAddEnd", v => noAddEnd = v);
-            buildb("noAddAll", v => noAddAll = v);
-            buildb("virtAlignSelected", v => virtAlignSelected = v);
-            buildb("virtAlignPrec", v => virtAlignPrec = v);
-            buildb("coeffVirtAuto", v => coeffVirtAuto = v);
-            buildb("coeffVirtAdjust", v => coeffVirtAdjust = v);
-
-            buildb("removeEpsilon", v => removeEpsilon = v);
-            buildb("forceCoeffVirt", v => forceCoeffVirt = v);
-            buildb("lissage", v => lissage = v);
-            buildb("cumul", v => cumul = v);
-            buildb("reSort", v => reSort = v);
-            buildb("noAdd", v => noAdd = v);
-            buildb("auto", v => auto = v);
-
-            builddec("pas", v => pas = v);
-            builddec("v", vv => v = vv);
-            builddec("dv", v => dv = v);
-            builddec("d0", v => d0 = v);
-            builddec("a", v => a = v);
-            builddec("aa", v => aa = v);
-            builddec("vepsilon", v => vepsilon = v);
-            builddec("aepsilon", v => aepsilon = v);
-
-
-            //builddec("dcoeffp", v => dcoeffp = v);
-            //builddec("dcoeffm", v => dcoeffm = v);
-            //builddec("dconvergence", v => dconvergence = v);
-            //builddec("dconvergence0", v => dconvergence0 = v);
-            //builddec("dconvergence01", v => dconvergence01 = v);
-            //builddec("dconvdeltap", v => dconvdeltap = v);
-            //builddec("dconvdeltam", v => dconvdeltam = v);
-
-            //builddec("danticonvergence", v => danticonvergence = v);
-            //builddec("danticonvergence0", v => danticonvergence0 = v);
-            //builddec("danticonvergence01", v => danticonvergence01 = v);
-            //builddec("danticonvdeltap", v => danticonvdeltap = v);
-            //builddec("danticonvdeltam", v => danticonvdeltam = v);
-            buildb("linkconv", v => _linkconv = v);
-            buildi("serialp", v => serialp = v);
-            buildi("serialm", v => serialm = v);
-            buildi("serialAlt", v => serialAlt = v);
-            buildi("elastique", v => serialElastique = v);
-            builddec("coeffElastique1", v => coeffElastique1 = v);
-            builddec("coeffElastique2", v => coeffElastique2 = v);
-            builddec("coeffElastique1r", v => coeffElastique1r = v);
-            builddec("coeffElastique2r", v => coeffElastique2r = v);
-            buildi("serial", v => _nbSameDirection = v);
-            buildi("serialBox", v => _nbSameDirectionBox = v);
-            buildi("serialAltC", v => _nbAlt = v);
-            buildi("serialAltH", v => _nbAltHisto = v);
-            builddec("elastiqueC", v => _nbElastique = v);
-            builddec("elastiqueC2", v => _nbElastique2 = v);
-
-
-            builddec("coeffOld", v => coeffOld = v);
-            buildb("oldAsZero", v => oldAsZero = v);
-            buildb("coeffOldAuto", v => coeffOldAuto = v);
-            buildb("coeffOldSwap", v => coeffOldSwap = v);
-            buildi("coeffOldAutoLevel", v => coeffOldAutoLevel = v);
-            builddec("epsilon", v => epsilon = v);
-
-            buildbn("lastDelta", v => lastDelta = v);
-
-            builddec("coeffStaticp", v => coeffStaticp = v);
-            builddec("coeffStaticm", v => coeffStaticm = v);
-
-            builddec("coeffStaticpRetour", v => coeffStaticpRetour = v);
-            builddec("coeffStaticmRetour", v => coeffStaticmRetour = v);
-            buildb("coeffStaticRetourLarge", v => coeffStaticRetourLarge = v); 
-            
-
-            builddec("currentStaticp", v => currentStaticp = v);
-            builddec("currentStaticm", v => currentStaticm = v);
-            builddec("rapportmp", v => rapportmp = v);
-
-            buildb("use", v => use = v);
-            buildb("checkFall", v => checkFall = v); 
-
-
-            HistoValue last = null;
-            var xhisto = XMLTool.NodeLookUp(child, "histo");
-            if (xhisto != null)
-            {
-                foreach (XmlElement sub in xhisto.ChildNodes)
-                {
-                    var _nevw = new HistoValue(sub.InnerText, last);
-                    histo.Add(_nevw);
-                    last = _nevw;
-                }
-            }
-            else
-            {
-
-                if (File.Exists(Path))
-                {
-                    var lines = File.ReadAllLines(Path);
-                    for (int i = 0; i < lines.GetLength(0); i++)
-                    {
-                        try
-                        {
-                            var line = lines[i];
-
-                            if (string.IsNullOrEmpty(line))
-                                continue;
-                            var _nevw = new HistoValue(line, last);
-                            histo.Add(_nevw);
-                            last = _nevw;
-                        }
-                        catch (Exception ex)
-                        {
-                            misc.log(string.Format("impossible de lire la ligne n° {0}:{1}", i + 1, lines[i]), ex);
-                            throw;
-                        }
-                    }
-                    indexDiff = histo.Count;
-
-                    //if (histo.Count >0 )
-                    //    coeffVirt = getCoeff(histo[histo.Count -1]);
-
-
-                }
-
-                if (File.Exists(PathDiff))
-                {
-                    var histoDiff = new List<HistoValue>();
-                    var lines = File.ReadAllLines(PathDiff);
-                    for (int i = 0; i < lines.GetLength(0); i++)
-                    {
-                        try
-                        {
-                            var line = lines[i];
-                            if (string.IsNullOrEmpty(line))
-                                continue;
-
-                            var _nevw = new HistoValue(line, last);
-                            histoDiff.Add(_nevw);
-                            last = _nevw;
-                        }
-                        catch (Exception ex)
-                        {
-                            misc.log(string.Format("impossible de lire la ligne n° {0}:{1}", i + 1, lines[i]), ex);
-                            throw;
-                        }
-
-                    }
-
-                    if (mode == dbMode.full)
-                    {
-                        histo.AddRange(histoDiff);
-                        indexDiff = histo.Count;
-                    }
-                    else
-                    {
-                        indexDiff = histo.Count - histoDiff.Count;
-                    }
-
-                }
-
-
-
-                if (mode == dbMode.full && File.Exists(PathDiff))
-                    File.Delete(PathDiff);
-
-                if (histo.Count > 0)
-                {
-                    int index = histo.Count - 1;
-                    decimal current = histo[index].coeff;
-                    //coeffVirt = getCoeff(current);
-                    bool? sens = null;
-
-                    int nbSerie = 0;
-                    // decimal delta = 0m;
-
-                    var rr = 1;
-                    //if (dcoeffp > 0)
-                    //    rr = dcoeffm / dcoeffp;
-                    if (rr > 0)
-                    {
-                        while (true)
-                        {
-                            index--;
-                            if (index < 0)
-                                break;
-                            var aux = histo[index].coeff;
-                            var _sens = current > aux;
-                            if (sens == null)
-                            {
-                                sens = _sens;
-                                lastAutoDirection = !_sens;
-
-                                // delta = current - aux;
-                            }
-
-
-                            if (sens != _sens)
-                                break;
-                            current = aux;
-                            nbSerie++;
-
-                        }
-
-                        //_nbSameDirection = nbSerie;
-                        //dcoeffp = Math.Abs(delta); dcoeffm = dcoeffp * rr;
-
-                    }
-                }
-            }
-
-            checkCoeffOld();
-            //if (histoDiff.Count > 0)
-            //    coeffVirt = getCoeff(histo[histo.Count - 1]); 
-
-        }
-
-
-
-        public override void save(XmlWriter w)
-        {
-            base.save(w);
-            writeStart("v");
-            write("name", name);
-            write("mode", mode);
-            write("use", use); 
-            write("serial", _nbSameDirection);
-            write("elastiqueC", _nbElastique);
-            write("elastiqueC2", _nbElastique2);
-
-            write("coeffVirt", coeffVirt);
-            write("coeffOld", coeffOld);
-            write("serialBox", _nbSameDirectionBox);
-            write("serialAltC", _nbAlt);
-            write("serialAltH", _nbAltHisto);
-
-            write("coeffStaticp", coeffStaticp);
-            write("coeffStaticm", coeffStaticm);
-            write("coeffStaticpRetour", coeffStaticpRetour);
-            write("coeffStaticmRetour", coeffStaticmRetour);
-            write("coeffStaticRetourLarge", coeffStaticRetourLarge); 
-            write("currentStaticp", currentStaticp);
-            write("currentStaticm", currentStaticm);
-          
-            write("lastDelta", lastDelta);
-
-            write("serialAlt", serialAlt);
-            write("elastique", serialElastique);
-            write("coeffElastique1", coeffElastique1);
-            write("coeffElastique2", coeffElastique2);
-            write("coeffElastique1r", coeffElastique1r);
-            write("coeffElastique2r", coeffElastique2r);
-            write("fdata", fdata);
-            write("fdiff", fdiff);
-            write("fdiffTmp", fdiffTmp);
-
-
-            write("safe", safe);
-
-            write("virtOnlyDisabled", virtOnlyDisabled);
-            write("noAddEnd", noAddEnd);
-            write("noAddAll", noAddAll);
-            write("virtAlignSelected", virtAlignSelected);
-            write("virtAlignPrec", virtAlignPrec);
-            write("coeffVirtAuto", coeffVirtAuto);
-            write("coeffVirtAdjust", coeffVirtAdjust);
-
-            write("removeEpsilon", removeEpsilon);
-            write("forceCoeffVirt", forceCoeffVirt);
-            write("lissage", lissage);
-            write("cumul", cumul);
-            write("reSort", reSort);
-            write("noAdd", noAdd);
-            write("auto", auto);
-
-            write("pas", pas);
-            write("v", v);
-            write("dv", dv);
-            write("d0", d0);
-            write("a", a);
-            write("aa", aa);
-            write("aepsilon", aepsilon);
-            write("vepsilon", vepsilon);
-            write("rapportmp", rapportmp);
-
-            //write("dcoeffp", dcoeffp);
-            //write("dcoeffm", dcoeffm);
-            //write("dconvergence", dconvergence);
-            //write("dconvergence0", dconvergence0);
-            //write("dconvergence01", dconvergence01);
-            //write("dconvdeltap", dconvdeltap);
-            //write("dconvdeltam", dconvdeltam);
-
-            //write("danticonvergence", danticonvergence);
-            //write("danticonvergence0", danticonvergence0);
-            //write("danticonvergence01", danticonvergence01);
-            //write("danticonvdeltap", danticonvdeltap);
-            //write("danticonvdeltam", danticonvdeltam);
-            write("linkconv", linkconv);
-            write("serialp", serialp);
-            write("serialm", serialm);
-
-            write("checkFall", checkFall); 
-
-
-
-          
-
-            write("oldAsZero", oldAsZero);
-            write("coeffOldAuto", coeffOldAuto);
-            write("coeffOldSwap", coeffOldSwap);
-
-            write("coeffOldAutoLevel", coeffOldAutoLevel);
-            write("epsilon", epsilon);
-
-           
-
-
-
-            var sb = new StringBuilder();
-            var sbDiff = new StringBuilder();
-
-
-
-
-            //if (modeDiff)
-            //{
-            //    histoDiff = null;
-            //}
-            //else
-            //{
-            //    if (histoDiff != null)
-            //    {
-            //        histo.AddRange(histoDiff);
-            //        histoDiff = null;
-            //    }
-
-            //    if (File.Exists(PathDiff))
-            //        File.Delete(PathDiff);
-            //}
-
-            int count = histo.Count;
-            HistoValue last = null;
-            for (int i = 0; i < count; i++)
-            {
-                histo[i].write(sb);
-                //var v = Math.Round(histo[i].coeff, 10);
-                //var sc = v.ToString();
-                //var v2 = Math.Round(1000m * histo[i].delta, 10);
-                //var sc2 = v2.ToString();
-
-                //var v3 = Math.Round(1000m * histo[i].conv, 10);
-                //var sc3 = v3.ToString();
-
-                //sb.Append(sc);
-                //sb.Append("|");
-                //sb.Append(sc2);
-                //sb.Append("|");
-                //sb.AppendLine(sc3);
-
-                if (i >= indexDiff)
-                {
-                    histo[i].writeDiff(sbDiff, last);
-                    //sbDiff.Append(sc);
-                    //sbDiff.Append("|");
-                    //sbDiff.Append(sc2);
-                    //sbDiff.Append("|");
-                    //sbDiff.AppendLine(sc3);
-                }
-                last = histo[i];
-            }
-
-
-            if (!string.IsNullOrEmpty(fdata))
-            {
-                AsyncFileWriter.Instance.post(Path, sb.ToString());
-                if (mode == dbMode.diff)
-                    AsyncFileWriter.Instance.post(PathDiff, sbDiff.ToString());
-                else
-                    AsyncFileWriter.Instance.post(PathDiffTmp, sbDiff.ToString());
-
-
-                if (mode == dbMode.full && File.Exists(PathDiff))
-                    File.Delete(PathDiff);
-            }
-
-
-            writeEnd();
-        }
-        /// <summary>
-        /// nb consecutif dans le même sens pour info
-        /// </summary>
-        public int Serial { get { return _nbSameDirection; } set { _nbSameDirection = value; } }
-        /// <summary>
-        /// nb même sens borné pour calcul
-        /// </summary>
-        public int SerialBox { get { return _nbSameDirectionBox; } }
-        /// <summary>
-        /// nb allez-retours pour calcul
-        /// </summary>
-        public int Alt { get { return _nbAlt; } }
-        /// <summary>
-        /// nb allez/retour consécutifs pour info
-        /// </summary>
-        public int AltHisto { get { return _nbAltHisto; } }
-        /// <summary>
-        /// Position de l'élastique. Positif : tend à agrandir le delta. du à plusieurs séries dans le même sens. Négatif : tend à diminuer le delta. du à plusieurs allez-retours consécutifs
-        /// </summary>
-        public decimal Elastique { get { return _nbElastique; } }
-        public decimal Elastique2 { get { return _nbElastique2; } }
-        public decimal dv = 0;
-        public decimal dx = 0m;
-        public decimal dcoeff = 1; 
-        //  public decimal da;
-        public decimal AccelerationRapport { get { return dv / epsilon; } }
-        public decimal VitesseRapport { get { return dx / epsilon; } }
-        public decimal danticonvergenceMin
-        {
-            get
-            {
-                return epsilon;
-            }
-        }
-
-
-
-
-        public decimal CoeffOld
-        {
-            get { return coeffOld; }
-            set { coeffOld = value; checkCoeffOld(); }
-        }
-
-        public bool CoeffOldAuto
-        {
-            get { return coeffOldAuto; }
-            set { coeffOldAuto = value; checkCoeffOld(); }
-        }
-
-        //private decimal getCoeff(decimal coeffT) { return Math.Pow(coeffT, (1.0m / safe)); }
-
-
-    }
-}
-]]></content>
-  </file>
-</db>
+ </db>
