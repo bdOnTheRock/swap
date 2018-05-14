@@ -1,1834 +1,581 @@
 <db path="C:\Bernard\db1\pdb4">
-  <file path="\pdb.sln">
-    <content><![CDATA[
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb", "pdb.csproj", "{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.it", "pieceDb.iT\pdb.it.csproj", "{CF5DB63F-4790-4351-9050-B30DED32F052}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.obj", "PieceDb.obj\pdb.obj.csproj", "{9B849072-2B8E-4CE4-8AD7-D173724A9644}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.db", "PieceDb.Db\pdb.db.csproj", "{43D27B47-E615-451D-AD25-67C5B8447C4A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.gen", "PieceDb.Consolid\pdb.gen.csproj", "{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.gen.it", "PieceDb.iT.listGen\pdb.gen.it.csproj", "{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testMoveTree", "testMoveTree\testMoveTree.csproj", "{FF82B72D-A119-4B53-9D35-2269FF6E5384}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "podcast", "podcast\podcast.csproj", "{CF22411A-0D1B-4301-9087-DFBCF85AB16A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.util", "pdb.util\pdb.util.csproj", "{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hello", "WPF\hello\hello.csproj", "{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.podcast", "pdb.podcast\pdb.podcast.csproj", "{6503C759-0373-4B68-A28B-1CB5FF0E6208}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "grant", "grant\grant.csproj", "{5E84FD2F-0954-4D9B-AF17-36F857490C6A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testSDK", "testSDK\testSDK.csproj", "{30459276-DDC7-4BF5-AF55-CDD7211FD791}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "purgeZique", "purgeZique\purgeZique.csproj", "{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.daemon", "pdb.daemon\pdb.daemon.csproj", "{D69D572F-67C8-47E8-93B0-CC33FA4BC704}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "podcastCopy", "podcastCopy\podcastCopy.csproj", "{F916911A-B4FF-4B0A-BA80-B8349E3E0130}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testFormar", "testFormar\testFormar.csproj", "{32A79657-7A1F-4F72-99D8-4406838182F2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.ordo", "pdb.ordo\pdb.ordo.csproj", "{30823D1D-851C-456B-AC4C-B0BEEC173361}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "engine", "engine", "{B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "vlc", "vlc", "{C7DF1F85-A6D6-4771-8870-2CC0F2A0041E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine", "engine\pdb.player.engine\pdb.player.engine.csproj", "{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine.build", "engine\pdb.player.engine.build\pdb.player.engine.build.csproj", "{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine.vlc.pluginI", "engine\vlc\pdb.player.engine.vlc.pluginI\pdb.player.engine.vlc.pluginI.csproj", "{610EF011-6738-49D6-8426-4B162726D57E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine.vlc.plugin", "engine\vlc\pdb.player.engine.vlc.plugin\pdb.player.engine.vlc.plugin.csproj", "{3CD9378E-BE8C-4E38-B362-51363357988C}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testStats", "testStats\testStats.csproj", "{07095C40-49A3-4001-8671-4285D9633596}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2001", "2001\2001.csproj", "{37020161-0E95-46F0-9FD1-DE43C491FA08}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player", "pdb.player\pdb.player.csproj", "{4166FA60-B33F-4496-9352-EDD8F3214021}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "testmatchalbum", "..\testmatchalbum\testmatchalbum.csproj", "{B901D21E-A546-4628-9136-B8D5E3FF4A1A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "pdb.player.engine.mp", "..\pdb.player.engine.mp\pdb.player.engine.mp.csproj", "{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Debug|Mixed Platforms = Debug|Mixed Platforms
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
-		Release|Any CPU = Release|Any CPU
-		Release|Mixed Platforms = Release|Mixed Platforms
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|x64.ActiveCfg = Debug|x64
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|x64.Build.0 = Debug|x64
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|x86.ActiveCfg = Debug|x86
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Debug|x86.Build.0 = Debug|x86
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|Any CPU.Build.0 = Release|Any CPU
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|x64.ActiveCfg = Release|x64
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|x64.Build.0 = Release|x64
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|x86.ActiveCfg = Release|x86
-		{45D9BDC7-909F-47D5-952A-7C78B69D4BE6}.Release|x86.Build.0 = Release|x86
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|x64.ActiveCfg = Debug|x64
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|x64.Build.0 = Debug|x64
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|x86.ActiveCfg = Debug|x86
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Debug|x86.Build.0 = Debug|x86
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|x64.ActiveCfg = Release|x64
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|x64.Build.0 = Release|x64
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|x86.ActiveCfg = Release|x86
-		{CF5DB63F-4790-4351-9050-B30DED32F052}.Release|x86.Build.0 = Release|x86
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|x64.ActiveCfg = Debug|x64
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|x64.Build.0 = Debug|x64
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|x86.ActiveCfg = Debug|x86
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Debug|x86.Build.0 = Debug|x86
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|x64.ActiveCfg = Release|x64
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|x64.Build.0 = Release|x64
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|x86.ActiveCfg = Release|x86
-		{9B849072-2B8E-4CE4-8AD7-D173724A9644}.Release|x86.Build.0 = Release|x86
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|x64.ActiveCfg = Debug|x64
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|x64.Build.0 = Debug|x64
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|x86.ActiveCfg = Debug|x86
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Debug|x86.Build.0 = Debug|x86
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|x64.ActiveCfg = Release|x64
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|x64.Build.0 = Release|x64
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|x86.ActiveCfg = Release|x86
-		{43D27B47-E615-451D-AD25-67C5B8447C4A}.Release|x86.Build.0 = Release|x86
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|x64.ActiveCfg = Debug|x64
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|x64.Build.0 = Debug|x64
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|x86.ActiveCfg = Debug|x86
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Debug|x86.Build.0 = Debug|x86
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|x64.ActiveCfg = Release|x64
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|x64.Build.0 = Release|x64
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|x86.ActiveCfg = Release|x86
-		{DFC524F3-50BB-40E3-BAC0-CA56950BBB5A}.Release|x86.Build.0 = Release|x86
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|x64.ActiveCfg = Debug|x64
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|x64.Build.0 = Debug|x64
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|x86.ActiveCfg = Debug|x86
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Debug|x86.Build.0 = Debug|x86
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|x64.ActiveCfg = Release|x64
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|x64.Build.0 = Release|x64
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|x86.ActiveCfg = Release|x86
-		{76351375-3BAA-4E37-A88E-AD7E7AE6F84B}.Release|x86.Build.0 = Release|x86
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|x64.ActiveCfg = Debug|x64
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|x86.ActiveCfg = Debug|x86
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Debug|x86.Build.0 = Debug|x86
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|Any CPU.ActiveCfg = Release|x86
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|Mixed Platforms.Build.0 = Release|x86
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|x64.ActiveCfg = Release|x64
-		{FF82B72D-A119-4B53-9D35-2269FF6E5384}.Release|x86.ActiveCfg = Release|x86
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|Mixed Platforms.Build.0 = Debug|x64
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|x64.ActiveCfg = Debug|x64
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|x86.ActiveCfg = Debug|x86
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Debug|x86.Build.0 = Debug|x86
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|Any CPU.ActiveCfg = Release|x86
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|Mixed Platforms.Build.0 = Release|x86
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|x64.ActiveCfg = Release|x64
-		{CF22411A-0D1B-4301-9087-DFBCF85AB16A}.Release|x86.ActiveCfg = Release|x86
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|x64.ActiveCfg = Debug|x64
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|x64.Build.0 = Debug|x64
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|x86.ActiveCfg = Debug|x86
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Debug|x86.Build.0 = Debug|x86
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|x64.ActiveCfg = Release|x64
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|x64.Build.0 = Release|x64
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|x86.ActiveCfg = Release|x86
-		{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}.Release|x86.Build.0 = Release|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|x64.ActiveCfg = Debug|x64
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|x86.ActiveCfg = Debug|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Debug|x86.Build.0 = Debug|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|Any CPU.ActiveCfg = Release|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|Mixed Platforms.Build.0 = Release|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|x64.ActiveCfg = Release|x64
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|x86.ActiveCfg = Release|x86
-		{5D58E88B-67FC-4CCC-B8CA-3F93EAC0032E}.Release|x86.Build.0 = Release|x86
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|x64.ActiveCfg = Debug|x64
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|x64.Build.0 = Debug|x64
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|x86.ActiveCfg = Debug|x86
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Debug|x86.Build.0 = Debug|x86
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|Any CPU.ActiveCfg = Release|x64
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|Mixed Platforms.Build.0 = Release|x86
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|x64.ActiveCfg = Release|x64
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|x64.Build.0 = Release|x64
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|x86.ActiveCfg = Release|x86
-		{6503C759-0373-4B68-A28B-1CB5FF0E6208}.Release|x86.Build.0 = Release|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|x64.ActiveCfg = Debug|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|x86.ActiveCfg = Debug|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Debug|x86.Build.0 = Debug|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|Any CPU.ActiveCfg = Release|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|Mixed Platforms.Build.0 = Release|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|x64.ActiveCfg = Release|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|x86.ActiveCfg = Release|x86
-		{5E84FD2F-0954-4D9B-AF17-36F857490C6A}.Release|x86.Build.0 = Release|x86
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|x64.ActiveCfg = Debug|x64
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|x86.ActiveCfg = Debug|x86
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Debug|x86.Build.0 = Debug|x86
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|Any CPU.ActiveCfg = Release|x86
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|Mixed Platforms.Build.0 = Release|x86
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|x64.ActiveCfg = Release|x64
-		{30459276-DDC7-4BF5-AF55-CDD7211FD791}.Release|x86.ActiveCfg = Release|x86
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|x64.ActiveCfg = Debug|x64
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|x86.ActiveCfg = Debug|x86
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Debug|x86.Build.0 = Debug|x86
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|Any CPU.ActiveCfg = Release|x86
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|Mixed Platforms.Build.0 = Release|x86
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|x64.ActiveCfg = Release|x64
-		{7DFF4E0E-5A4D-4588-B015-D16F19DACFC0}.Release|x86.ActiveCfg = Release|x86
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|x64.ActiveCfg = Debug|x64
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|x86.ActiveCfg = Debug|x86
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Debug|x86.Build.0 = Debug|x86
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|Mixed Platforms.Build.0 = Release|x86
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|x64.ActiveCfg = Release|x64
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|x64.Build.0 = Release|x64
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|x86.ActiveCfg = Release|x86
-		{D69D572F-67C8-47E8-93B0-CC33FA4BC704}.Release|x86.Build.0 = Release|x86
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|Mixed Platforms.Build.0 = Debug|x64
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|x64.ActiveCfg = Debug|x64
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|x86.ActiveCfg = Debug|x86
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Debug|x86.Build.0 = Debug|x86
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|Any CPU.ActiveCfg = Release|x86
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|Mixed Platforms.Build.0 = Release|x86
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|x64.ActiveCfg = Release|x64
-		{F916911A-B4FF-4B0A-BA80-B8349E3E0130}.Release|x86.ActiveCfg = Release|x86
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|x64.ActiveCfg = Debug|x64
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|x86.ActiveCfg = Debug|x86
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Debug|x86.Build.0 = Debug|x86
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|Any CPU.ActiveCfg = Release|x86
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|Mixed Platforms.Build.0 = Release|x86
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|x64.ActiveCfg = Release|x64
-		{32A79657-7A1F-4F72-99D8-4406838182F2}.Release|x86.ActiveCfg = Release|x86
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|x64.ActiveCfg = Debug|x64
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|x64.Build.0 = Debug|x64
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|x86.ActiveCfg = Debug|x86
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Debug|x86.Build.0 = Debug|x86
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|Any CPU.Build.0 = Release|Any CPU
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|x64.ActiveCfg = Release|x64
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|x64.Build.0 = Release|x64
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|x86.ActiveCfg = Release|x86
-		{30823D1D-851C-456B-AC4C-B0BEEC173361}.Release|x86.Build.0 = Release|x86
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|x64.ActiveCfg = Release|Any CPU
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}.Release|x86.ActiveCfg = Release|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|x64.ActiveCfg = Release|Any CPU
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}.Release|x86.ActiveCfg = Release|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Release|x64.ActiveCfg = Release|Any CPU
-		{610EF011-6738-49D6-8426-4B162726D57E}.Release|x86.ActiveCfg = Release|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|x86.ActiveCfg = Debug|x86
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Debug|x86.Build.0 = Debug|x86
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|x64.ActiveCfg = Release|Any CPU
-		{3CD9378E-BE8C-4E38-B362-51363357988C}.Release|x86.ActiveCfg = Release|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{07095C40-49A3-4001-8671-4285D9633596}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{07095C40-49A3-4001-8671-4285D9633596}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Release|Any CPU.Build.0 = Release|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Release|x64.ActiveCfg = Release|Any CPU
-		{07095C40-49A3-4001-8671-4285D9633596}.Release|x86.ActiveCfg = Release|Any CPU
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|x64.ActiveCfg = Debug|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|x86.ActiveCfg = Debug|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Debug|x86.Build.0 = Debug|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|Any CPU.ActiveCfg = Release|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|Mixed Platforms.Build.0 = Release|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|x64.ActiveCfg = Release|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|x86.ActiveCfg = Release|x86
-		{37020161-0E95-46F0-9FD1-DE43C491FA08}.Release|x86.Build.0 = Release|x86
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|x64.ActiveCfg = Debug|x86
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|x86.ActiveCfg = Debug|x86
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Debug|x86.Build.0 = Debug|x86
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|x64.ActiveCfg = Release|x86
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|x86.ActiveCfg = Release|x86
-		{4166FA60-B33F-4496-9352-EDD8F3214021}.Release|x86.Build.0 = Release|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|x64.ActiveCfg = Debug|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|x86.ActiveCfg = Debug|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Debug|x86.Build.0 = Debug|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|Any CPU.ActiveCfg = Release|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|Mixed Platforms.Build.0 = Release|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|x64.ActiveCfg = Release|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|x86.ActiveCfg = Release|x86
-		{B901D21E-A546-4628-9136-B8D5E3FF4A1A}.Release|x86.Build.0 = Release|x86
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|x64.ActiveCfg = Release|Any CPU
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}.Release|x86.ActiveCfg = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{C7DF1F85-A6D6-4771-8870-2CC0F2A0041E} = {B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}
-		{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D} = {B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}
-		{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54} = {B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}
-		{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154} = {B35DF70C-1EC8-445D-939E-02FFE4A5B8B1}
-		{610EF011-6738-49D6-8426-4B162726D57E} = {C7DF1F85-A6D6-4771-8870-2CC0F2A0041E}
-		{3CD9378E-BE8C-4E38-B362-51363357988C} = {C7DF1F85-A6D6-4771-8870-2CC0F2A0041E}
-	EndGlobalSection
-EndGlobal
-]]></content>
-  </file>
-  <file path="\engine\pdb.player.engine.build\pdb.player.engine.build.csproj">
-    <content><![CDATA[<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{0F3BC2CF-E69D-4019-B6EA-A4B50A7FEB54}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>pdb.player.engine.build</RootNamespace>
-    <AssemblyName>pdb.player.engine.build</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Class1.cs" />
-    <Compile Include="PlayerBuilder.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\pdb.player.engine.mp\pdb.player.engine.mp.csproj">
-      <Project>{E6C7E1DD-5BB8-414E-AAD8-11758AE0A154}</Project>
-      <Name>pdb.player.engine.mp</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\pdb.player.engine\pdb.player.engine.csproj">
-      <Project>{778B94A9-80ED-4440-9AC3-7E6E6F4AD49D}</Project>
-      <Name>pdb.player.engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\vlc\pdb.player.engine.vlc.pluginI\pdb.player.engine.vlc.pluginI.csproj">
-      <Project>{610EF011-6738-49D6-8426-4B162726D57E}</Project>
-      <Name>pdb.player.engine.vlc.pluginI</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
-</Project>]]></content>
-  </file>
-  <file path="\engine\pdb.player.engine.build\PlayerBuilder.cs">
-    <content><![CDATA[using pdb.player.engine.vlc.pluginI;
-using pdb.player.engine.mp;
-
-namespace pdb.player.engine.build
-{
-    public class PlayerBuilder
-    {
-        private static IPlayerEngine player;
-        private static IPlayerEngineList playerList; 
-        public static IPlayerEngine create(string type)
-        {
-            if (player == null)
-                player = new VlcWrapper(); // MpWrapper(); // new VlcWrapper();
-            return player;
-        }
-
-        //public static IPlayerEngineList createEngineList(string type)
-        //{
-        //    if (playerList == null)
-        //        playerList = new VlcWrapperList();
-        //    return playerList;
-        //}
-
-        public static IPlayerEngine Player { get { return player; } }
-        public static IPlayerEngineList PlayerList { get { return playerList; } }
-    }
-}
-]]></content>
-  </file>
-  <file path="\engine\vlc\pdb.player.engine.vlc.pluginI\VlcWrapper.cs">
-    <content><![CDATA[using AXVLC;
-using pdb.util;
-using System;
-using pdb.obj;
-using System.Threading;
-using System.Text.RegularExpressions;
-using System.IO;
-using System.Globalization;
-
-namespace pdb.player.engine.vlc.pluginI
-{
-    public class VlcWrapper : IPlayerEngine
-    {
-
-        private Logger logger;
-#if NONI
-        private VLCPlugin2Class vlc;
-        Equalization eq = Equalization.Instance; 
-#else
-        private VLCPlugin2 vlc;
-#endif
-        public event EventHandler mediaEndReached;
-        // public static VlcWrapper Instance = new VlcWrapper();
-        public VlcWrapper()
-        {
-            logger = Logger.getLogger("vlc");
-            try
-            {
-#if NONI
-          vlc = new VLCPlugin2Class();
-     //     vlc.setVariable(Equalization.VARGAIN, eq.getVarGain());
-     //     vlc.setVariable(Equalization.VARFREQ, eq.getVarFreq()); 
-                
-#else
-                vlc = new VLCPlugin2();
-                vlc.Volume = 100; 
-
-
-#endif
-            }
-            catch (Exception e)
-            {
-                logger.log("impossible de récupérer vlc " + e.ToString());
-            }
-
-            catch
-            {
-            }
-
-#if NONI
-            vlc.DVLCEvents_Event_pause += vlc_DVLCEvents_Event_pause;
-            vlc.DVLCEvents_Event_play += vlc_DVLCEvents_Event_play;
-            vlc.DVLCEvents_Event_stop += vlc_DVLCEvents_Event_stop;
-            
-#else
-            vlc.MediaPlayerEncounteredError += vlc_MediaPlayerEncounteredError;
-            vlc.MediaPlayerEndReached += vlc_MediaPlayerEndReached;
-            vlc.MediaPlayerPaused += vlc_pause; //  new DVLCEvents_pauseEventHandler(vlc_pause);
-            vlc.AutoLoop = false;
-            vlc.AutoPlay = false;
-
-#endif
-        }
-
-        void vlc_pause()
-        {
-            log("vlc_pause");
-        }
-
-        #region event
-        void vlc_MediaPlayerEndReached()
-        {
-            vlc.playlist.stop();
-            log("vlc_MediaPlayerEndReached");
-            if (mediaEndReached != null)
-                mediaEndReached(this, EventArgs.Empty);
-        }
-
-        void vlc_MediaPlayerEncounteredError()
-        {
-            log("vlc_DVLCEvents_Event_stop");
-        }
-
-        void vlc_DVLCEvents_Event_stop()
-        {
-            log("vlc_DVLCEvents_Event_stop");
-        }
-
-        void vlc_DVLCEvents_Event_play()
-        {
-            log("vlc_DVLCEvents_Event_play");
-        }
-
-        void vlc_DVLCEvents_Event_pause()
-        {
-            log("vlc_DVLCEvents_Event_pause");
-        }
-
-        private void log(string txt)
-        {
-            logger.log(txt);
-        }
-        #endregion
-
-        #region commande
-        string location;
-        int currentItem;
-        public void play(string location, bool reload)
-        {
-            if (reload || location != this.location)
-            {
-                this.location = location;
-#if NONI
-                vlc.playlistClear();
-                vlc.addTarget(new Uri(location).AbsoluteUri, null, VLCPlaylistMode.VLCPlayListReplaceAndGo, 0);
-#else
-                vlc.playlist.items.clear();
-                currentItem = vlc.playlist.add(new Uri(location).AbsoluteUri);
-                vlc.playlist.playItem(currentItem);
-#endif
-            }
-            else
-                vlc.playlist.play();
-
-
-#if NONI
-            vlc.play();
-#else
-
-#endif
-        }
-
-        public void pause()
-        {
-#if NONI
-            vlc.pause();
-#else
-            vlc.playlist.pause();
-#endif
-        }
-
-        public void stop()
-        {
-#if NONI
-            vlc.stop();
-#else
-            vlc.playlist.stop();
-#endif
-        }
-
-        public TimeSpan Duration
-        {
-            get
-            {
-                var input = vlc.input;
-                if (input == null)
-                    return new TimeSpan();
-                return TimeSpan.FromMilliseconds(input.Length);
-            }
-        }
-        public TimeSpan getDurationOrThrow()
-        {
-            var l = vlc.input.Length;
-            if (l < 100)
-                throw new ApplicationException("trop court");
-
-            return TimeSpan.FromMilliseconds(l);
-        }
-
-        public TimeSpan Elapsed
-        {
-            get
-            {
-                var input = vlc.input;
-                if (input == null)
-                    return new TimeSpan();
-                return TimeSpan.FromMilliseconds(input.Time);
-            }
-        }
-
-        public double Position
-        {
-            get
-            {
-
-                var input = vlc.input;
-                if (input == null)
-                    return 0;
-                return input.Position;
-            }
-
-            set
-            {
-                var input = vlc.input;
-                if (input == null)
-                    return;
-                input.Position = value;
-            }
-        }
-
-        public double Volume
-        {
-            set
-            {
-                try
-                {
-                    vlc.Volume = (int)(200.0 * value);
-                }
-                catch { }
-            }
-
-            get
-            {
-                return vlc.Volume / 200.0; 
-            }
-        }
-
-        #endregion
-
-        #region equalizer
-        #endregion
-
-
-
-
-
-        private playerstate state = playerstate.stop;
-        public playerstate State
-        {
-            get { return state; }
-        }
-
-        private void insist(string phase, Action action)
-        {
-            DateTime end = DateTime.Now.AddSeconds(1);
-            int nb = 1; 
-            while (true)
-            {
-                //vlc.volume = 0;
-                //vlc.playlist.play();
-                try
-                {
-                    action();
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    misc.log(ex.Message + " " + nb + " " + phase);
-                    Thread.Sleep(100);
-                    if (DateTime.Now > end)
-                    {
-                        misc.log("abandon " + phase);
-                        return;
-                    }
-
-                    // vlc.volume = 0;
-                    //vlc.playlist.items.clear();
-                    //currentItem = vlc.playlist.add(new Uri(location).AbsoluteUri);
-                    //vlc.playlist.playItem(currentItem);
-                    Thread.Sleep(100 * nb);
-                    nb++; 
-                }
-            }
-        }
-
-        public void getDuration(ITrackMetaData track)
-        {
-            int vol = vlc.Volume;
-            try
-            {
-                vlc.playlist.items.clear();
-                location = track.Location;
-                currentItem = vlc.playlist.add(new Uri(location).AbsoluteUri);
-               // vlc.volume = 0;
-                vlc.playlist.play();
-
-                //while (!vlc.playlist.isPlaying)
-                //    Thread.Sleep(100);
-                // vlc.playlist.pause();
-
-
-                //vlc.playlist.play();
-                //vlc.volume = 0;
-
-                insist("Duration", () => track.Duration = getDurationOrThrow());
-
-
-
-            }
-
-            finally
-            {
-                vlc.playlist.stop();
-                vlc.Volume = vol;
-            }
-        }
-
-
-        public void load(ITrackMetaData track)
-        {
-            int vol = vlc.Volume;
-            var cur = currentItem;
-            var oldLocation = this.location;
-            try
-            {
-                vlc.playlist.items.clear();
-
-                //vlc.volume = 0;
-                this.location = track.Location;
-                currentItem = vlc.playlist.add(new Uri(location).AbsoluteUri);
-                vlc.playlist.playItem(currentItem);
-
-                while (!vlc.playlist.isPlaying)
-                    Thread.Sleep(100);
-                // vlc.playlist.pause();
-
-
-                //  vlc.playlist.play();
-                // vlc.volume = 0;
-
-                insist("Duration", () => track.Duration = getDurationOrThrow());
-
-                if (string.IsNullOrEmpty(track.Album))
-                {
-                    insist("Album", () =>
-                        {
-                            var album = vlc.mediaDescription.album;
-                            if (album != null)
-                            {
-                                track.Album = album;
-
-                            }
-
-                        });
-                }
-                if (string.IsNullOrEmpty(track.Artist))
-                    insist("Artist", () => track.Artist = vlc.mediaDescription.artist);
-
-                if (string.IsNullOrEmpty(track.Name))
-                    insist("Name", () => track.Name = vlc.mediaDescription.title);
-                if (track.TrackNumber <= 0)
-                {
-                    insist("TrackNumber", () =>
-                    {
-                        string tn = vlc.mediaDescription.trackNumber;
-
-                        //if (!string.IsNullOrEmpty(tn))
-                        //{
-                        //    try
-                        //    {
-                        track.TrackNumber = Convert.ToInt32(tn);
-                        //    }
-                        //    catch
-                        //    {
-                        //    }
-                        //}
-                    });
-                }
-                if (track.Year <= 0)
-                {
-                    insist("Year", () =>
-                    {
-
-                        string date = vlc.mediaDescription.date;
-                        //DateTime dateC = DateTime.MinValue;
-                        //if (!string.IsNullOrEmpty(date))
-                        //{
-                        //    try
-                        //    {
-                        track.Year = Convert.ToInt32(date);
-                        //    }
-                        //    catch
-                        //    {
-                        //    }
-                        //}
-                    });
-                }
-
-            }
-
-            finally
-            {
-                //vlc.volume = vol;
-                if (!string.IsNullOrEmpty(oldLocation))
-                {
-                    location = oldLocation;
-                    vlc.playlist.items.clear();
-                    currentItem = vlc.playlist.add(new Uri(location).AbsoluteUri);
-                }
-            }
-        }
-
-    }
-}
-]]></content>
-  </file>
-  <file path="\PieceDb.Consolid\albums\Albums.cs">
+  
+  <file path="\pdb.player\ViewModel\AllTracksViewModel.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
-using pdb.gen.medianne;
-using pdb.gen.Tuning;
+using System.Collections.Specialized;
+using System.ComponentModel;
+using System.Windows.Input;
+using System.Windows.Threading;
+using pdb.player.ViewModel.Commande.Link;
+using pdb.player.ViewModel.Commande.PlayList;
+using pdb.player.ViewModel.Commande;
 using pdb.util;
-using pdb.gen.conf;
+using System.Globalization;
+using pdb.gen.auto;
 
-namespace pdb.gen.albums
+namespace pdb.player.ViewModel
 {
-    public class Albums // : IAlbumInit
+    public enum listDisplay
     {
-        public Albums(Consolid consolid)
+        all,
+        onlyDisabled,
+        onlyEnabled
+    }
+
+    public class AllTracksViewModel : List<TrackListViewModel>, INotifyCollectionChanged, INotifyPropertyChanged
+    {
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
+        //   private List<TrackListViewModel> tracks;
+        private Dictionary<int, TrackListViewModel> dict;
+        private object _lock = new object();
+        private PlayListViewModel parent;
+        private DispatcherOperation ope;
+
+
+
+        private bool? onlyDisabled;
+        private bool onlyFathers;
+        public AllTracksViewModel(PlayListViewModel parent, bool? onlyDisabled, bool onlyFathers)
         {
-            this.consolid = consolid;
+            this.parent = parent;
+            this.onlyDisabled = onlyDisabled;
+            this.onlyFathers = onlyFathers;
+            //   this.mode = mode; 
+            build();
+            PlayerViewModel.Instance.resumeChange += playerResumeChange;
+            PlayerViewModel.autoChange += new EventHandler(PlayerViewModel_autoChange);
+            //TrackListViewModel.CurrentHumanSelectedChanged += PlayerViewModel_autoChange; 
         }
-        private BgDictString<Album> dict = new BgDictString<Album>();
-        public BgDictString<Album> Dict { get { return dict; } }
-        private Consolid consolid;
-        private StackAlbum stack = StackAlbum.Instance;
-        private static volatile object _lock = new object();
-        private static volatile object _lockSort = new object();
-        public static object Lock { get { return _lock; } }
-        public static object LockSort { get { return _lockSort; } }
 
-
-        public void checkBuild()
+        void PlayerViewModel_autoChange(object sender, EventArgs e)
         {
-            lock (_lock)
-            {
-                misc.log("albums.checkBuild();");
-                foreach (Album album in dict.Values)
-                {
-                    album.checkBuild();
-                }
-            }
-        }
-
-        private string getKey(string _album, bool artist)
-        {
-            return Album.getKey(_album, artist);
-        }
-
-        public void buildDone()
-        {
-            lock (_lock)
-            {
-                var confGen = CConf.ConfGen;
-                var min1 = confGen.AlbumMin;
-                var min2 = confGen.PathVirtualMin;
-                var min3 = confGen.AristVirtualMin;
-                foreach (Album album in new List<Album>(dict.Values))
-                {
-                    int count = album.Count;
-                    bool toKeep = album.buildDone();
-                    if (toKeep)
-                    {
-
-                        if (album.Virtual)
-                        {
-                            if (album.VirtualByArtist)
-                            {
-                                if (min3 > 1 && count < min3)
-                                    toKeep = false;
-                            }
-                            else if (min2 > 1 && count < min2)
-                                toKeep = false;
-                        }
-                        else if (min1 > 1 && count < min1)
-                            toKeep = false;
-
-
-
-                        if (!toKeep)
-                        {
-                            // misc.log("mise au rencard de {0} {1}", album.Name, (count > 0 ? "" : count.ToString() + " éléments"));
-                            dict.Remove(getKey(album.Name, album.VirtualByArtist));
-                        }
-
-                    }
-
-                }
-
-
-            }
+            OnPropertyChanged("AutoResume");
         }
 
 
-
-        private bool check_(Piece piece, string albumOrg, bool virtualByArtist, IDictionary<string, Album> dict)
+        void playerResumeChange(object sender, EventArgs e)
         {
-            string __album = getKey(albumOrg, virtualByArtist);
-
-
-            var album = dict[__album];
-            if (album == null)
-            {
-                //  misc.log("creation album {0}", __album);
-                album = new Album(albumOrg, __album);
-                album.Virtual = piece.Virtual;
-                album.VirtualByArtist = piece.VirtualByArtist;
-                dict.Add(__album, album);
-            }
-
-            return album.add(piece);
+            OnPropertyChanged("TV");
+            OnPropertyChanged("Resume");
+            OnPropertyChanged("AutoResume");
         }
 
-        private bool check_(Piece piece, IDictionary<string, Album> dict)
-        {
-            return check_(piece, piece.Album, piece.VirtualByArtist, dict);
-        }
-
-        public int Count { get { return dict.Count; } }
-
-
-
-
-
-        public void sortVirtual()
-        {
-            misc.log("sortVirtual");
-            foreach (Album album in dict.Values)
-            {
-                if (album.Virtual)
-                    album.sortVirtual();
-            }
-        }
-
-        public bool check(Piece piece)
-        {
-            return check_(piece, dict);
-        }
-
-        //public void check(Piece piece)
-        //{
-        //    check_(piece, dict);
-        //    foreach (Piece child in piece.Childs)
-        //        check_(child, dict);
-        //}
-
-        public void checkVirtual(Piece piece, IDictionary<string, Album> dict)
-        {
-
-            if (piece.Virtual)
-                check_(piece, dict);
-
-        }
-
-        public Album getAlbum(TrackList piece)
-        {
-            return piece.Piece.PieceAlbum;
-            string __album = "-";
-            var _album = piece.Album;
-            if (!string.IsNullOrEmpty(_album))
-            {
-                __album = _album.Trim();
-                return dict[__album];
-            }
-            return null;
-        }
-
-        public void buildStack(bool incrementStack)
-        {
-            // prise en compte de la stack
-            var now = DateTime.Now;
-            misc.log("stack.build();");
-            var confSort = consolid.SortAlbumMode;
-            int stackSize = confSort.stackSize;
-            stack.Capacity = stackSize;
-            Album.ConfAlbumSort = confSort;
-            stack.Enabled = confSort.stackEnabled;
-            stack.build(incrementStack);
-            misc.log("buildStack; {0} ms", (DateTime.Now - now).TotalMilliseconds.ToString("0")); now = DateTime.Now;
-        }
-
-
-        /// <summary>
-        /// On fait en premier le makesort de l'album qui a changé
-        /// </summary>
-        /// <param name="album"></param>
-        public void makeSort(Piece piece)
-        {
-            if (piece == null)
-                return;
-            //var album = piece.PieceAlbum;
-            //if (album == null)
-            //    return;
-            ConfMedianne confMedianne = null;
-            var confSort = consolid.SortAlbumMode;
-            foreach (var cmp in confSort.ComposantsUtiles)
-            {
-                if (cmp.type == medianneMode.light || confMedianne == null)
-                    confMedianne = cmp;
-            }
-
-            var conf0 = new ConfMedianne(confMedianne, true);
-            //var main = confMedianne.Main;
-            //var coeffVirt = main.coeffVirt;
-            //var safe = main.safe;
-            //var coeffOld = main.CoeffOld;
-            foreach (Piece p in piece.Master)
-            {
-                var album = p.PieceAlbum;
-                if (album == null)
-                    continue;
-
-                album.mustRefresh();
-                album.makeSort(confMedianne, conf0); //listRef, reference); 
-            }
-
-        }
-        // private int nbSort=1;
-        private bool urgence;
-        public void setUrgence() { urgence = true; }
-        public void makeSort(bool sortAll)
-        {
-            lock (_lockSort)
-            {
-                misc.log("albums.make sort");
-
-                ///check to find first light
-                ConfMedianne confMedianne = null;
-                var confSort = consolid.SortAlbumMode;
-                foreach (var cmp in confSort.ComposantsUtiles)
-                {
-                    if (cmp.type == medianneMode.light || confMedianne == null)
-                        confMedianne = cmp;
-                }
-
-                var conf0 = new ConfMedianne(confMedianne, true);
-                var main = confMedianne.Main;
-                var min = confMedianne.Min;
-                var mainCoeffVirt = main.coeffVirt;
-                var mainCoeffOld = main.CoeffOld;
-
-                var minCoeffVirt = min.coeffVirt;
-                var minCoeffOld = min.CoeffOld;
-
-
-
-
-                if (confSort.reset)
-                {
-                    main.coeffVirt = 1;
-                    main.CoeffOld = 1;
-                    min.coeffVirt = 1;
-                    min.CoeffOld = 1;
-                }
-
-                List<Album> list = new List<Album>(dict.Values);
-                List<Album> listw = list;
-                HashSet<Album> hs = null;
-                DateTime now = DateTime.Now;
-                DateTime debut = now;
-                bool partial = !sortAll && confSort.optimSize > 0 && urgence;
-                if (partial)
-                    urgence = false;
-                int step = 0;
-                Album last = null;
-                // int coeffSort = 1;
-                while (true)
-                {
-                    step++;
-
-                    if (partial)
-                    {
-                        //nbSort++;
-                        //coeffSort = 1; 
-
-                        //int _nbSort = nbSort;
-                        //while (_nbSort >=2 && _nbSort % 2 == 0)
-                        //{
-                        //    coeffSort *= 2;
-                        //    _nbSort /= 2; 
-                        //}
-                        hs = new HashSet<Album>();
-                        list.Sort(new AlbumClassComparer2());
-                        list.Reverse();
-                        listw = new List<Album>();
-                        decimal equivLightMax = 0;
-                        decimal equivLightZeroMax = 0; 
-                        int nb = 0;
-                        int max = step * confSort.optimSize; // *coeffSort;
-
-                        foreach (Album a in list)
-                        {
-                            if (a.AtLeastOneEnabled)
-                            {
-                                nb++;
-                                listw.Add(a);
-                                hs.Add(a);
-
-                                var _classementValueLight = a.ClassementValueLight;
-                                if (_classementValueLight > equivLightMax)
-                                {
-                                    equivLightMax = _classementValueLight; 
-                                    last = a;
-                                }
-
-                                var _classementValueLightZero = a.ClassementValueLightZero;
-
-                                if (_classementValueLightZero > equivLightZeroMax)
-                                {
-                                    equivLightZeroMax = _classementValueLightZero;
-                                    last = a;
-                                }
-
-                                if (nb >= max)
-                                    break;
-                            }
-                        }
-
-                        
-                        var equivZeroVerif = equivLightZeroMax * pdb.util.Math.Pow(main.coeffVirt, main.safe) * pdb.util.Math.Pow(min.coeffVirt, min.safe) * main.CoeffOld * min.CoeffOld;
-                        var dxMin = min.dcoeff; 
-                        var dxMain = pdb.util.Math.Pow(main.dcoeff, main.safe);
-                        var equivVerif = equivLightMax * (dxMain * dxMin); 
-
-                        foreach (Album a in list)
-                        {
-                            if (a.AtLeastOneEnabled)
-                            {
-                                var _classementValueLight = a.ClassementValueLight;
-                               
-                                
-                                if (_classementValueLight <equivVerif && _classementValueLight <equivZeroVerif )
-                                {
-                                    if (hs.Add(a))
-                                    {
-                                        listw.Add(a);
-                                        if (_classementValueLight > equivLightMax)
-                                        {
-                                            equivLightMax = _classementValueLight;
-                                            last = a;
-                                        }
-
-                                    }
-                                }
-
-                            }
-                        }
-
-                    }
-
-                    int nbSorted = 0; 
-                    foreach (Album album in listw)
-                    {
-                        if (album.makeSort(confMedianne, conf0)) //listRef, reference); 
-                            nbSorted++; 
-                    }
-
-                    string infoAlbum = "";
-                    if (last != null)
-                    {
-                        infoAlbum = string.Format("last={0} {1} {2} {3}", last.Tracks[0].RankAlbumReverse, last.EquivLight0, last.EquivLight, last);
-                    }
-                    //   misc.log(string.Format("makeSort : nbSort={0} coeffSort={1} step={2}  {3} albums {4} ms {5}", nbSort, coeffSort, step, listw.Count, (DateTime.Now - now).TotalMilliseconds, infoAlbum));
-                    misc.log(string.Format("makeSort : step={0}  {1}/{2} albums {3} ms {4}", step, nbSorted,  listw.Count, (DateTime.Now - now).TotalMilliseconds, infoAlbum));
-                    now = DateTime.Now;
-                    //if (confSort.reset)
-                    //{
-                    main.coeffVirt = mainCoeffVirt;
-                    main.CoeffOld = mainCoeffOld;
-                    min.coeffVirt = minCoeffVirt;
-                    min.CoeffOld = minCoeffOld;
-
-                    // }
-
-
-                    list.Sort(new AlbumClassComparer(consolid.SortAlbumMode, false, null));
-                    list.Reverse();
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        list[i].Rank.Sort = i + 1;
-                    }
-
-                    if (!partial)
-                        break;
-
-
-                    list.Reverse();
-
-                    int nbCheck = 0;
-                    bool? check = null;
-                    foreach (Album a in list)
-                    {
-                        if (!a.AtLeastOneEnabled)
-                            continue;
-                        if (hs.Contains(a))
-                        {
-                            nbCheck++;
-                            if (nbCheck >= confSort.optimCheck) // * coeffSort)
-                            {
-                                check = true;
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            check = false;
-                            break;
-                        }
-
-
-                    }
-
-                    if (check == null || check.Value)
-                        break;
-
-                }
-
-
-                misc.log(string.Format("makeSort albums total : {0} ms", (DateTime.Now - debut).TotalMilliseconds));
-
-                List<Album> listSt = null;
-                List<Album> list0 = null;
-                List<Album> listSt0 = null;
-
-
-                if (confSort.sortSt || confSort.correcMainRank || confSort.correcMainCoeff || confSort.correcMainZero)
-                {
-                    listSt = new List<Album>(list);
-
-                    listSt.Sort(new AlbumClassComparer(consolid.SortAlbumMode, true, null));
-                    listSt.Reverse();
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        listSt[i].RankSt = i + 1;
-                    }
-                    misc.log(string.Format("sort St : {0} ms", (DateTime.Now - now).TotalMilliseconds));
-                }
-
-                if (confSort.sort0)
-                {
-                    now = DateTime.Now;
-                    list0 = new List<Album>(list);
-
-                    list0.Sort(new AlbumClassComparer(consolid.SortAlbumMode, false, conf0));
-                    list0.Reverse();
-                    for (int i = 0; i < list0.Count; i++)
-                    {
-                        list0[i].RankZero = i + 1;
-                    }
-                    misc.log(string.Format("sort 0 : {0} ms", (DateTime.Now - now).TotalMilliseconds));
-                }
-
-                if (confSort.sortSt0 || confSort.correcMainRank)
-                {
-                    now = DateTime.Now;
-                    listSt0 = new List<Album>(list);
-
-                    listSt0.Sort(new AlbumClassComparer(consolid.SortAlbumMode, true, conf0));
-                    listSt0.Reverse();
-                    for (int i = 0; i < listSt0.Count; i++)
-                    {
-                        listSt0[i].RankZeroSt = i + 1;
-                    }
-                    misc.log(string.Format("sort St0 : {0} ms", (DateTime.Now - now).TotalMilliseconds));
-                }
-
-                if (confSort.correcMainRank)
-                {
-                    now = DateTime.Now;
-                    for (int i = listSt.Count - 1; i >= 0; i--)
-                    {
-                        Album un = listSt[i];
-                        Album zero = listSt0[i];
-                        if (un.DontTouchSelectedCoeff)
-                            continue;
-                        if (un == zero)
-                            un.InvalidateMain();
-                    }
-                    misc.log(string.Format("correcMainRank : {0} ms", (DateTime.Now - now).TotalMilliseconds));
-                }
-
-                if (confSort.correcMainCoeff)
-                {
-                    now = DateTime.Now;
-                    for (int i = list.Count - 1; i >= 0; i--)
-                    {
-                        Album un = listSt[i];
-                        if (un.DontTouchSelectedCoeff)
-                            continue;
-                        if (!confSort.dontTouchMain && un.SelectedCoeff > selectedCoeff.noCoeff || un.SelectedCoeff == selectedCoeff.min)
-                        {
-                            var next = un.Next;
-                            if (next == null)
-                                continue;
-                            var coeff = next.CoeffVirtuel;
-                            if (coeff == 1m)
-                                continue;
-                            var redresse = un.ClassementValueLightSt * coeff;
-                            bool correc = false;
-                            for (int j = i - 1; j >= 0; j--)
-                            {
-                                var o = listSt[j];
-                                var onext = o.Next;
-                                if (onext == null)
-                                    continue;
-                                if (onext.MasterId == next.MasterId)
-                                    continue;
-                                var cmp = o.ClassementValueLightSt;
-                                if (cmp > redresse)
-                                {
-                                    correc = true;
-                                    break;
-                                }
-
-                                if (cmp < redresse && o.SelectedCoeff == selectedCoeff.noCoeff)
-                                {
-                                    correc = false;
-                                    break;
-                                }
-
-                                var coeff2 = onext.CoeffVirtuel;
-
-                                var redresse2 = coeff2 * cmp;
-                                if (redresse2 < redresse)
-                                {
-                                    correc = false;
-                                    break;
-                                }
-                            }
-
-                            if (correc)
-                                un.InvalidateMain();
-
-                        }
-                    }
-                    misc.log(string.Format("correcMainCoeff : {0} ms", (DateTime.Now - now).TotalMilliseconds));
-
-                }
-                if (confSort.correcMainZero)
-                {
-                    now = DateTime.Now;
-                    for (int i = list.Count - 1; i >= 0; i--)
-                    {
-                        Album un = listSt[i];
-                        if (un.DontTouchSelectedCoeff)
-                            continue;
-                        if (!confSort.dontTouchMain && un.SelectedCoeff > selectedCoeff.noCoeff || un.SelectedCoeff == selectedCoeff.min)
-                        {
-                            var unNext = un.Next;
-                            if (unNext == null)
-                                continue;
-
-                            bool correc = true;
-                            int nbTry = 0;
-                            int nbMaxTry = confSort.correcMainZeroOptim;
-                            if (nbMaxTry <= 0)
-                                nbMaxTry = int.MaxValue;
-                            var hsTestes = new HashSet<int>();
-                            bool unClassementRecent = unNext.LastClassementRecent;
-                            for (int j = i - 1; j >= 0; j--)
-                            {
-                                var o = listSt[j];
-                                var onext = o.Next;
-                                if (onext == null)
-                                    continue;
-                                if (onext.MasterId == unNext.MasterId)
-                                    continue;
-                                if (o.StackValue > 0)
-                                    continue;
-                                if (!hsTestes.Add(onext.MasterId))
-                                    continue;
-
-                                if (o.ClassementValueLightZeroSt < un.ClassementValueLightZeroSt)
-                                {
-                                    correc = false;
-                                    break;
-                                }
-
-                                if (!unClassementRecent)
-                                {
-                                    if (o.ClassementValueLightZeroSt == un.ClassementValueLightZeroSt)
-                                    {
-                                        if (onext.LastClassementRecent)
-                                        {
-                                            correc = false;
-                                            break;
-                                        }
-                                    }
-
-                                }
-
-
-                                if (nbMaxTry == int.MaxValue)
-                                    continue;
-
-
-
-                                if (o.ClassementValueLightSt > un.ClassementValueLightZeroSt)
-                                {
-                                    nbTry++;
-                                    if (nbTry > nbMaxTry)
-                                        break;
-                                }
-
-
-                                //if (o.ClassementValueLightSt > un.ClassementValueLightZeroSt)
-                                //    break;
-                                // }
-
-
-
-                                //if (o.RankSt <= un.RankSt)
-                                //{
-                                //    if (o.RankZeroSt > un.RankZeroSt)
-                                //    {
-                                //        correc = false;
-                                //        break;
-                                //    }
-
-                                //    if (o.ClassementValueLightSt > un.ClassementValueLightZeroSt)
-                                //        break;
-                                //}
-
-                            }
-
-                            if (true == correc)
-                                un.InvalidateMain();
-
-                        }
-
-
-
-                    }
-
-                    misc.log(string.Format("correcMainZero : {0} ms", (DateTime.Now - now).TotalMilliseconds));
-                }
-
-
-
-
-                //var listStack = stack.Albums;
-                //foreach (Album s in listStack)
-                //{
-                //    string key = getKey(s.Name);
-                //    var alb = dict[key];
-                //    stack.merge(s, alb);
-                //}
-                //list.Sort(new AlbumClassComparerStack());
-                //for (int i = 0; i < list.Count; i++)
-                //{
-                //    list[i].Rank2 = i + 1; 
-                //}
-
-                misc.log(string.Format("makeSort total : {0} ms", (DateTime.Now - debut).TotalMilliseconds));
-            }
-        }
-
-        public List<Album> makeSelection()
-        {
-            misc.log("albums.makeSelection");
-            var now = DateTime.Now;
-            var list = new List<Album>(dict.Values);
-
-            //var confGen = CConf.ConfGen;
-            //var min1 = confGen.AlbumMin;
-            //var min2 = confGen.PathVirtualMin;
-            //var min3 = confGen.AristVirtualMin;
-            //foreach (Album album in dict.Values)
-            //{
-            //    int count = album.Count;
-            //    bool toKeep = true;
-
-
-            //    if (album.Virtual)
-            //    {
-            //        if (album.VirtualByArtist)
-            //        {
-            //            if (min3 > 1 && count < min3)
-            //                toKeep = false;
-            //        }
-            //        else if (min2 > 1 && count < min2)
-            //            toKeep = false;
-            //    }
-            //    else if (min1 > 1 && count < min1)
-            //        toKeep = false;
-
-
-
-            //    if (!toKeep)
-            //    {
-            //        misc.log("mise au rencard de {0} {1}", album.Name, (count > 0 ? "" : count.ToString() + " éléments"));
-            //    }
-            //    else
-            //        list.Add(album);
-
-            //}
-
-            foreach (Album album in list)
-            {
-                album.makeSelection();
-            }
-            list.Sort(new AlbumRestComparer());
-            for (int i = 0; i < list.Count; i++)
-            {
-                list[i].Rank.RankRest = i + 1;
-            }
-
-            misc.log(string.Format("make selection : {0} ms", (DateTime.Now - now).TotalMilliseconds));
-            return list;
-        }
-
-        public void changeAlbum(Piece p, string newA)
-        {
-            var currentAlb = dict[getKey(p.Album, false)];
-            if (currentAlb != null)
-                currentAlb.mustRefresh();
-            check_(p, newA, false, this.dict);
-            var newAlb = dict[getKey(newA, false)];
-            if (newAlb != null)
-                newAlb.mustRefresh();
-            p.albumMustRefresh();
-
-            //  invalidate(p); 
-        }
-
-        public void changeArtist(Piece p, string newA)
-        {
-
-
-
-            var currentAlb = dict[getKey(p.Artist, true)];
-            if (currentAlb != null)
-                currentAlb.mustRefresh();
-
-            check_(p, newA, true, this.dict);
-            var newAlb = dict[getKey(newA, true)];
-            if (newAlb != null)
-                newAlb.mustRefresh();
-            p.albumMustRefresh();
-        }
-
-        public void checkVirtuals(IEnumerable<Album> candidats, List<Piece> list)
-        {
-            foreach (Album candidat in candidats)
-            {
-                bool found = false;
-                foreach (Album album in dict.Values)
-                {
-                    if (album.isSameOf(candidat))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (found)
-                {
-                    // on ne le prend pas (car identique à un existant)
-                    // on n'oublie pas de supprimer les fils
-                    candidat.Clear();
-                }
-                else
-                {
-                    // on le prend.
-                    dict.Add(getKey(candidat.Name, candidat.VirtualByArtist), candidat);
-                    foreach (Piece p in candidat)
-                    {
-                        p.consolidChild();
-                        list.Add(p);
-                    }
-                }
-            }
-        }
-
-
-
-
-        public List<Album> List
+        public string Resume
         {
             get
             {
-                var list = new List<Album>();
-                foreach (Album album in dict.Values)
-                    list.Add(album);
-                list.Sort(new AlbumNameComparer());
-                return list;
+                return PlayerViewModel.Instance.Resume;
             }
-        }
-        //public List<Album> ListByUpdate
-        //{
-        //    get
-        //    {
-        //        var list = new List<Album>();
-        //        foreach (Album album in dict.Values)
-        //            list.Add(album);
-        //        list.Sort(new AlbumLastModifClassementComparer());
-
-        //        return list;
-        //    }
-        //}
-
-        public void signalClassChange(TrackList track)
-        {
-            track.Piece.albumMustRefresh();
-            //var album = getAlbum(track);
-            //if (album == null)
-            //    return;
-            //album.mustRefresh();
-
-            //var master = track.Piece.Master;
-            //master.PieceAlbum.mustRefresh();
-            //foreach (Piece child in master)
-            //    child.PieceAlbum.mustRefresh();
-            stack.Add(track.Piece);
-
-        }
-
-        #region invalider
-
-
-        public void invalidateAll(bool total)
-        {
-            foreach (var a in dict.Values)
+            set
             {
-                if (total)
-                    a.mustRefresh();
-                else
-                    a.refreshLight();
+
             }
         }
-        //public void invalidate(Piece piece)
-        //{
-        //    foreach (var p in piece.Master)
-        //    {
-        //        var key = getKey(p.Album, p.VirtualByArtist);
-        //        var a = dict[key];
-        //        if (a == null)
-        //        {
-        //        }
-        //        else
-        //            a.invalidate();
-        //        //if (p.Virtual)
-        //        //    continue; 
-        //        ////1. check standard
-        //        //var key = getKey(p.Album, false);
-        //        //var a = dict[key];
-        //        //if (a == null)
-        //        //{
-        //        //}
-        //        //else
-        //        //    a.invalidate(); 
-        //        ////2. check artiste
-        //        //key = getKey(p.Artist, true);
-        //        //a = dict[key];
-        //        //if (a == null)
-        //        //{
-        //        //}
-        //        //else
-        //        //    a.invalidate(); 
 
-        //        ////3. check paths
-        //        //foreach (string path in p.getIntermediaryPath())
-        //        //{
-        //        //    key = getKey(path, false);
-        //        //    a = dict[key];
-        //        //    if (a == null)
-        //        //    {
-        //        //    }
-        //        //    else
-        //        //        a.invalidate(); 
-        //        //}
+        protected void OnCollectionChange(NotifyCollectionChangedEventArgs e)
+        {
+            // Be nice - use BlockReentrancy like MSDN said
+
+            //var dispatcher = Dispatcher.CurrentDispatcher;
+            //if (dispatcher.CheckAccess())
+            //{
+            //    if (CollectionChanged == null)
+            //    {
+            //    }
+            //    else
+            //    {
+            //        CollectionChanged(this, e); 
+            //    }
+            //    return; 
+            //}
+
+            //dispatcher.Invoke(DispatcherPriority.DataBind, new Action<NotifyCollectionChangedEventArgs>(OnCollectionChange), e);
+
+
+
+            var eventHandler = CollectionChanged;
+            if (eventHandler != null)
+            {
+                Delegate[] delegates = eventHandler.GetInvocationList();
+                // Walk thru invocation list
+                foreach (NotifyCollectionChangedEventHandler handler in delegates)
+                {
+                    try
+                    {
+                        var dispatcherObject = handler.Target as DispatcherObject;
+                        // If the subscriber is a DispatcherObject and different thread
+                        if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
+                        // Invoke handler in the target dispatcher's thread
+                        {
+                            ope =
+                               dispatcherObject.Dispatcher.BeginInvoke(App.DISPATCHER_PRIORITY,
+                                            handler, this, e);
+                            ope.Completed += ope_Completed;
+
+
+                        }
+                        else // Execute handler as is
+                            handler(this, e);
+                    }
+                    catch (Exception ex)
+                    {
+                        App.log.log(ex.ToString());
+                    }
+                }
+            }
+            else
+            {
+            }
+
+            // PlayerViewModel.Instance.makeResume();
+
+        }
+
+        void ope_Completed(object sender, EventArgs e)
+        {
+            App.log.log(string.Format("AllTracksViewModel::OnCollectionChange {0} CollectionChanged completé", sender));
+            PlayerViewModel.Instance.makeResume();
+        }
+
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            var eventHandler = PropertyChanged;
+            if (eventHandler == null)
+            {
+                //   int toto = 0;
+            }
+            else
+            {
+                //var dispatcher = Dispatcher.CurrentDispatcher;
+                //if (dispatcher.CheckAccess())
+                //    PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+                //else
+                //    dispatcher.Invoke(new Action<string>(OnPropertyChanged), propertyName);
+
+                Delegate[] delegates = eventHandler.GetInvocationList();
+                // Walk thru invocation list
+                foreach (PropertyChangedEventHandler handler in delegates)
+                {
+                    try
+                    {
+                        var dispatcherObject = handler.Target as DispatcherObject;
+                        // If the subscriber is a DispatcherObject and different thread
+                        if (dispatcherObject != null && dispatcherObject.CheckAccess() == false)
+                            // Invoke handler in the target dispatcher's thread
+                            dispatcherObject.Dispatcher.BeginInvoke(App.DISPATCHER_PRIORITY,
+                                          handler, this, new PropertyChangedEventArgs(propertyName));
+                        else // Execute handler as is
+                            handler(this, new PropertyChangedEventArgs(propertyName));
+                    }
+                    catch (Exception ex)
+                    {
+                        App.log.log(ex.ToString());
+                    }
+                }
+            }
+        }
+
+        public void refresh()
+        {
+            build();
+            foreach (TrackListViewModel track in this)
+                track.refresh();
+
+        }
+
+        //public void init()
+        //{
+        //    refresh();
+        //    OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        //}
+
+        public TrackListViewModel TV { get { return TrackListViewModel.HumanSelected; } }
+
+        public void build()
+        {
+            lock (_lock)
+            {
+                var list = new List<TrackListViewModel>();
+                var dict = new Dictionary<int, TrackListViewModel>();
+                buildAllTraks(list, dict, onlyDisabled, onlyFathers);
+                if (this.dict == null)
+                {
+                    this.dict = new Dictionary<int, TrackListViewModel>();
+                    foreach (TrackListViewModel track in list)
+                    {
+                        Add(track);
+                        this.dict.Add(track.PieceId, track);
+                        // track.PropertyChanged += track_PropertyChanged;
+                    }
+
+                    OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+                }
+                else
+                {
+
+                    foreach (TrackListViewModel newTrack in list)
+                    {
+                        if (!this.dict.ContainsKey(newTrack.PieceId))
+                        {
+                            Add(newTrack);
+                            this.dict.Add(newTrack.PieceId, newTrack);
+                            // newTrack.PropertyChanged += track_PropertyChanged;
+                            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, newTrack));
+                        }
+                    }
+
+                    foreach (TrackListViewModel track in new List<TrackListViewModel>(this))
+                    {
+                        if (!dict.ContainsKey(track.PieceId))
+                        {
+                            Remove(track);
+                            this.dict.Remove(track.PieceId);
+                            // track.PropertyChanged -= track_PropertyChanged;
+                            OnCollectionChange(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, track));
+                        }
+                    }
+                }
+            }
+
+            //Clear(); 
+            //foreach (TrackListViewModel track in parent.Tracks)
+            //    Add(track); 
+        }
+
+        //void track_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        //{
+        //    switch (e.PropertyName)
+        //    {
+        //        case "Duration":
+        //        case "Enabled":
+        //            PlayerViewModel.Instance.makeResume();
+        //            break;
         //    }
         //}
+
+        public List<TrackListViewModel> AllTracks
+        {
+            get
+            {
+                build();
+                return this;
+            }
+        }
+
+        public List<TrackListViewModel> Tracks
+        {
+            get
+            {
+                return parent.Tracks;
+            }
+        }
+
+        protected void buildAllTraks(List<TrackListViewModel> container, Dictionary<int, TrackListViewModel> dict, bool? onlyDisabled, bool onlyFathers)
+        {
+            foreach (TrackListViewModel t in parent.Tracks)
+            {
+                if (!t.Enabled || true != onlyDisabled)
+                {
+                    if (onlyDisabled == null && t.Enabled)
+                    {
+                        if (!t.PieceGen.ClassementProvisoireRecent)
+                            continue;
+                    }
+                    if (t.PieceParentId < 0 || !onlyFathers)
+                    {
+                        if (!t.Track.Virtual || PlayerViewModel.Instance.WithVirtualAlbum)
+                        {
+
+                            if (!dict.ContainsKey(t.PieceId))
+                            {
+                                dict.Add(t.PieceId, t);
+                                container.Add(t);
+                                //  t.Index = container.Count; 
+                            }
+                        }
+                    }
+                }
+
+            }
+
+            foreach (PlayListViewModel pl in parent)
+            {
+                AllTracksViewModel other = pl.AlltracksVm;
+                //if (true == onlyDisabled)
+                //    other = pl.AlltracksVmd;
+                //else
+                //    other = pl.AlltracksVm;
+                other.buildAllTraks(container, dict, onlyDisabled, onlyFathers);
+            }
+        }
+
+        #region cmd
+
+        private ICommand _contextCmdCheck;
+        public ICommand ContextCmdCheck { get { if (_contextCmdCheck == null) _contextCmdCheck = new CheckCmd(); return _contextCmdCheck; } }
+
+        private ICommand _contextCmdUnCheck;
+        public ICommand ContextCmdUnCheck { get { if (_contextCmdUnCheck == null) _contextCmdUnCheck = new UnCheckCmd(); return _contextCmdUnCheck; } }
+
+
+        private ICommand _contextLinkFather;
+        public ICommand LinkFather { get { if (_contextLinkFather == null) _contextLinkFather = new LinkFather(); return _contextLinkFather; } }
+
+        private ICommand _contextLinkChild;
+        public ICommand LinkChild { get { if (_contextLinkChild == null) _contextLinkChild = new LinkChild(); return _contextLinkChild; } }
+
+        private ICommand _contextLinkFusion;
+        public ICommand LinkFusion { get { if (_contextLinkFusion == null) _contextLinkFusion = new LinkFusion(); return _contextLinkFusion; } }
+
+        private ICommand _contextUnLink;
+        public ICommand LinkReset { get { if (_contextUnLink == null) _contextUnLink = new LinkReset(); return _contextUnLink; } }
+
+        private ICommand _contextExport;
+        public ICommand Export { get { if (_contextExport == null) _contextExport = new ExportCmd(); return _contextExport; } }
+
+        private ICommand _contextExportCompress;
+        public ICommand ExportCompress { get { if (_contextExportCompress == null) _contextExportCompress = new ExportCompress(); return _contextExportCompress; } }
+
+        private ICommand _contextDelete;
+        public ICommand DeleteTrack { get { if (_contextDelete == null) _contextDelete = new DeleteCmd(); return _contextDelete; } }
+
+        private ICommand _contexExplorer;
+        public ICommand Explorer { get { if (_contexExplorer == null) _contexExplorer = new Explorer(); return _contexExplorer; } }
+
+
+
+        private ICommand _ContextCmdAddToList;
+        public ICommand ContextCmdAddToList { get { if (_ContextCmdAddToList == null) _ContextCmdAddToList = new AddToList(App.Instance); return _ContextCmdAddToList; } }
+
+        private ICommand _ContextCmdDbDeleteClassement;
+        public ICommand ContextCmdDbDeleteClassement { get { if (_ContextCmdDbDeleteClassement == null) _ContextCmdDbDeleteClassement = new DbDeleteLastClassement(); return _ContextCmdDbDeleteClassement; } }
+
+        private ICommand _ContextCmdDbDeleteRead;
+        public ICommand ContextCmdDbDeleteRead { get { if (_ContextCmdDbDeleteRead == null) _ContextCmdDbDeleteRead = new DbDeleteLastRead(); return _ContextCmdDbDeleteRead; } }
+
+
         #endregion
 
+        public TrackListViewModel HumanSelected
+        {
+            get
+            {
+                return TrackListViewModel.HumanSelected;
+            }
+        }
 
+        #region from Ihm
+        private TrackListViewModel selectedTrack;
+        public TrackListViewModel SelectedTrack
+        {
+            get
+            {
+                return selectedTrack;
+            }
+            set
+            {
+                selectedTrack = value;
+                TrackListViewModel.setHumanSelected(parent, value); //  .HumanSelected = value;
+                if (selectedTrack != null)
+                    selectedTrack.IsSelected = true;
+            }
+        }
+        #endregion
+
+        private int nbAlbumMoved;
+
+        public int NbAlbumMoved
+        {
+            get { return nbAlbumMoved; }
+        }
+
+        private int nbEmpeached;
+        public int NbEmpeached { get { return nbEmpeached; } }
+
+        private void writeConf(StringBuilder sb, ConfMedianneVirt conf)
+        {
+            var coeff = conf.coeffVirt;
+            if (coeff == 1)
+                coeff = conf.CoeffOld;
+            sb.Append((coeff - 1).FormatE(3)); sb.Append("\t "); //(3,3,9));                  
+
+            sb.Append((conf.v).FormatE(3)); sb.Append("\t ");  //sb.Append("m  ");
+
+            sb.Append(conf.a.FormatE(3)); sb.Append("\t ");
+            if (conf.CoeffStaticmRetour > 1)
+            {
+                sb.Append(conf.CurrentStaticm.FormatE(3)); sb.Append("\t ");
+            }
+
+
+            sb.Append(conf.Serial); sb.Append(" ");
+            //  sb.Append(conf.SerialBox); sb.Append(" ");
+            // sb.Append(conf.Alt); sb.Append(" ");
+            sb.Append(conf.AltHisto); sb.Append("  ");
+            sb.Append(conf.Elastique.ToString("0.##")); sb.Append(" ");
+            sb.Append(conf.Elastique2.ToString("0.##"));
+        }
+
+        private void check(StringBuilder sb, StringBuilder sb2)
+        {
+            sb.Append(" ");
+            sb2.Append(" ");
+
+            while (sb.Length < sb2.Length)
+                sb.Append(" ");
+            while (sb2.Length < sb.Length)
+                sb2.Append(" ");
+
+        }
+
+        //private void writeConf(StringBuilder sb, ConfMedianneVirt conf, StringBuilder sb2, ConfMedianneVirt conf2)
+        //{
+        //    sb.Append((conf.coeffVirt - 1).FormatE(4));
+        //    sb2.Append((conf2.coeffVirt - 1).FormatE(4));
+
+        //    check(sb, sb2); 
+
+        //    sb.Append((conf.v).FormatE(4));
+        //    sb2.Append((conf2.v).FormatE(4));
+        //    check(sb, sb2); 
+
+        //    sb.Append(conf.a.FormatE(4));
+        //    sb2.Append(conf2.a.FormatE(4));
+        //    check(sb, sb2); 
+
+        //    sb.Append(conf.CurrentStaticm.FormatE(3));
+        //    sb2.Append(conf2.CurrentStaticm.FormatE(3));
+        //    check(sb, sb2);
+
+        //    sb.Append(conf.Serial);
+        //    sb2.Append(conf2.Serial);
+        //    check(sb, sb2);
+        //    //  sb.Append(conf.SerialBox); sb.Append(" ");
+        //    // sb.Append(conf.Alt); sb.Append(" ");
+        //    sb.Append(conf.AltHisto); 
+        //    sb2.Append(conf2.AltHisto);
+        //    check(sb, sb2);
+
+
+        //    sb.Append(conf.Elastique.ToString("0.##"));
+        //    sb2.Append(conf2.Elastique.ToString("0.##"));
+
+        //    check(sb, sb2); 
+        //    sb.Append(conf.Elastique2.ToString("0.##"));
+        //    sb2.Append(conf2.Elastique2.ToString("0.##"));
+        //}
+
+        public string AutoResume
+        {
+            get
+            {
+
+                try
+                {
+                    var confM = App.gen.SortAlbumMode.ComposantsUtiles[0];
+                    var conf = confM.Main;
+                    var min = confM.Min;
+                    var sb = new StringBuilder();
+
+
+
+                    //if (min.Use)
+                    //{
+                    //    var sb2 = new StringBuilder();
+                    //    writeConf(sb, conf, sb2, min);
+                    //    sb.AppendLine();
+                    //    sb.Append(sb2.ToString()); 
+                    //}
+
+                    //else
+                    //    writeConf(sb, conf);
+
+
+                    writeConf(sb, conf);
+                    if (min.Use)
+                    {
+                        sb.AppendLine();
+                        writeConf(sb, min);
+                    }
+
+
+                    return sb.ToString();
+
+                }
+                catch
+                {
+                    return "";
+                }
+            }
+        }
+        public string NbAlbumMovedDesc
+        {
+            get
+            {
+                if (nbAlbumMoved < 0)
+                    return "";
+                if (nbAlbumMoved == 0)
+                    return "pas d'album en quarantaine";
+                return string.Format("{0} albums en quarantaine", nbAlbumMoved);
+            }
+        }
+
+        public void setNbAlbum(int nbanavailable, int empeches, int moved)
+        {
+            if (nbanavailable != this.nbAlbumMovedUnavailable)
+            {
+                this.nbAlbumMovedUnavailable = nbanavailable;
+                OnPropertyChanged("NbAlbumMovedUnavailable");
+            }
+
+            if (empeches != nbEmpeached)
+            {
+                nbEmpeached = empeches;
+                OnPropertyChanged("NbEmpeached");
+            }
+
+            if (moved != nbAlbumMoved)
+            {
+                nbAlbumMoved = moved;
+                OnPropertyChanged("NbAlbumMoved");
+            }
+        }
+
+        //public void setNbAlbumMoved(int nb)
+        //{
+        //    if (nb != nbAlbumMoved)
+        //    {
+        //        nbAlbumMoved = nb;
+        //        OnPropertyChanged("NbAlbumMoved");
+        //        OnPropertyChanged("NbAlbumMovedDesc");
+        //    }
+
+        //}
+
+        private int nbAlbumMovedUnavailable;
+        public int NbAlbumMovedUnavailable
+        {
+            get
+            {
+                return nbAlbumMovedUnavailable;
+            }
+
+            //set
+            //{
+            //    if (value != nbAlbumMovedUnavailable)
+            //    {
+            //        nbAlbumMovedUnavailable = value;
+            //        OnPropertyChanged("NbAlbumMovedUnavailable");
+            //    }
+            //}
+        }
 
     }
+
+
 }
 ]]></content>
   </file>
@@ -2003,48 +750,51 @@ namespace pdb.gen.auto
             if (_nbAlt > serialAlt)
                 _nbAlt = serialAlt;
 
-            var ecart0 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
-
+            decimal ecart0 = System.Math.Max(_nbElastique,-_nbElastique2);
+          
             var last = lastAutoDirection;
             var lastDelta_ = this.lastDelta;
             lastAutoDirection = selectedByCoeff;
 
             if (last.HasValue)
             {
-                if (last != selectedByCoeff ||  (checkFall && selectedByCoeff))
+                if (last != selectedByCoeff || (checkFall && selectedByCoeff))
                 {
                     if (last != selectedByCoeff)
                     {
                         _nbAltHisto++;
                         _nbSameDirection = 0;
-                        _nbAlt++;
+                        _nbAlt++;                        
                     }
-                    else _nbAltHisto = 0;
+                    else
+                    {
+                        _nbAltHisto = 0;
+                    }
 
                     //if (_nbAltHisto > 1)
                     //{
                     if (selectedByCoeff)
                     {
-                        _nbElastique -= coeffElastique1r;
-                        _nbElastique2 -= coeffElastique2;
+                        _nbElastique -= rapportmp * coeffElastique1r;
+                        _nbElastique2 -= rapportmp * coeffElastique2;
                     }
                     else
                     {
-                        _nbElastique -= rapportmp * coeffElastique1r;
-                        _nbElastique2 -= rapportmp * coeffElastique2;
+                        _nbElastique -= coeffElastique1r;
+                        _nbElastique2 -= coeffElastique2;
                     }
 
                     if (last != selectedByCoeff)
                     {
                         if (_nbAltHisto > 1)
                         {
-                            if (currentStaticp > 1)
+                            if (currentStaticp > 1 && coeffStaticpRetour > 1)
                             {
                                 currentStaticp /= coeffStaticpRetour;
                                 if (currentStaticp < 1)
                                     currentStaticp = 1;
                             }
-                            if (currentStaticm > 1)
+                            if (currentStaticm > 1 && coeffStaticmRetour > 1)
                             {
                                 currentStaticm /= coeffStaticmRetour;
                                 if (currentStaticm < 1)
@@ -2073,6 +823,7 @@ namespace pdb.gen.auto
                 {
                     _nbAlt--;
                     _nbAltHisto = 0;
+                  
 
                     if (selectedByCoeff)
                     {
@@ -2121,7 +872,7 @@ namespace pdb.gen.auto
                 lastDelta = null;
                 if (last != selectedByCoeff) // if (_nbAltHisto > 1)
                 {
-                    if (_nbAlt > serialAlt || _nbElastique < -serialElastique || _nbElastique2 < -serialElastique)
+                    if (_nbAlt > serialAlt || _nbElastique2 < -serialElastique)
                     {
                         lastDelta = false;
                     }
@@ -2129,7 +880,7 @@ namespace pdb.gen.auto
                 else if (checkFall && selectedByCoeff)
                 {
                 }
-                else 
+                else
                 {
                     bool applyanti = false;
 
@@ -2168,8 +919,8 @@ namespace pdb.gen.auto
                             applyanti = true;
                         else if (_nbElastique > serialElastique)
                             applyanti = true;
-                        else if (_nbElastique2 > serialElastique)
-                            applyanti = true;
+                        //else if (_nbElastique2 > serialElastique)
+                        //    applyanti = true;
                     }
                     if (applyanti)
                         lastDelta = true;
@@ -2192,8 +943,10 @@ namespace pdb.gen.auto
                 }
                 else
                 {
-                    var ecart1 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
-                    if (ecart1 < ecart0)
+                    decimal ecart1 = System.Math.Max(_nbElastique, -_nbElastique2);
+                    
+                        
+                    if (ecart1 >0 && ecart1 < ecart0)
                     {
                         if (a > aepsilon)
                         {
@@ -2310,8 +1063,8 @@ namespace pdb.gen.auto
                 dcoeff = 1 + dx / _c0;
 
             if (selectedByCoeff)
-                dx /= rapportmp; 
-            
+                dx /= rapportmp;
+
 
             dv = Math.Abs(v - _v0);
             if (dv == 0)
@@ -2340,4 +1093,785 @@ namespace pdb.gen.auto
 }
 ]]></content>
   </file>
- </db>
+  <file path="\PieceDb.Consolid\auto\ConfMedianneVirt.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Xml;
+using pdb.util;
+using Math = pdb.util.Math;
+using StringBuilder = pdb.util.StringBuilder;
+
+namespace pdb.gen.auto
+{
+    public partial class ConfMedianneVirt : TuningBase
+    {
+        [NonSerialized]
+        const string PATH_DYN = "..\\dynamic";
+        private string Path { get { return string.Format("{0}{1}", DIR_CONF, fdata); } }
+        private string PathDiff { get { return string.Format("{0}{1}", DIR_CONF, fdiff); } }
+        private string PathDiffTmp { get { return string.Format("{0}{1}", DIR_CONF, fdiffTmp); } }
+        // private string PathLastFull { get { return string.Format("{0}{1}", DIR_CONF, flast); } }
+        const string PATH_DYN_DIFF = "..\\dynamic_diff";
+
+
+        const int NB_HISTO = 1000000;
+        public int safe;
+        public decimal coeffVirt = 1m;
+
+
+
+        public string name;
+
+
+        /// <summary>
+        /// lié au mode db
+        /// </summary>
+        public dbMode mode;
+        /// <summary>
+        /// fichier ou est consigné l'historique courant
+        /// </summary>
+        public string fdata;
+        /// <summary>
+        /// fichier ou est consigné l'incrémental de l'historique
+        /// </summary>
+        public string fdiff;
+        /// <summary>
+        /// fichier ou est consigné l'incrémental de l'historique en mode full en vue de la sauvegarfe
+        /// </summary>
+        public string fdiffTmp;
+        ///// <summary>
+        ///// fichier ou est consigné la dernière sauvegarde full de l'historique
+        ///// </summary>
+        //public string flast;
+
+        public int indexDiff = 0;
+
+        public bool virtOnlyDisabled;
+        public bool noAddEnd;
+        public bool noAddAll;
+        public bool virtAlignSelected;
+        public bool virtAlignPrec;
+        public bool coeffVirtAuto;
+        public bool coeffVirtAdjust;
+
+        public bool removeEpsilon;
+
+        public bool forceCoeffVirt;
+        public bool lissage;
+        public bool cumul;
+
+        public bool reSort;
+        public bool noAdd;
+
+
+        public bool auto;
+
+        public int serialp = 1;
+        public int serialm = 1;
+        public int serialAlt = 1;
+        public decimal serialElastique = 1m;
+        public decimal coeffElastique1 = 1m;
+        public decimal coeffElastique2 = 1m;
+
+        public decimal coeffElastique1r = 1m;
+        public decimal coeffElastique2r = 1m;
+
+        /// <summary>
+        /// pas de calcul
+        /// </summary>
+        public decimal pas = 0.1m;
+        /// <summary>
+        /// vitesse : augmentation ou diminution du coeff virtuel
+        /// </summary>
+        public decimal v;
+
+        /// <summary>
+        /// variation de la vitesse en proportion
+        /// </summary>
+        public decimal vv = 1.1m;
+
+        ///// <summary>
+        ///// Vitesse virtuelle : pour calculer l'accélaration en tenant compte des contraintes en simulant un augmentation. Mauvaise idée. toujours egal à v en cas de contrainte
+        ///// </summary>
+        //private decimal vv;
+        /// <summary>
+        /// borne visant à limiter le delta entre deux pas
+        /// </summary>
+        public decimal d0 = 0.01m;
+        //  public decimal dcoeffm;
+
+
+        /// <summary>
+        /// accélération : augmentation ou diminution de la vitesse
+        /// </summary>
+        public decimal a;
+        //public decimal a0 =0.01m;
+        //public decimal dconvergence01;
+        /// <summary>
+        /// variation de l'accélération en proportion
+        /// </summary>
+        public decimal aa = 0.01m;
+        /// <summary>
+        ///accélaration plancher
+        /// </summary>
+        public decimal aepsilon = 0.001m;
+
+        /// <summary>
+        /// ecart min entre deux positions
+        /// </summary>
+        private decimal epsilon = 0.001m * 0.001m;
+        /// <summary>
+        /// ecart de vitesse entre deux positions
+        /// </summary>
+        private decimal vepsilon = 0.001m * 0.001m;
+
+        private bool? lastDelta;
+        private bool? lastAutoDirection;
+        /// <summary>
+        /// nb consecutif dans le même sens pour info
+        /// </summary>
+        private int _nbSameDirection;
+        /// <summary>
+        /// nb même sens borné pour calcul
+        /// </summary>
+        private int _nbSameDirectionBox;
+        /// <summary>
+        /// nb allez/retour pour calcul
+        /// </summary>
+        private int _nbAlt;
+        /// <summary>
+        /// bilan même sens vs allez-retour. Quand trop grand on agrandit le delta, quand trop petit on diminue
+        /// </summary>
+        private decimal _nbElastique;
+
+        /// <summary>
+        /// bilan même sens vs allez-retour. Quand trop grand on agrandit le delta, quand trop petit on diminue
+        /// </summary>
+        private decimal _nbElastique2;
+        /// <summary>
+        /// nb allez/retour consécutifs pour info
+        /// </summary>
+        private int _nbAltHisto;
+
+        /// <summary>
+        /// Quand plusieurs montées consécutives : application d'un coeff à la vitesse pour accélérer la reprise à la normale
+        /// </summary>
+        private decimal coeffStaticp = 1;
+        /// <summary>
+        /// Quand plusieurs descentes consécutives : application d'un coeff à la vitesse pour accélérer la reprise à la normale
+        /// </summary>
+        private decimal coeffStaticm = 1;
+
+        /// <summary>
+        /// Après plusieurs montées consécutives : retour au coeff nominal 
+        /// </summary>
+        private decimal coeffStaticpRetour = 1;
+        /// <summary>
+        /// Quand plusieurs descentes consécutives : retour au coeff nominal 
+        /// </summary>
+        private decimal coeffStaticmRetour = 1;
+        public decimal CoeffStaticmRetour { get { return coeffStaticmRetour; } }
+
+        /// <summary>
+        /// Retour mode large
+        /// </summary>
+        private bool coeffStaticRetourLarge; 
+
+        /// <summary>
+        /// Valeur courante du coeff corrigeant les situations anormales du point de vue des montées consécutives
+        /// </summary>
+        private decimal currentStaticp = 1;
+        /// <summary>
+        /// Valeur courante du coeff corrigeant les situations anormales du point de vue des descentes consécutives
+        /// </summary>
+        private decimal currentStaticm = 1;
+        public decimal CurrentStaticm { get { return currentStaticm; } }
+
+        /// <summary>
+        /// On gere spécifiquement le cas des descentes consécutives
+        /// </summary>
+        public bool checkFall; 
+
+        /// <summary>
+        /// Rapport de vitesse négative / vitesse positive
+        /// </summary>
+        private decimal rapportmp = 1m;
+        /// <summary>
+        /// anti atténuation
+        /// </summary>
+        //public decimal danticonvergence = 1m;
+        //public decimal danticonvergence0;
+        //public decimal danticonvergence01;
+
+        //public decimal danticonvdeltap = 1m;
+        //public decimal danticonvdeltam = 1m;
+        private bool _linkconv;
+        private decimal linkProduct;
+        private List<HistoValue> histo = new List<HistoValue>();
+        //  private List<decimal> histoDiff = new List<decimal>();
+
+        private decimal coeffOld = 1m;
+
+        public bool oldAsZero;
+        private bool coeffOldAuto;
+        public bool coeffOldSwap;
+        public int coeffOldAutoLevel;
+        private bool use;
+
+
+        public bool Use { get { return use; } }
+
+        public ConfMedianneVirt()
+        { }
+
+        public ConfMedianneVirt(ConfMedianneVirt o, bool raz)
+            : this(o)
+        {
+            if (raz)
+            {
+                // safe = 0;
+                coeffOld = 1;
+                coeffVirt = 1;
+            }
+        }
+        public ConfMedianneVirt(ConfMedianneVirt o)
+        {
+            name = o.name;
+            mode = o.mode;
+            fdata = o.fdata;
+            fdiff = o.fdiff;
+            fdiffTmp = o.fdiffTmp;
+            //  flast = o.flast;
+            safe = o.safe;
+            coeffVirt = o.coeffVirt;
+            virtOnlyDisabled = o.virtOnlyDisabled;
+            noAddEnd = o.noAddEnd;
+            noAddAll = o.noAddAll;
+            virtAlignSelected = o.virtAlignSelected;
+            virtAlignPrec = o.virtAlignPrec;
+            coeffVirtAuto = o.coeffVirtAuto;
+
+            coeffVirtAdjust = o.coeffVirtAdjust;
+            removeEpsilon = o.removeEpsilon;
+            forceCoeffVirt = o.forceCoeffVirt;
+            lissage = o.lissage;
+            cumul = o.cumul;
+            reSort = o.reSort;
+            noAdd = o.noAdd;
+            auto = o.auto;
+            //dcoeffp = o.dcoeffp;
+            //dcoeffm = o.dcoeffm;
+            //dconvergence = o.dconvergence;
+            //dconvdeltap = o.dconvdeltap;
+            //dconvdeltam = o.dconvdeltam;
+            //danticonvergence = o.danticonvergence;
+            //danticonvdeltap = o.danticonvdeltap;
+            //danticonvdeltam = o.danticonvdeltam;
+
+            pas = o.pas;
+            v = o.v;
+            d0 = o.d0;
+            a = o.a;
+            aa = o.aa;
+            aepsilon = o.aepsilon;
+            _linkconv = o._linkconv;
+            serialp = o.serialp;
+            serialm = o.serialm;
+            serialAlt = o.serialAlt;
+            serialElastique = o.serialElastique;
+            coeffElastique1 = o.coeffElastique1;
+            coeffElastique2 = o.coeffElastique2;
+
+            coeffElastique1r = o.coeffElastique1r;
+            coeffElastique2r = o.coeffElastique2r;
+
+
+            _nbSameDirection = o._nbSameDirection;
+            _nbSameDirectionBox = o._nbSameDirectionBox;
+            _nbAlt = o._nbAlt;
+            _nbAltHisto = o._nbAltHisto;
+            _nbElastique = o._nbElastique;
+            _nbElastique2 = o._nbElastique2;
+
+            coeffOld = o.coeffOld;
+            coeffOldAuto = o.coeffOldAuto;
+            coeffOldSwap = o.coeffOldSwap;
+            oldAsZero = o.oldAsZero;
+            coeffOldAutoLevel = o.coeffOldAutoLevel;
+            epsilon = o.epsilon;
+
+            //dconvergence0 = o.dconvergence0;
+            //dconvergence01 = o.dconvergence01;
+            //danticonvergence0 = o.danticonvergence0;
+            //danticonvergence01 = o.danticonvergence01;
+
+            lastDelta = o.lastDelta;
+            use = o.use;
+            coeffStaticRetourLarge = o.coeffStaticRetourLarge;
+            this.checkFall = o.checkFall; 
+            histo = new List<HistoValue>(o.histo);
+
+        }
+        public ConfMedianneVirt(XmlElement parent, XmlElement child)
+            : base(parent, child)
+        {
+            var str = "";
+            builds("mode", v => str = v);
+            if (!string.IsNullOrEmpty(str))
+                mode = (dbMode)Enum.Parse(typeof(dbMode), str);
+            builds("name", v => name = v);
+            builds("fdata", v => fdata = v);
+            builds("fdiff", v => fdiff = v);
+            builds("fdiffTmp", v => fdiffTmp = v);
+            // builds("flast", v => flast = v);
+            builddec("coeffVirt", v => coeffVirt = v);
+            buildi("safe", v => safe = v);
+
+            buildb("virtOnlyDisabled", v => virtOnlyDisabled = v);
+            buildb("noAddEnd", v => noAddEnd = v);
+            buildb("noAddAll", v => noAddAll = v);
+            buildb("virtAlignSelected", v => virtAlignSelected = v);
+            buildb("virtAlignPrec", v => virtAlignPrec = v);
+            buildb("coeffVirtAuto", v => coeffVirtAuto = v);
+            buildb("coeffVirtAdjust", v => coeffVirtAdjust = v);
+
+            buildb("removeEpsilon", v => removeEpsilon = v);
+            buildb("forceCoeffVirt", v => forceCoeffVirt = v);
+            buildb("lissage", v => lissage = v);
+            buildb("cumul", v => cumul = v);
+            buildb("reSort", v => reSort = v);
+            buildb("noAdd", v => noAdd = v);
+            buildb("auto", v => auto = v);
+
+            builddec("pas", v => pas = v);
+            builddec("v", vv => v = vv);
+            builddec("dv", v => dv = v);
+            builddec("d0", v => d0 = v);
+            builddec("a", v => a = v);
+            builddec("aa", v => aa = v);
+            builddec("vepsilon", v => vepsilon = v);
+            builddec("aepsilon", v => aepsilon = v);
+
+
+            //builddec("dcoeffp", v => dcoeffp = v);
+            //builddec("dcoeffm", v => dcoeffm = v);
+            //builddec("dconvergence", v => dconvergence = v);
+            //builddec("dconvergence0", v => dconvergence0 = v);
+            //builddec("dconvergence01", v => dconvergence01 = v);
+            //builddec("dconvdeltap", v => dconvdeltap = v);
+            //builddec("dconvdeltam", v => dconvdeltam = v);
+
+            //builddec("danticonvergence", v => danticonvergence = v);
+            //builddec("danticonvergence0", v => danticonvergence0 = v);
+            //builddec("danticonvergence01", v => danticonvergence01 = v);
+            //builddec("danticonvdeltap", v => danticonvdeltap = v);
+            //builddec("danticonvdeltam", v => danticonvdeltam = v);
+            buildb("linkconv", v => _linkconv = v);
+            buildi("serialp", v => serialp = v);
+            buildi("serialm", v => serialm = v);
+            buildi("serialAlt", v => serialAlt = v);
+            buildi("elastique", v => serialElastique = v);
+            builddec("coeffElastique1", v => coeffElastique1 = v);
+            builddec("coeffElastique2", v => coeffElastique2 = v);
+            builddec("coeffElastique1r", v => coeffElastique1r = v);
+            builddec("coeffElastique2r", v => coeffElastique2r = v);
+            buildi("serial", v => _nbSameDirection = v);
+            buildi("serialBox", v => _nbSameDirectionBox = v);
+            buildi("serialAltC", v => _nbAlt = v);
+            buildi("serialAltH", v => _nbAltHisto = v);
+            builddec("elastiqueC", v => _nbElastique = v);
+            builddec("elastiqueC2", v => _nbElastique2 = v);
+
+
+            builddec("coeffOld", v => coeffOld = v);
+            buildb("oldAsZero", v => oldAsZero = v);
+            buildb("coeffOldAuto", v => coeffOldAuto = v);
+            buildb("coeffOldSwap", v => coeffOldSwap = v);
+            buildi("coeffOldAutoLevel", v => coeffOldAutoLevel = v);
+            builddec("epsilon", v => epsilon = v);
+
+            buildbn("lastDelta", v => lastDelta = v);
+
+            builddec("coeffStaticp", v => coeffStaticp = v);
+            builddec("coeffStaticm", v => coeffStaticm = v);
+
+            builddec("coeffStaticpRetour", v => coeffStaticpRetour = v);
+            builddec("coeffStaticmRetour", v => coeffStaticmRetour = v);
+            buildb("coeffStaticRetourLarge", v => coeffStaticRetourLarge = v); 
+            
+
+            builddec("currentStaticp", v => currentStaticp = v);
+            builddec("currentStaticm", v => currentStaticm = v);
+            builddec("rapportmp", v => rapportmp = v);
+
+            buildb("use", v => use = v);
+            buildb("checkFall", v => checkFall = v); 
+
+
+            HistoValue last = null;
+            var xhisto = XMLTool.NodeLookUp(child, "histo");
+            if (xhisto != null)
+            {
+                foreach (XmlElement sub in xhisto.ChildNodes)
+                {
+                    var _nevw = new HistoValue(sub.InnerText, last);
+                    histo.Add(_nevw);
+                    last = _nevw;
+                }
+            }
+            else
+            {
+
+                if (File.Exists(Path))
+                {
+                    var lines = File.ReadAllLines(Path);
+                    for (int i = 0; i < lines.GetLength(0); i++)
+                    {
+                        try
+                        {
+                            var line = lines[i];
+
+                            if (string.IsNullOrEmpty(line))
+                                continue;
+                            var _nevw = new HistoValue(line, last);
+                            histo.Add(_nevw);
+                            last = _nevw;
+                        }
+                        catch (Exception ex)
+                        {
+                            misc.log(string.Format("impossible de lire la ligne n° {0}:{1}", i + 1, lines[i]), ex);
+                            throw;
+                        }
+                    }
+                    indexDiff = histo.Count;
+
+                    //if (histo.Count >0 )
+                    //    coeffVirt = getCoeff(histo[histo.Count -1]);
+
+
+                }
+
+                if (File.Exists(PathDiff))
+                {
+                    var histoDiff = new List<HistoValue>();
+                    var lines = File.ReadAllLines(PathDiff);
+                    for (int i = 0; i < lines.GetLength(0); i++)
+                    {
+                        try
+                        {
+                            var line = lines[i];
+                            if (string.IsNullOrEmpty(line))
+                                continue;
+
+                            var _nevw = new HistoValue(line, last);
+                            histoDiff.Add(_nevw);
+                            last = _nevw;
+                        }
+                        catch (Exception ex)
+                        {
+                            misc.log(string.Format("impossible de lire la ligne n° {0}:{1}", i + 1, lines[i]), ex);
+                            throw;
+                        }
+
+                    }
+
+                    if (mode == dbMode.full)
+                    {
+                        histo.AddRange(histoDiff);
+                        indexDiff = histo.Count;
+                    }
+                    else
+                    {
+                        indexDiff = histo.Count - histoDiff.Count;
+                    }
+
+                }
+
+
+
+                if (mode == dbMode.full && File.Exists(PathDiff))
+                    File.Delete(PathDiff);
+
+                if (histo.Count > 0)
+                {
+                    int index = histo.Count - 1;
+                    decimal current = histo[index].coeff;
+                    //coeffVirt = getCoeff(current);
+                    bool? sens = null;
+
+                    int nbSerie = 0;
+                    // decimal delta = 0m;
+
+                    var rr = 1;
+                    //if (dcoeffp > 0)
+                    //    rr = dcoeffm / dcoeffp;
+                    if (rr > 0)
+                    {
+                        while (true)
+                        {
+                            index--;
+                            if (index < 0)
+                                break;
+                            var aux = histo[index].coeff;
+                            var _sens = current > aux;
+                            if (sens == null)
+                            {
+                                sens = _sens;
+                                lastAutoDirection = !_sens;
+
+                                // delta = current - aux;
+                            }
+
+
+                            if (sens != _sens)
+                                break;
+                            current = aux;
+                            nbSerie++;
+
+                        }
+
+                        //_nbSameDirection = nbSerie;
+                        //dcoeffp = Math.Abs(delta); dcoeffm = dcoeffp * rr;
+
+                    }
+                }
+            }
+
+            checkCoeffOld();
+            //if (histoDiff.Count > 0)
+            //    coeffVirt = getCoeff(histo[histo.Count - 1]); 
+
+        }
+
+
+
+        public override void save(XmlWriter w)
+        {
+            base.save(w);
+            writeStart("v");
+            write("name", name);
+            write("mode", mode);
+            write("use", use); 
+            write("serial", _nbSameDirection);
+            write("elastiqueC", _nbElastique);
+            write("elastiqueC2", _nbElastique2);
+
+            write("coeffVirt", coeffVirt);
+            write("coeffOld", coeffOld);
+            write("serialBox", _nbSameDirectionBox);
+            write("serialAltC", _nbAlt);
+            write("serialAltH", _nbAltHisto);
+
+            write("coeffStaticp", coeffStaticp);
+            write("coeffStaticm", coeffStaticm);
+            write("coeffStaticpRetour", coeffStaticpRetour);
+            write("coeffStaticmRetour", coeffStaticmRetour);
+            write("coeffStaticRetourLarge", coeffStaticRetourLarge); 
+            write("currentStaticp", currentStaticp);
+            write("currentStaticm", currentStaticm);
+          
+            write("lastDelta", lastDelta);
+
+            write("serialAlt", serialAlt);
+            write("elastique", serialElastique);
+            write("coeffElastique1", coeffElastique1);
+            write("coeffElastique2", coeffElastique2);
+            write("coeffElastique1r", coeffElastique1r);
+            write("coeffElastique2r", coeffElastique2r);
+            write("fdata", fdata);
+            write("fdiff", fdiff);
+            write("fdiffTmp", fdiffTmp);
+
+
+            write("safe", safe);
+
+            write("virtOnlyDisabled", virtOnlyDisabled);
+            write("noAddEnd", noAddEnd);
+            write("noAddAll", noAddAll);
+            write("virtAlignSelected", virtAlignSelected);
+            write("virtAlignPrec", virtAlignPrec);
+            write("coeffVirtAuto", coeffVirtAuto);
+            write("coeffVirtAdjust", coeffVirtAdjust);
+
+            write("removeEpsilon", removeEpsilon);
+            write("forceCoeffVirt", forceCoeffVirt);
+            write("lissage", lissage);
+            write("cumul", cumul);
+            write("reSort", reSort);
+            write("noAdd", noAdd);
+            write("auto", auto);
+
+            write("pas", pas);
+            write("v", v);
+            write("dv", dv);
+            write("d0", d0);
+            write("a", a);
+            write("aa", aa);
+            write("aepsilon", aepsilon);
+            write("vepsilon", vepsilon);
+            write("rapportmp", rapportmp);
+
+            //write("dcoeffp", dcoeffp);
+            //write("dcoeffm", dcoeffm);
+            //write("dconvergence", dconvergence);
+            //write("dconvergence0", dconvergence0);
+            //write("dconvergence01", dconvergence01);
+            //write("dconvdeltap", dconvdeltap);
+            //write("dconvdeltam", dconvdeltam);
+
+            //write("danticonvergence", danticonvergence);
+            //write("danticonvergence0", danticonvergence0);
+            //write("danticonvergence01", danticonvergence01);
+            //write("danticonvdeltap", danticonvdeltap);
+            //write("danticonvdeltam", danticonvdeltam);
+            write("linkconv", linkconv);
+            write("serialp", serialp);
+            write("serialm", serialm);
+
+            write("checkFall", checkFall); 
+
+
+
+          
+
+            write("oldAsZero", oldAsZero);
+            write("coeffOldAuto", coeffOldAuto);
+            write("coeffOldSwap", coeffOldSwap);
+
+            write("coeffOldAutoLevel", coeffOldAutoLevel);
+            write("epsilon", epsilon);
+
+           
+
+
+
+            var sb = new StringBuilder();
+            var sbDiff = new StringBuilder();
+
+
+
+
+            //if (modeDiff)
+            //{
+            //    histoDiff = null;
+            //}
+            //else
+            //{
+            //    if (histoDiff != null)
+            //    {
+            //        histo.AddRange(histoDiff);
+            //        histoDiff = null;
+            //    }
+
+            //    if (File.Exists(PathDiff))
+            //        File.Delete(PathDiff);
+            //}
+
+            int count = histo.Count;
+            HistoValue last = null;
+            for (int i = 0; i < count; i++)
+            {
+                histo[i].write(sb);
+                //var v = Math.Round(histo[i].coeff, 10);
+                //var sc = v.ToString();
+                //var v2 = Math.Round(1000m * histo[i].delta, 10);
+                //var sc2 = v2.ToString();
+
+                //var v3 = Math.Round(1000m * histo[i].conv, 10);
+                //var sc3 = v3.ToString();
+
+                //sb.Append(sc);
+                //sb.Append("|");
+                //sb.Append(sc2);
+                //sb.Append("|");
+                //sb.AppendLine(sc3);
+
+                if (i >= indexDiff)
+                {
+                    histo[i].writeDiff(sbDiff, last);
+                    //sbDiff.Append(sc);
+                    //sbDiff.Append("|");
+                    //sbDiff.Append(sc2);
+                    //sbDiff.Append("|");
+                    //sbDiff.AppendLine(sc3);
+                }
+                last = histo[i];
+            }
+
+
+            if (!string.IsNullOrEmpty(fdata))
+            {
+                AsyncFileWriter.Instance.post(Path, sb.ToString());
+                if (mode == dbMode.diff)
+                    AsyncFileWriter.Instance.post(PathDiff, sbDiff.ToString());
+                else
+                    AsyncFileWriter.Instance.post(PathDiffTmp, sbDiff.ToString());
+
+
+                if (mode == dbMode.full && File.Exists(PathDiff))
+                    File.Delete(PathDiff);
+            }
+
+
+            writeEnd();
+        }
+        /// <summary>
+        /// nb consecutif dans le même sens pour info
+        /// </summary>
+        public int Serial { get { return _nbSameDirection; } set { _nbSameDirection = value; } }
+        /// <summary>
+        /// nb même sens borné pour calcul
+        /// </summary>
+        public int SerialBox { get { return _nbSameDirectionBox; } }
+        /// <summary>
+        /// nb allez-retours pour calcul
+        /// </summary>
+        public int Alt { get { return _nbAlt; } }
+        /// <summary>
+        /// nb allez/retour consécutifs pour info
+        /// </summary>
+        public int AltHisto { get { return _nbAltHisto; } }
+        /// <summary>
+        /// Position de l'élastique. Positif : tend à agrandir le delta. du à plusieurs séries dans le même sens. Négatif : tend à diminuer le delta. du à plusieurs allez-retours consécutifs
+        /// </summary>
+        public decimal Elastique { get { return _nbElastique; } }
+        public decimal Elastique2 { get { return _nbElastique2; } }
+        public decimal dv = 0;
+        public decimal dx = 0m;
+        public decimal dcoeff = 1; 
+        //  public decimal da;
+        public decimal AccelerationRapport { get { return dv / epsilon; } }
+        public decimal VitesseRapport { get { return dx / epsilon; } }
+        public decimal danticonvergenceMin
+        {
+            get
+            {
+                return epsilon;
+            }
+        }
+
+
+
+
+        public decimal CoeffOld
+        {
+            get { return coeffOld; }
+            set { coeffOld = value; checkCoeffOld(); }
+        }
+
+        public bool CoeffOldAuto
+        {
+            get { return coeffOldAuto; }
+            set { coeffOldAuto = value; checkCoeffOld(); }
+        }
+
+        //private decimal getCoeff(decimal coeffT) { return Math.Pow(coeffT, (1.0m / safe)); }
+
+
+    }
+}
+]]></content>
+  </file>
+</db>
