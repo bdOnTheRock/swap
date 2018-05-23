@@ -1,2035 +1,4 @@
-<db path="C:\Bernard\db1\pdb4">
-   <file path="\PieceDb.Consolid\Piece.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using pdb.gen.albums;
-using pdb.gen.conf;
-using pdb.gen.medianne;
-using pdb.gen.Tuning;
-using pdb.obj;
-using pdb.util;
-
-namespace pdb.gen
-{
-    public enum infoMedianne : short
-    {
-        none = 0,
-        med = 1,
-        medLight = 2,
-        border = 4,
-        borderEff = 8,
-        borderMin = 16
-    }
-    /// <summary>
-    /// Ajout de données utiles Ranq
-    /// </summary>
-    public class Piece : ITrackMetaData, IFile, ITrackNativeDates, IEnumerable<Piece>
-    {
-        private ITrackNativeDates track;
-        public bool Virtual { get { return PieceId < 0; } }
-        public virtual bool VirtualByArtist { get { return false; } }
-        // private String className = "";
-        private static CultureInfo en = new CultureInfo("en-US");
-        //  private static List<displayCategory> minCategories;
-
-        protected static Consolid gen;
-        public static Consolid Gen { set { gen = value; } }
-
-        static Piece()
-        {
-            //   minCategories = new List<displayCategory> { displayCategory.rankTime, displayCategory.timeValue, displayCategory.dates, displayCategory.pertinentDates };
-        }
-
-        public ITrackNativeDates Track { get { return track; } }
-
-        #region Rank
-        private CRank m_rank = new CRank();
-
-        public CRank Rank
-        {
-            get
-            {
-                if (parent == null)
-                    return m_rank;
-                return parent.m_rank;
-            }
-        }
-
-        private infoMedianne _infoMedianne;
-        public void eraseInfoMedianne() { _infoMedianne = infoMedianne.none; }
-        public infoMedianne InfoMedianne { get { return _infoMedianne; } }
-        public bool Medianne
-        {
-            get
-            {
-                return _infoMedianne.HasFlag(infoMedianne.med);
-            }
-
-            set
-            {
-                if (!value)
-                    throw new ApplicationException();
-                if (Medianne)
-                    return;
-                _infoMedianne |= infoMedianne.med;
-            }
-        }
-        public bool MedianneLight
-        {
-            get
-            {
-                return _infoMedianne.HasFlag(infoMedianne.medLight);
-            }
-
-            set
-            {
-                if (!value)
-                    throw new ApplicationException();
-                if (MedianneLight)
-                    return;
-                _infoMedianne |= infoMedianne.medLight;
-            }
-        }
-
-        public bool Border
-        {
-            get
-            {
-                return _infoMedianne.HasFlag(infoMedianne.border);
-            }
-
-            set
-            {
-                if (!value)
-                    throw new ApplicationException();
-                if (Border)
-                    return;
-                _infoMedianne |= infoMedianne.border;
-            }
-        }
-
-        public bool BorderEffect
-        {
-            get
-            {
-                return _infoMedianne.HasFlag(infoMedianne.borderEff);
-            }
-
-            set
-            {
-                if (!value)
-                    throw new ApplicationException();
-                if (BorderEffect)
-                    return;
-                _infoMedianne |= infoMedianne.borderEff;
-            }
-        }
-
-        public bool BorderMin
-        {
-            get
-            {
-                return _infoMedianne.HasFlag(infoMedianne.borderMin);
-            }
-
-            set
-            {
-                if (!value)
-                    throw new ApplicationException();
-                if (BorderMin)
-                    return;
-                _infoMedianne |= infoMedianne.borderMin;
-            }
-        }
-
-
-        public virtual void initRank()
-        {
-            //  _classementCache = null; 
-            //_infoMedianne = infoMedianne.none;
-            // _classementProvisoireRecent = null;
-
-            // _lnClassement = int.MinValue; 
-            Rank.init();
-        }
-
-        public int QRank
-        {
-            get { return Rank.Quality; }
-            set { Rank.Quality = value; }
-        }
-
-        public int LRank
-        {
-            get { return Rank.Lenght; }
-            set { Rank.Lenght = value; }
-        }
-
-        public int QLRank
-        {
-            get { return Rank.Twice; }
-            set { Rank.Twice = value; }
-        }
-
-        public int RankAllAlbum
-        {
-            get { return m_rank.RankAllAlbum; }
-            set { m_rank.RankAllAlbum = value; }
-        }
-
-        public int RankAlbum { get { if (album == null) return 0; return album.Rank.Sort; } }
-        public int RankAlbumZero { get { if (album == null) return 0; return album.RankZero; } }
-        public int RankAlbumSt { get { if (album == null) return 0; return album.RankSt; } }
-        public int RankAlbumZeroSt { get { if (album == null) return 0; return album.RankZeroSt; } }
-
-
-
-
-        public bool AlbumAbsent { get { if (album == null) return true; return album.Absent; } }
-
-        //public int nbInAlbum(exportState state ) { if (album == null) return -1; return album.nbInAlbum(state);  }
-        public int NbExportPresents { get { if (album == null) return -1; return album.NbExportPresents; } }
-
-        //public bool SameAlbum(Piece x)
-        //{
-        //    if (x == null)
-        //        return false; 
-        //    return album == x.album; 
-        //}
-
-        public int IndexExport { get { if (album == null) return -1; return album.IndexExport(this); } }
-
-        //  public TuningData TuningData { get { return m_rank.Rest; } set { m_rank.Rest = value; } }
-        #endregion
-
-
-
-        public bool FirstClass { get { return track.FirstClass; } set { track.FirstClass = value; } }
-        private Album album;
-
-        public Album PieceAlbum { get { return album; } set { album = value; } }
-        public int StackValue { get { if (album == null) return 0; return album.StackValue; } }
-        public int StackIndex { get { if (album == null) return 0; return album.StackIndex; } }
-        public decimal ClassementValueLight { get { if (album == null) return 0; return album.ClassementValueLight; } }
-        public decimal ClassementValueLight0 { get { if (album == null) return 0; return album.ClassementValueLightZero; } }
-        public decimal ClassementValueLightSt { get { if (album == null) return 0; return album.ClassementValueLightSt; } }
-        public bool Moved { get { if (album == null) return false; return album.Moved && SelectedMotif == selectedCoeff.noCoeff; } set { if (album != null) album.Moved = value; } }
-        public bool MovedM
-        {
-            get
-            {
-                if (album == null) return false;
-                switch (SelectedMotif)
-                {
-                    case selectedCoeff.none:
-                        return false;
-                    case selectedCoeff.noCoeff:
-                        return false;
-                    case selectedCoeff.main:
-                    case selectedCoeff.min:
-                        return album.Moved;
-                    default:
-                        return false;
-                }
-            }
-        }
-
-        public bool isEmpeached()
-        {
-            if (album == null) return false;
-            return album.Empeached;
-        }
-
-        public int EmpeachedNb { get { if (album == null) return 0; return album.EmpeachedNb; } }
-
-        public bool Empeached { get { if (album == null) return false; return album.Empeached && SelectedMotif == selectedCoeff.noCoeff; } set { if (album != null) album.Empeached = value; } }
-        public bool EmpeachedM
-        {
-            get
-            {
-                if (album == null) return false;
-                switch (SelectedMotif)
-                {
-                    case selectedCoeff.none:
-                        return false;
-                    case selectedCoeff.noCoeff:
-                        return false;
-                    case selectedCoeff.main:
-                    case selectedCoeff.min:
-                        return album.Empeached;
-                    default:
-                        return false;
-                }
-            }
-        }
-        /// <summary>
-        /// Premier empêché
-        /// </summary>
-        public bool Empeached1 { get { if (album == null) return false; return album.Empeached1 && this == album.Next; } set { if (album != null) album.Empeached1 = value; } }
-        public bool AlmostFree { get { if (album == null) return false; return album.AlmostFree && this == album.Next; } }
-        public bool AlmostFree1 { get { if (album == null) return false; return album.AlmostFree1 && this == album.Next; } }
-
-        public bool AlbumRecentlyUpdated { get { return StackValue > 0 && SelectedMotif == selectedCoeff.noCoeff; } }
-        public bool AlbumRecentlyUpdatedMain
-        {
-            get
-            {
-                if (StackValue == 0) return false;
-                switch (SelectedMotif)
-                {
-                    case selectedCoeff.none:
-                        return false;
-                    case selectedCoeff.noCoeff:
-                        return false;
-                    case selectedCoeff.main:
-                    case selectedCoeff.min:
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-        }
-
-
-        //private static int _sID = 0;
-        //private int _dID;
-        internal Piece(ITrackNativeDates track)
-        {
-            //_sID++;
-            //_dID = _sID;
-            if (track == null)
-                Debugger.Launch();
-            this.track = track; initRank();
-
-#if VOL
-            int volumeMin = CConf.VolumeMin;
-            if (Volume < volumeMin)
-                Volume = volumeMin;
-#endif
-        }
-
-        ///// <summary>
-        ///// Tri des listes classement et détermination de la liste classement pertinente
-        ///// </summary>
-        //public void setClassPlayList()
-        //{
-        //    List<CPlayList> classLists = track.ClassPlayLists;
-        //    if (classLists.Count > 0)
-        //    {
-        //        classLists.Sort(new CPlayListComparer());
-        //        className = classLists[0].Name;
-        //    }
-        //}
-
-        public String ClassName { get { return track.ClassName; } set { track.ClassName = value; } }
-
-        public void setClassement(string className, int rating)
-        {
-            if (className == null)
-                return;
-            track.setClassement(className, rating);
-            invalidateCache(true);
-
-        }
-
-        public string ClassementCompact
-        {
-            get
-            {
-                if (parent != null)
-                    return parent.ClassementCompact; 
-#if COMPACT
-                if (string.IsNullOrEmpty(_classementCompact))
-                    return ClassementCache.strClassement;
-                return _classementCompact;
-#else 
-                return ClassementCache.strClassement; 
-#endif
-            }
-        }
-        private static ClassementHash classementHash = new ClassementHash();
-        private ClassementCache _classementCache;
-        private ClassementCache ClassementCache
-        {
-            get
-            {
-
-
-                if (_classementCache == null)
-                {
-                    if (parent != null)
-                        _classementCache = parent.ClassementCache;
-                    if (_classementCache == null)
-                    {
-#if COMPACT
-                        if (string.IsNullOrEmpty(_classementCompact))
-                            _classementCache = classementHash.getCache(track.ClassName, track.Rating);
-                        else
-                            _classementCache = classementHash.getCache(_classementCompact);
-#else
-                         _classementCache = classementHash.getCache(track.ClassName, track.Rating);
-#endif
-                    }
-                }
-                return _classementCache;
-            }
-        }
-
-#if COMPACT
-        private string _classementCompact;
-        /// <summary>
-        /// Compacte le classement - returne OK si fait
-        /// </summary>
-        /// <param name="classement"></param>
-        /// <returns></returns>
-        public bool setClassementCompact(string classement)
-        {
-            invalidateCache(true);
-            _classementCompact = classement;
-            var _compact = classementHash.getCache(_classementCompact);
-            var org = classementHash.getCache(track.ClassName, track.Rating);
-            if (org.ClassementValueDecimal < _compact.ClassementValueDecimal)
-            {
-                _classementCompact = null;
-                _classementCache = org;
-                return false;
-            }
-            else
-            {
-                _classementCache = _compact;
-                return true;
-            }
-        }
-
-
-#endif
-
-        public decimal ClassementValueDecimal0
-        {
-            get
-            {
-#if COMPACT
-                return classementHash.getCache(track.ClassName, track.Rating).ClassementValueDecimal;
-#else
-                return ClassementValueDecimal;
-#endif
-            }
-        }
-        public virtual void invalidateCache(bool razCompact)
-        {
-
-            //_classNameAndRating = null;
-            //_classementValueDecimal = -1;
-            //_rapportClassement = -1;
-            //  _classementProvisoireRecent = null;
-
-            if (parent != null)
-                parent.invalidateCache(razCompact);
-            else
-            {
-                _classementCache = null;
-#if COMPACT
-                if (razCompact)
-                    _classementCompact = null;
-#endif
-                foreach (Piece p in childs)
-                {
-#if COMPACT
-                    if (razCompact) 
-                        p._classementCompact = null;
-#endif
-                    p._classementCache = null;
-                }
-            }
-
-
-        }
-
-        //public bool belongsTo(string a_list)
-        //{
-        //    foreach (CPlayList l_pl in track.PLayLists)
-        //    {
-        //        if (l_pl.isSubList(a_list))
-        //            return true;
-        //    }
-        //    return false;
-        //}
-
-        #region CPieceComparer compatibilité
-        public List<CPlayList> ClassPlayLists
-        {
-            get { return track.ClassPlayLists; }
-        }
-        /// <summary>
-        /// ClassList principale
-        /// </summary>
-        public CPlayList ClassPlayList
-        {
-            get
-            {
-                List<CPlayList> classLists = track.ClassPlayLists;
-                if (classLists.Count > 0)
-                    return classLists[0];
-                return null;
-            }
-        }
-
-
-        public int RatingCmp
-        {
-            get
-            {
-                int rating = track.Rating;
-                if (rating < 0)
-                    return 0;
-                return rating;
-            }
-        }
-        /// <summary>
-        /// la classList est-elle numérique?
-        /// </summary>
-        public bool isClassListNumeric
-        {
-            get
-            {
-                return ClassName.isInteger();
-            }
-        }
-
-        // private string _classNameAndRating;
-        public String ClassNameAndRating
-        {
-            get
-            {
-                return ClassementCache.ClassNameAndRating;
-            }
-        }
-
-        // private decimal _classementValueDecimal = -1;
-        public decimal ClassementValueDecimal
-        {
-            get
-            {
-                return ClassementCache.ClassementValueDecimal;
-            }
-        }
-        //private double _classementValue = -1; 
-        //public double ClassementValue
-        //{
-        //    get
-        //    {
-        //        if (_classementValue == -1)
-        //        {
-        //            if (!isClassListNumeric)
-        //                _classementValue = 0;
-        //            else
-        //            {
-        //                string classNameAndRating = ClassNameAndRating.Insert(1, ",");
-        //                _classementValue= Convert.ToDouble(classNameAndRating);
-        //            }
-        //        }
-
-        //        return _classementValue; 
-        //    }
-        //}
-
-        public static decimal getRapport(decimal base6)
-        {
-            string str = base6.ToString("0.######").Replace(",", "");
-            return getRapport(str);
-        }
-
-        public static decimal getRapport(string classNameAndRating)
-        {
-            decimal resultat = 0m;
-            char[] tab = classNameAndRating.ToCharArray();
-
-            decimal K = 1;
-            int count = tab.GetLength(0);
-
-
-            for (int i = 0; i < count; i++)
-            {
-                K = K * 6;
-                int c = Convert.ToInt32(tab[i].ToString());
-                resultat += (decimal)c / K;
-            }
-
-            return resultat;
-        }
-
-        // private decimal _rapportClassement = -1;
-        public decimal RapportClassement
-        {
-            get
-            {
-                return ClassementCache.RapportClassement;
-                //if (parent != null)
-                //    return parent.RapportClassement;
-                //if (_rapportClassement != -1)
-                //    return _rapportClassement;
-
-                //decimal resultat = 0;
-                //try
-                //{
-                //    return getRapport(ClassNameAndRating);
-                //}
-                //catch
-                //{
-                //}
-                //_rapportClassement = resultat;
-                //// _classementVirtuel = resultat; 
-                //return _rapportClassement;
-            }
-        }
-
-
-        //private decimal _lnClassement = -1;
-        //public decimal LnClassement
-        //{
-        //    get
-        //    {
-        //        if (_lnClassement == int.MinValue)
-        //        {
-        //            var rapport = RapportClassement;
-        //            if (rapport <= 0m)
-        //                _lnClassement = 0m;
-        //            else
-        //                _lnClassement = Math.Log10(rapport) + 10;
-        //        }
-        //        return _lnClassement; 
-        //    }
-        //}
-        static int NB_DEC = 4;
-        public static string getReadableCl(string str)
-        {
-            int count = str.Length;
-            if (count < 4)
-                return str;
-
-            var tab = str.ToCharArray();
-            var sb = new StringBuilder();
-            int i = 0;
-
-            bool pt = false;
-            for (int ii = 0; ii < count; ii++)
-            {
-                var c = tab[ii];
-                if (c == '.')
-                    pt = true;
-
-                if (!pt)
-                {
-                    if (c != ' ')
-                    {
-                        if (i >= NB_DEC)
-                        {
-                            i = 0;
-                            sb.Append(" ");
-                        }
-                        i++;
-                    }
-                }
-                sb.Append(c);
-            }
-
-            return sb.ToString();
-        }
-
-        private const int END_EQUIV = 13;
-        private const int NB_DEC_EQUIV = 8;
-        public static string getClassementEquiv(decimal valRapport)
-        {
-            if (valRapport < 0)
-                return "";
-            if (valRapport == 0m)
-                return "0";
-            decimal v = 0;
-            decimal r = valRapport;
-            StringBuilder sb = new StringBuilder();
-            int _ok = Int16.MaxValue;
-
-            int lastNotNull = 0;
-            int firstNotNull = -1;
-            int i = 0;
-            for (; i < END_EQUIV; i++)
-            {
-                v = 6 * r;
-                int a = (int)(v + 0.0001m);
-                if (a > 0 && i < _ok)
-                {
-                    _ok = i;
-                }
-                r = v - a;
-                if (r < 0)
-                    r = 0;
-                sb.Append(a);
-
-                if (a > 0)
-                {
-                    lastNotNull = i;
-                    if (firstNotNull < 0)
-                        firstNotNull = i;
-                }
-                if (i >= _ok + NB_DEC_EQUIV + 2)
-                    break;
-            }
-            var str = sb.ToString();
-            sb = new StringBuilder();
-            int indexPt = lastNotNull - 1;
-            if ((lastNotNull - firstNotNull) > NB_DEC_EQUIV)
-                indexPt--;
-            //if (str.Length == 5)
-            //    indexPt--; 
-
-            for (int j = 0; j <= lastNotNull; j++)
-            {
-
-                sb.Append(str[j]);
-                if (j == indexPt)
-                    sb.Append('.');
-
-            }
-            str = sb.ToString(); // str.Insert(str.Length - 1, ".");
-            return getReadableCl(str);
-        }
-
-
-
-
-        public decimal RapportClassementDecimal
-        {
-            get
-            {
-                if (parent != null)
-                    return parent.RapportClassementDecimal;
-                decimal resultat = 0;
-                try
-                {
-                    string str = ClassNameAndRating;
-                    char[] tab = str.ToCharArray();
-
-                    decimal K = 1m;
-                    int count = tab.GetLength(0);
-
-
-                    for (int i = 0; i < count; i++)
-                    {
-                        K = K * 6;
-                        int c = Convert.ToInt32(tab[i].ToString());
-                        resultat += (decimal)c / K;
-                    }
-                }
-                catch
-                {
-                }
-                return resultat;
-            }
-        }
-
-        public int classPrecision()
-        {
-            string classNameAndRating = ClassNameAndRating;
-            int precision = 0;
-            char[] tab = classNameAndRating.ToCharArray();
-            int count = tab.GetLength(0);
-
-            int iIndexDepart = -1;
-            int iIndexFin = -1;
-            for (int i = 0; i < count; i++)
-            {
-                Char c = tab[i];
-                if (iIndexDepart < 0)
-                {
-                    if (c != '0')
-                        iIndexDepart = i;
-                }
-
-                if (c != '0')
-                    iIndexFin = i;
-            }
-
-            precision = iIndexFin - iIndexDepart + 1;
-
-            return precision;
-        }
-        #endregion
-
-        #region compatibilité CList
-        /// <summary>
-        /// vérifie si les deux pieces n'en sont qu'une
-        /// </summary>
-        /// <param name="other"></param>
-        /// <returns>True si doublon</returns>
-        /// <remarks></remarks>
-        //public bool checkIdentity(ITrackIdentity other)
-        //{
-        //    //return track.Location == other.Location; 
-        //    String location = track.Location;
-        //    return (location.Equals((other.Location)) || CUtil.DefinedEquals(track.Artist, track.Album, track.Name, track.TrackNumber, other.Artist, other.Album, other.Name, other.TrackNumber));
-        //}
-        #endregion
-
-        #region ITrackNative Membres
-
-        public string Artist
-        {
-            get
-            {
-                return track.Artist;
-            }
-            set
-            {
-                if (track.Artist != value)
-                {
-                    try
-                    {
-                        //                 misc.log("change artist from '{0}' to'{1}'", track.Artist, value);
-                        track.Artist = value;
-                    }
-                    catch { misc.log("unable to change artist {0}  {1}", track.Artist, value); }
-                }
-            }
-        }
-
-        public virtual string Album
-        {
-            get
-            {
-                return track.Album;
-            }
-            set
-            {
-                if (track.Album != value)
-                {
-                    try
-                    {
-                        //                   misc.log("change Album from '{0}' to'{1}'", track.Album, value);
-                        track.Album = value;
-                    }
-                    catch { misc.log("unable to change album {0}  {1}", track.Album, value); }
-                }
-            }
-        }
-
-        public string Name
-        {
-            get
-            {
-                return track.Name;
-            }
-            set
-            {
-                if (track.Name != value)
-                {
-                    try
-                    {
-                        //                 misc.log("change Name from '{0}' to'{1}'", track.Name, value);
-                        track.Name = value;
-                    }
-                    catch { misc.log("unable to change name {0}  {1}", track.Name, value); }
-                }
-            }
-        }
-
-        public virtual int TrackNumber
-        {
-            get
-            {
-                return track.TrackNumber;
-            }
-            set
-            {
-                if (track.TrackNumber != value)
-                {
-                    try
-                    {
-                        //              misc.log("change TrackNumber from '{0}' to'{1}'", track.TrackNumber, value);
-                        track.TrackNumber = value;
-                    }
-                    catch { misc.log("unable to change TrackNumber {0}  {1}", track.TrackNumber, value); }
-                }
-            }
-        }
-
-        public int Rating
-        {
-            get
-            {
-                return track.Rating;
-            }
-            set
-            {
-                if (track.Rating != value)
-                {
-                    try
-                    {
-                        //                misc.log("change Rating from '{0}' to'{1}'", track.Rating, value);
-                        track.Rating = value;
-                    }
-                    catch { misc.log("unable to change Rating {0}  {1}", track.Rating, value); }
-                }
-            }
-        }
-
-        public int Year
-        {
-            get
-            {
-                return track.Year;
-            }
-            set
-            {
-                if (track.Year != value)
-                {
-                    try
-                    {
-                        //         misc.log("change Year from '{0}' to'{1}'", track.Year, value);
-                        track.Year = value;
-                    }
-                    catch { misc.log("unable to change Year {0}  {1}", track.Year, value); }
-                }
-            }
-        }
-
-#if VOL
-        public int Volume
-        {
-            get
-            {
-                int volumeMin = CConf.VolumeMin;
-                int trackVolume = track.Volume;
-                if (trackVolume < volumeMin)
-                {
-                    Volume = volumeMin;
-                }
-                return trackVolume;
-            }
-            set
-            {
-                if (track.Volume != value)
-                {
-                    int volumeMin = CConf.VolumeMin;
-                    int _value = Math.Max(value, volumeMin);
-                    try
-                    {
-                        //         misc.log("change Year from '{0}' to'{1}'", track.Year, value);
-                        track.Volume = _value;
-                    }
-                    catch { misc.log("unable to change Volume {0}  {1}", track.Volume, _value); }
-                }
-            }
-        }
-#endif
-
-        //public string Comment
-        //{
-        //    get
-        //    {
-        //        //if (string.IsNullOrEmpty(track.Comment))
-        //        //    gen.writeComment(this);
-        //        return track.Comment;
-        //    }
-        //    set
-        //    {
-        //        //if (track.Comment != value)
-        //        //{
-        //        try
-        //        {
-        //            //   misc.log("change Comment from '{0}' to'{1}'", track.Comment, value);
-        //            track.Comment = value;
-        //        }
-        //        catch { misc.log("unable to change Comment {0}  {1}", track.Comment, value); }
-        //        //}
-        //    }
-        //}
-
-        //public virtual string Grouping
-        //{
-        //    get
-        //    {
-        //        if (string.IsNullOrEmpty(track.Grouping))
-        //        {
-        //            gen.writeGrouping(this);
-        //        }
-        //        return track.Grouping;
-        //    }
-        //    //set
-        //    //{
-        //    //    //if (track.Grouping != value)
-        //    //    //{
-        //    //        try
-        //    //        {
-        //    //            //   misc.log("change Comment from '{0}' to'{1}'", track.Comment, value);
-        //    //            track.Grouping = value;
-        //    //        }
-        //    //        catch { misc.log("unable to change Grouping {0}  {1}", track.Grouping, value); }
-        //    //    //}
-        //    //}
-
-        //}
-
-
-
-
-
-        //public virtual void setGrouping(string value, bool prior)
-        //{
-        //    try
-        //    {
-        //        //   misc.log("change Comment from '{0}' to'{1}'", track.Comment, value);
-        //        track.setGrouping(value, prior);
-        //    }
-        //    catch { misc.log("unable to change Grouping {0}  {1}", track.Grouping, value); }
-        //}
-
-        public bool Enabled
-        {
-            get
-            {
-                return track.Enabled;
-            }
-            set
-            {
-                if (track.Enabled != value)
-                {
-                    try
-                    {
-                        //      misc.log("change Enabled from '{0}' to'{1}'", track.Enabled, value);
-                        track.Enabled = value;
-                    }
-                    catch { misc.log("unable to change Enabled {0}  {1}", track.Enabled, value); }
-                }
-            }
-        }
-
-
-
-        public bool isPodcast
-        {
-            get { return track.isPodcast; }
-        }
-
-        public DateTime PlayedDate
-        {
-            get { return track.PlayedDate; }
-        }
-
-        public string Location
-        {
-            get { return track.Location; }
-        }
-        public string getLocation()
-        {
-            return track.getLocation();
-        }
-
-        public TimeSpan Duration
-        {
-            get { return track.Duration; }
-            set { track.Duration = value; }
-        }
-
-        #endregion
-
-        public List<DateTime> Dates
-        {
-            get { return track.Dates; }
-        }
-        public string ArtWork
-        {
-            get { return track.ArtWork; }
-            set { track.ArtWork = value; }
-        }
-
-        public DateTime FirstAcces
-        {
-            get
-            {
-                var min = DateTime.MaxValue;
-                foreach (DateTime dt in Dates)
-                {
-                    if (dt < min && dt > DateTime.MinValue)
-                        min = dt;
-                }
-                foreach (DateTime dt in DatesClassementBrut)
-                {
-                    if (dt < min && dt > DateTime.MinValue)
-                        min = dt;
-                }
-
-                return min;
-            }
-        }
-
-        public DateTime Added
-        {
-            get
-            {
-                return track.Added;
-            }
-        }
-
-        public virtual DateTime AlbumAdded
-        {
-            get
-            {
-                return album.AlbumAdded;
-            }
-        }
-
-        public List<DateTime> DatesClassement { get { return track.DatesClassement; } }
-        public DateTime? UpdateClassement
-        {
-            get
-            {
-                var list = DatesClassement;
-                if (list.Count == 0)
-                return null; 
-                var dc = list[0];
-
-                if (dc == DateTime.MinValue)
-                    return null;
-                if (dc == DateTime.MaxValue)
-                    return null;
-             
-                return dc;
-            }
-        }
-
-        public bool LastClassementRecent
-        {
-            get
-            {
-
-                foreach (DateTime dt in track.DatesClassementBrut)
-                {
-                    if (dt > Piece.SeuilProvisoire)
-                        return true;
-                }
-                return false;
-
-            }
-        }
-        public DateTime? AlbumUpdateClassement
-        {
-            get
-            {
-                if (album == null)
-                    return null;
-                return album.UpdateClassement;
-            }
-        }
-
-        public DateTime? LastRead
-        {
-            get
-            {
-
-                var dc = CalcDate.getLastModif(Dates);
-                if (dc == DateTime.MaxValue || dc == DateTime.MaxValue)
-                    return null;
-                return dc;
-            }
-        }
-
-        public DateTime? AlbumLastRead
-        {
-            get
-            {
-                if (album == null)
-                    return null;
-                return album.LastRead;
-            }
-        }
-
-        public String ClassEvol { get { return track.ClassEvol; } }
-
-
-
-
-        //public void writeCommentGrouping()
-        //{
-        //    var mode = CConf.ConfGen.WriteComment;
-        //    writeComment(mode);
-        //    var modeg = CConf.ConfGen.WriteGrouping;
-        //    writeGrouping(modeg);
-
-        //}
-
-        //public List<CPlayList> PLayLists
-        //{
-        //    get { return track.PLayLists; }
-        //}
-
-        /// <summary>
-        /// Calculer le commentaire
-        /// </summary>
-        //public void writeComment(writeGrouping mode)
-        //{
-        //    if (parent != null)
-        //        return;
-        //    if (mode == Tuning.writeGrouping.none)
-        //        return;
-
-
-        //    if (mode == Tuning.writeGrouping.mix)
-        //    {
-        //        StringBuilder sbEnd = new StringBuilder();
-
-        //        sbEnd.Append(ClassName);
-        //        sbEnd.Append(".");
-        //        sbEnd.Append((RatingCmp / 20).ToString());
-        //        sbEnd.Append(ClassEvol);
-        //        string strEnd = sbEnd.ToString();
-        //        string found = "";
-
-        //        string[] tab = Comment.Split(' ');
-        //        int count = tab.GetLength(0);
-        //        if (count > 0)
-        //        {
-        //            found = tab[count - 1];
-        //            if (found.Equals(strEnd))
-        //                return;
-        //        }
-        //        writeComment(Tuning.writeGrouping.all);
-        //    }
-
-        //    StringBuilder sb = new StringBuilder();
-        //    //string l_pref = "";
-        //    //string l_str = "";
-
-        //    string l_strList = ClassName;
-        //    //if (ClassPlayList != null)
-        //    //    l_strList = ClassName;
-
-        //    ////if (m_classement.Imported)
-        //    ////{
-        //    //if (l_strList != ClassName)
-        //    //{
-        //    //    sb.Append("m (");
-        //    //    sb.Append(ClassName);
-        //    //    sb.Append(") "); 
-        //    //  //  l_pref = "m (" + ClassName + ") ";
-        //    //}
-        //    ////}
-        //    int l_rank = Rank.Twice;
-
-        //    if (l_rank > 0)
-        //    {
-        //        CTuning.format(sb, l_rank);
-        //        sb.Append(" ");
-        //        //    if (l_rank < 1000)
-        //        //    {
-        //        //        if (CTuning.Total > 1000)
-        //        //        {
-        //        //            l_str += "0";
-        //        //        }
-        //        //        if (l_rank < 100)
-        //        //        {
-        //        //            l_str += "0";
-        //        //            if (l_rank < 10)
-        //        //            {
-        //        //                l_str += "0";
-        //        //            }
-        //        //        }
-        //        //    }
-
-
-        //        var r = CTuning.Rapport(Rank.Quality);
-
-
-
-
-
-
-        //        var quality = CConf.Select.Quality;
-        //        //if (quality.Mode != listMode.substract || quality.Exp != 1 || quality.Offset != 0 || CConf.Select.TimePriority != 0)
-        //        //{
-        //        double tx0 = Convert.ToInt32(1000 * r);
-        //        sb.Append(tx0.ToString());
-        //        sb.Append(" ");
-        //        //}
-
-        //        //  double l_tx = Convert.ToInt32(1000 * CTuning.Calc(m_rank, CConf.Select)); //   RapportNorm(m_rank.Quality, CConf.Sort.Quality));
-        //        var l_tx = CConf.ConfGen.Vie.TotalDays() / CTuning.Calc(m_rank, CConf.Select);
-        //        //  double l_tx2 = Convert.ToInt32(100 * CTuning.RapportNorm(m_rank.Lenght, CConf.Sort.Length));
-        //        //CInt(100 * CDbl(1 + CTuning.Total - m_rank.Lenght) / CTuning.Total)
-        //        //getTx(m_rank.Lenght)
-        //        //     l_str += l_rank.ToString() + "  " + l_tx.ToString() + " " + l_tx2.ToString() + "  " + l_strList + "." + (RatingCmp / 20).ToString();
-
-
-        //        sb.Append(l_tx.FormatCustom(3, 4)); //   ToString("G2", en));
-        //        //if (l_tx < 100 || l_tx >= 1000)
-        //        //    sb.Append(l_tx.ToString("G2", en));
-        //        //else
-        //        //    sb.Append(Convert.ToInt64(l_tx).ToString("D", en)); 
-
-
-
-        //        sb.Append(" ");
-        //        var rest = r;
-
-        //        for (int i = 0; i < 4; i++)
-        //        {
-        //            var ee = rest * 6.0m;
-        //            int e = (int)System.Math.Floor(ee);
-        //            rest = ee - e;
-        //            sb.Append(e);
-        //        }
-
-
-
-        //        sb.Append(" ");
-
-
-        //        //sb.Append(l_tx2.ToString());
-        //        //sb.Append(" ");
-        //        //sb.Append((100 * m_rank.SortValue).ToString("0"));
-        //        //sb.Append(" ");
-
-        //        //sb.Append(Dates.Count.ToString()); sb.Append(" ");
-
-        //        //sb.Append(DatesClassement.Count.ToString()); sb.Append(" ");
-
-        //        //sb.Append(ListSelection.buildListReadOrClassementModified(this).Count.ToString()); sb.Append(" ");
-
-        //        //   sb.Append((100 * m_rank.TimeRest).ToString("0")); sb.Append(" ");
-
-
-
-        //        sb.Append(l_strList);
-        //        sb.Append(".");
-        //        sb.Append((RatingCmp / 20).ToString());
-
-        //    }
-
-        //    sb.Append(ClassEvol);
-
-
-
-        //    Comment = sb.ToString();
-        //    //Comment = l_pref + l_str + ClassEvol;
-        //}
-
-        public override string ToString()
-        {
-            return track.ToString();
-        }
-
-        public override bool Equals(object obj)
-        {
-            Piece p = obj as Piece;
-            if (p == null)
-                return false;
-            return PieceId.Equals(p.PieceId);
-        }
-
-        private decimal _classementVirtuel;
-
-        public string ClassementVirtuel { get { return Piece.getClassementEquiv(_classementVirtuel); } }
-        public decimal VirtualClassement { get { return _classementVirtuel; } }
-        public void setClassementVirtuel(decimal virt)
-        {
-            _classementVirtuel = virt;
-        }
-
-        public decimal CoeffVirtuel
-        {
-            get
-            {
-                if (_classementVirtuel == 0)
-                    return 1;
-                return RapportClassement / _classementVirtuel;
-            }
-        }
-
-        private decimal _classementVirtuel2;
-
-        public string ClassementVirtuel2 { get { return Piece.getClassementEquiv(_classementVirtuel2); } }
-        public decimal VirtualClassement2 { get { return _classementVirtuel2; } }
-        public void setClassementVirtuel2(decimal virt)
-        {
-            _classementVirtuel2 = virt;
-        }
-
-        public decimal CoeffVirtuel2
-        {
-            get
-            {
-                if (_classementVirtuel2 == 0)
-                    return 1;
-                return RapportClassement / _classementVirtuel2;
-            }
-        }
-
-
-
-
-        public override int GetHashCode()
-        {
-            return PieceId.GetHashCode();
-        }
-
-        //private bool haveToUpdateGrouping = false;
-        //public void MarkAsUpdateGrouping() { haveToUpdateGrouping = true; }
-
-        //public void writeGrouping(writeGrouping writeGrouping)
-        //{
-        //    var cat = CConf.ConfGen.DisplayCategories;
-        //    //if (!CConf.ConfGen.WithOrder)
-        //    //    cat = minCategories; 
-        //    if (writeGrouping == Tuning.writeGrouping.none)
-        //        return;
-
-        //    //if (m_rank.Twice <= 0)
-        //    //    return;
-        //    if (haveToUpdateGrouping)
-        //    {
-        //        setGrouping(getGroup(cat), true);
-        //    }
-
-        //    else if (writeGrouping == Tuning.writeGrouping.mix)
-        //    {
-        //        bool haveToUpdate = false;
-        //        string org = Grouping;
-        //        if (org != null)
-        //        {
-        //            string[] data = org.Split(' ');
-
-        //            try
-        //            {
-        //                foreach (datesMode mode in Enum.GetValues(typeof(datesMode))) //  CConf.ConfGen.Modes) //  Enum.GetValues(typeof(datesMode)))
-        //                {
-        //                    DisplayGrouping found = cat.Find(c => (int)c.category == (int)mode);
-        //                    //displayCategory found = cat.Find(c => (int)c == (int)mode);
-        //                    if (found != null)
-        //                    {
-        //                        int indexOfTime = cat.IndexOf(found);
-
-        //                        string timeValue = data[indexOfTime];
-        //                        string newValue = getTimeValue(mode, found.mode);
-        //                        if (!newValue.Equals(timeValue))
-        //                        {
-        //                            haveToUpdate = true;
-        //                            break;
-        //                        }
-        //                    }
-        //                }
-        //            }
-        //            catch
-        //            {
-        //                haveToUpdate = true;
-        //            }
-        //        }
-        //        else
-        //        {
-        //            haveToUpdate = true;
-        //        }
-        //        if (haveToUpdate)
-        //            setGrouping(getGroup(cat), true);
-        //    }
-        //    else
-        //        setGrouping(getGroup(cat), false);
-        //}
-
-
-
-        private string getTimeValue(datesMode modeDates, timeMode modeTime)
-        {
-            switch (modeTime)
-            {
-                case timeMode.simple: return (CConf.ConfGen.Vie.TotalDays.toDecimal() * ListSelection.getTuningDateValues(this, modeDates)).FormatCustomTs(2);
-                case timeMode.complex: return (CConf.ConfGen.Vie.TotalDays.toDecimal() * ListSelection.getTuningDateValues(this, modeDates) / CTuning.Calc(m_rank, CConf.Select)).FormatCustomTs(2);
-                case timeMode.last:
-                case timeMode.equiv:
-                case timeMode.equivNorm:
-                    var ts = ListSelection.getTuningDatesEquiv(this, modeDates, modeTime, false);
-                    if (modeTime == timeMode.equivNorm)
-                        return ts.FormatCustomTs(3, 2, 4);
-                    return ts.FormatCustomTs(2);
-
-                case timeMode.delta:
-                case timeMode.deltaNorm:
-
-                    var ts0 = ListSelection.getTuningDatesEquiv(this, modeDates, modeTime, false);
-                    var tsf = ListSelection.getTuningDatesEquiv(this, modeDates, modeTime, true);
-                    var delta = tsf - ts0;
-                    delta = delta * 100;
-                    //if (modeTime == timeMode.deltaNorm)
-                    //    return delta.FormatCustom(3, 2, 4);
-                    return "(" + delta.FormatCustomTs(2) + ")";
-                default:
-                    throw new NotImplementedException();
-
-            }
-
-            //if (modeTime == timeMode.complex)
-            //    return (CConf.ConfGen.Vie.TotalDays * ListSelection.getTuningDateValues(this, modeDates) / CTuning.Calc(m_rank, CConf.Select)).FormatCustom(2);
-            //else if (modeTime == Tuning.timeMode.simple)
-            //    return (CConf.ConfGen.Vie.TotalDays * ListSelection.getTuningDateValues(this, modeDates)).FormatCustom(2);
-            ////   return m_rank.TimeRest.FormatCustom(2); //.ToString("G2", en); 
-            //else if (modeTime == timeMode.equiv || modeTime == timeMode.equivNorm)
-            //{
-            //    var ts = ListSelection.getTuningDatesEquiv(this, modeDates, modeTime, false);
-
-            //    if (modeTime == timeMode.equivNorm || modeTime == timeMode.deltaNorm)
-            //        return ts.FormatCustom(3, 2, 4);
-            //    return ts.FormatCustom(2);
-            //}
-            //else
-            //{
-            //    var ts0 = ListSelection.getTuningDatesEquiv(this, modeDates, modeTime, false);
-            //    var tsf = ListSelection.getTuningDatesEquiv(this, modeDates, modeTime, true);
-            //    var delta = tsf - ts0;
-
-            //    if (modeTime == timeMode.equivNorm)
-            //        return delta.FormatCustom(3, 2, 4);
-            //    return delta.FormatCustom(2);
-            //}
-        }
-
-        public int RankAlbumReverse
-        {
-            get
-            {
-                if (album != null)
-                {
-                    int rank = album.Rank.Sort;
-                    rank = 1 + gen.Albums.Count - rank;
-                    return rank;
-                }
-                return 0;
-            }
-        }
-
-        private string getGroup(List<DisplayGrouping> categories)
-        {
-            StringBuilder sb = new StringBuilder();
-
-            bool begin = false;
-
-            displayCategory last = displayCategory.none;
-            foreach (var category in categories)
-            {
-                try
-                {
-                    if (begin //&& (int)category.category <= (int)displayCategory.pipe
-                        && last != displayCategory.croc1 && last != displayCategory.par1
-                        && category.category != displayCategory.croc2 && category.category != displayCategory.par2)
-                        sb.Append(" ");
-                    begin = true;
-
-                    switch (category.category)
-                    {
-                        case displayCategory.rankSort:
-                            CTuning.format(sb, Rank.Sort); break;
-                        case displayCategory.rankDelta:
-                            CTuning.format(sb, Rank.RankDelta); break;
-                        case displayCategory.rankTime:
-                            CTuning.format(sb, Rank.RankRest); break;
-                        case displayCategory.rankAllAlbum:
-                            CTuning.format(sb, RankAllAlbum); break;
-                        case displayCategory.rankAlbum:
-                            if (album != null)
-                                sb.Append(album.Rank.Sort); break;
-                        case displayCategory.rankAlbumReverse:
-                            sb.Append(RankAlbumReverse);
-                            break;
-                        case displayCategory.rankEquiv:
-                            if (album != null)
-                                sb.Append(album.Equiv);
-                            break;
-                        case displayCategory.rankEquivLight:
-                            if (album != null)
-                                sb.Append(album.EquivLight);
-                            break;
-                        case displayCategory.rankEquivLight0:
-                            if (album != null)
-                                sb.Append(album.EquivLight0);
-                            break;
-                        case displayCategory.albumMoy:
-                            if (album != null)
-                            {
-                                sb.Append(album.Moyenne);
-                            }
-                            break;
-                        case displayCategory.lenght:
-                            sb.Append(Convert.ToInt32(100 * CTuning.Rapport(Rank.Lenght))); break; //   CTuning.RapportNorm(m_rank.Lenght, CConf.Sort.Length))); break;
-                        case displayCategory.sortValue:
-                            sb.Append((1000 * Rank.SortValue).ToString("####", en)); break;
-                        case displayCategory.tplay:
-                            sb.Append(getTimeValue(datesMode.play, category.mode)); break;
-                        case displayCategory.tclass:
-                            sb.Append(getTimeValue(datesMode.@class, category.mode)); break;
-                        case displayCategory.tclassMin:
-                            sb.Append(getTimeValue(datesMode.classMin, category.mode)); break;
-                        case displayCategory.tmix:
-                            sb.Append(getTimeValue(datesMode.mix, category.mode)); break;
-                        case displayCategory.tmixMin:
-                            sb.Append(getTimeValue(datesMode.mixMin, category.mode)); break;
-                        case displayCategory.timeCoeff:
-                            sb.Append((100 * Rank.TimeCoeff).ToString("G3", en)); break;
-                        case displayCategory.dplay:
-                            sb.Append(ListSelection.getPlayDates(this).Count.ToString()); break;
-                        case displayCategory.dclass:
-                            sb.Append(ListSelection.getDatesClassement(this).Count.ToString());
-                            break;
-                        case displayCategory.dclassMin:
-                            sb.Append(ListSelection.getClassDatesMin(this).Count.ToString()); break;
-                        case displayCategory.dmix:
-                            sb.Append(ListSelection.buildListReadOrClassementModified(this, false).Count.ToString());
-                            break;
-                        case displayCategory.dmixMin:
-                            sb.Append(ListSelection.buildListReadOrClassementModified(this, true).Count.ToString());
-                            break;
-                        case displayCategory.pipe:
-                            sb.Append("|");
-                            break;
-                        case displayCategory.par1: sb.Append("("); break;
-                        case displayCategory.par2: sb.Append(")"); break;
-                        case displayCategory.croc1: sb.Append("["); break;
-                        case displayCategory.croc2: sb.Append("]"); break;
-
-                        default:
-                            break;
-                    }
-
-
-                    last = category.category;
-                }
-
-                catch (Exception ex)
-                {
-                    misc.log("writeGrouping::" + ex.ToString());
-                }
-            }
-            return sb.ToString();
-        }
-
-        public virtual int PieceId
-        {
-            get
-            {
-                return track.PieceId;
-            }
-        }
-
-        public void albumMustRefresh()
-        {
-            foreach (Piece p in Master)
-            {
-                if (p.album != null)
-                    p.album.mustRefresh();
-            }
-            //gen.Albums.invalidate(Master); 
-        }
-
-
-        protected Piece parent;
-        public virtual Piece Parent
-        {
-            get { return parent; }
-            set
-            {
-                if (value == parent)
-                    return;
-                var old = parent;
-                if (old != null)
-                    old.albumMustRefresh();
-                parent = value;
-                if (parent == null)
-                {
-                    if (old != null)
-                    {
-                        old.removeChild(this);
-                        this.PieceParentId = -1;
-                    }
-                }
-                else
-                {
-                    parent = parent.Master;
-                    this.PieceParentId = value.MasterId;
-                    parent.addChild(this);
-                }
-                if (album != null)
-                    this.album.mustRefresh();
-            }
-        }
-        public Piece Master
-        {
-            get
-            {
-                if (parent == null)
-                    return this;
-                return parent;
-            }
-        }
-
-        public int MasterId { get { return Master.PieceId; } }
-
-        private List<Piece> childs = new List<Piece>();
-        public List<Piece> Childs { get { return childs; } }
-        protected void addChild(Piece child)
-        {
-            if (child != null && parent != null)
-                throw new ApplicationException(string.Format("on ne doit pas affecter un enfant à un non-maitre. enfant:{0} parent {1}", child, parent));
-
-            //if (childs.Contains(child))
-            //{
-            //    throw new ApplicationException("enfant déjà enregistré"));
-            //}
-            childs.Add(child);
-        }
-
-        public void consolidChild()
-        {
-            if (parent != null)
-            {
-                parent.addChild(this);
-            }
-        }
-
-        private void removeChild(Piece child)
-        {
-            childs.Remove(child);
-        }
-
-        public virtual int PieceParentId
-        {
-            get { return track.PieceParentId; }
-            set { track.PieceParentId = value; }
-        }
-
-
-        #region key
-        private TrackIdentity key;
-        public TrackIdentity Key
-        {
-            get
-            {
-                if (key == null)
-                    keyGener();
-                return key;
-            }
-        }
-        private void keyGener()
-        {
-            key = new TrackIdentity(this);
-        }
-
-        #endregion
-
-
-        public exportState ExportStatus
-        {
-            get
-            {
-                return track.ExportStatus; // exportState;
-            }
-            set
-            {
-                track.ExportStatus = value;
-            }
-        }
-
-
-
-
-        public List<string> RelativesPath
-        {
-            get { return track.RelativesPath; }
-        }
-
-        //public List<string> getIntermediaryPath()
-        //{
-        //    var list = new List<string>();
-        //    foreach (var path in track.RelativesPath)
-        //    {
-
-        //        var tab = path.Split('\\');
-        //        var sb = new StringBuilder();
-
-        //        sb.Append(@"\");
-        //        var count = tab.GetLength(0);
-        //        for (int i = 0; i < count; i++)
-        //        {
-        //            var _s = tab[i];
-        //            if (string.IsNullOrEmpty(_s))
-        //                continue;
-
-        //            var s = sb.ToString();
-        //            if (!string.IsNullOrEmpty(s))
-        //            {
-        //                if (s.Length >= 2)
-        //                {
-        //                    list.Add(s);
-        //                }
-        //            }
-
-
-
-        //            if (i > 0)
-        //                sb.Append(@"\");
-        //            sb.Append(_s);
-        //        }
-        //    }
-
-
-        //    return list;
-
-
-        //}
-
-
-        public void buildVirtualAlbums(List<Piece> list)
-        {
-
-            foreach (var path in track.RelativesPath)
-            {
-
-                var tab = path.Split('\\');
-                var sb = new StringBuilder();
-
-                sb.Append(@"\");
-                var count = tab.GetLength(0);
-                for (int i = 0; i < count; i++)
-                {
-                    var _s = tab[i];
-                    if (string.IsNullOrEmpty(_s))
-                        continue;
-
-                    var virt = createVirtualAlbum(sb.ToString(), false);
-
-                    if (virt != null)
-                        list.Add(virt);
-
-                    if (i > 0)
-                        sb.Append(@"\");
-                    sb.Append(_s);
-
-
-
-
-                }
-            }
-
-            if (CConf.ConfGen.ArtistVirtual)
-            {
-                foreach (Piece p in this)
-                {
-                    var virt = createVirtualAlbum(p.Artist, true);
-                    if (virt == null)
-                        continue;
-                    list.Add(virt);
-                }
-
-            }
-
-        }
-
-        private Piece createVirtualAlbum(string path, bool artist)
-        {
-            if (string.IsNullOrEmpty(path))
-                return null;
-            if (path.Length < 2)
-                return null;
-            var virt = new VirtualAlbumPiece(track, Master, path, artist);
-            return virt;
-        }
-
-
-
-        public bool IsNext
-        {
-            get
-            {
-                if (album == null)
-                    return false;
-                return this == album.Next;
-            }
-        }
-        const int NB_CHAR_COMPLETE = 4;
-
-        //public bool AutoCoeff1 { get { if (album == null) return false; return album.SelectedByCoeff; } }
-        //public bool AutoCoeff2 { get { if (album == null) return false; return album.SelectedByCoeff2; } }
-        public selectedCoeff SelectedMotif
-        {
-            get
-            {
-                if (album == null || !IsNext) return selectedCoeff.none;
-                return album.SelectedCoeff;
-            }
-        }
-
-
-        public static DateTime SeuilProvisoire;
-        public static DateTime SeuilCompact;
-        // private bool? _classementProvisoireRecent;
-        public bool ClassementProvisoireRecent
-        {
-            get
-            {
-                foreach (DateTime dt in track.DatesClassementBrut)
-                {
-                    if (dt > SeuilProvisoire)
-                        return true;
-                }
-                return false;
-                //return getClassementProvisoireRecent();
-                //if (_classementProvisoireRecent == null)
-                //    _classementProvisoireRecent = getClassementProvisoireRecent();
-                //return _classementProvisoireRecent.Value;
-
-
-
-            }
-        }
-
-        public bool ClassementACompacter
-        {
-            get
-            {
-                foreach (DateTime dt in track.DatesClassementBrut)
-                {
-                    if (dt > SeuilCompact)
-                        return false;
-                }
-                return true;
-                //return getClassementProvisoireRecent();
-                //if (_classementProvisoireRecent == null)
-                //    _classementProvisoireRecent = getClassementProvisoireRecent();
-                //return _classementProvisoireRecent.Value;
-
-
-
-            }
-        }
-
-        //private bool getClassementProvisoireRecent()
-        //{
-        //    if (!ClassementProvisoire)
-        //        return false;
-        //    var list = DatesClassement;
-        //    var last = CalcDate.getLastModif(list);
-        //    if (last > SeuilProvisoire)
-        //        return true;
-        //    return false;
-        //}
-
-        public int NbClass { get { return DatesClassement.Count<DateTime>(t => t >= Piece.SeuilProvisoire); } }
-
-        public bool ClassementProvisoire
-        {
-            get
-            {
-                if (RapportClassement == 0)
-                    return false;
-                var str = ClassName;
-                int count = str.Length;
-                if (count < 4)
-                    return true;
-                if (count >= 8)
-                    return false;
-
-                var tab = str.ToCharArray();
-                int nb = 0;
-                for (int i = 0; i < count; i++)
-                {
-                    if (nb > 0)
-                        nb++;
-                    else
-                    {
-                        if (tab[i] != '0')
-                        {
-                            nb++;
-                        }
-                    }
-                }
-                if (nb >= NB_CHAR_COMPLETE)
-                    return false;
-
-                return true;
-
-            }
-        }
-
-        private class PieceEnumerator : IEnumerator<Piece>
-        {
-            private IEnumerator<Piece> childEnumerator;
-            private Piece current;
-            private Piece piece;
-
-            public PieceEnumerator(Piece piece) { this.piece = piece; }
-            public Piece Current
-            {
-                get { return current; }
-            }
-
-            public void Dispose()
-            {
-                if (childEnumerator != null)
-                    childEnumerator.Dispose();
-            }
-
-            object System.Collections.IEnumerator.Current
-            {
-                get { return current; }
-            }
-
-            public bool MoveNext()
-            {
-                if (childEnumerator == null)
-                {
-                    childEnumerator = piece.childs.GetEnumerator();
-                    current = piece;
-                    return true;
-                }
-                var ret = childEnumerator.MoveNext();
-                if (!ret)
-                    return false;
-                current = childEnumerator.Current;
-                return true;
-            }
-
-            public void Reset()
-            {
-                if (childEnumerator != null)
-                    childEnumerator.Reset();
-                childEnumerator = null;
-            }
-        }
-
-
-        public IEnumerator<Piece> GetEnumerator()
-        {
-            return new PieceEnumerator(this);
-        }
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            return new PieceEnumerator(this);
-        }
-
-        public List<DateTime> DatesClassementBrut
-        {
-            get
-            {
-                return track.DatesClassementBrut;
-            }
-        }
-    }
-
-
-
-
-}
-
-]]></content>
-  </file>
+<db path="C:\Bernard\db1\pd4bb">
   <file path="\PieceDb.Consolid\albums\AlbumMedianne.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
@@ -2139,17 +108,20 @@ namespace pdb.gen.albums
         {
 
             var safe = modeVirt.safe;
+            var _nbNoAdd = 0;
 
             int i0 = 0;
             int count = pieces.Count;
-            if (modeVirt.virtOnlyDisabled || mode.removeLast == removeLast.unselected)
+            if ((modeVirt.coeffVirtAuto && modeVirt.coeffVirtAutoAll) || modeVirt.noAddAll)
+                _nbNoAdd = pieces.Count;
+            else if (modeVirt.virtOnlyDisabled || mode.removeLast == removeLast.unselected)
             {
                 _nbNoAdd = pieces.Count(p => p.Enabled);  // || p.VirtualClassement == 0m);
+                if (modeVirt.coeffVirtAuto && modeVirt.coeffVirtAutoAll)
+                    return _nbNoAdd;
                 if (_nbNoAdd > 0)
                     _nbNoAdd--;
             }
-            else if (modeVirt.noAddAll)
-                _nbNoAdd = pieces.Count;
             else
             {
                 for (int i = 0; i < count; i++)
@@ -2163,6 +135,9 @@ namespace pdb.gen.albums
                     }
                 }
             }
+
+            if (modeVirt.coeffVirtAuto && modeVirt.coeffVirtAutoAll)
+                return _nbNoAdd;
 
             if (modeVirt.noAddEnd)
             {
@@ -2284,7 +259,7 @@ namespace pdb.gen.albums
 
         public void buildVirtual0(ConfMedianneVirt modeVirt, bool main)
         {
-            DateTime limitDC = DateTime.Now.AddDays(-modeVirt.virtDelay);  
+            DateTime limitDC = DateTime.Now.AddDays(-modeVirt.virtDelay);
             var coeffEnabled = modeVirt.CoeffOld;
 
             var _coeffVirt = modeVirt.coeffVirt;
@@ -2323,8 +298,8 @@ namespace pdb.gen.albums
             {
                 if (_coeffVirt > 1)
                 {
-
-                    if (count < safe && modeVirt.coeffVirtAuto)
+                    if (modeVirt.coeffVirtAuto && (modeVirt.coeffVirtAutoAll || count < safe))
+                    // if (count < safe && modeVirt.coeffVirtAuto)
                     {
                         if (modeVirt.coeffVirtAdjust)
                             _coeffVirt = Math.Pow(coeffEnabled, 1.0m / (count + 1.0m));
@@ -2344,16 +319,19 @@ namespace pdb.gen.albums
                         if (j < pieces.Count)
                         {
                             var dc = pieces[j].Piece.UpdateClassement;
-                            if (dc == null || dc.Value < limitDC)
-                            {
-                                if (!modeVirt.virtOnlyDisabled || !pieces[j].Enabled)
-                                    _coeff *= _coeffVirt;
-                                else if (modeVirt.forceCoeffVirt)
-                                    _coeff *= _coeffVirt;
-                            }
+
+                            if (modeVirt.forceCoeffVirt)
+                                _coeff *= _coeffVirt;
+                            else if (!modeVirt.virtOnlyDisabled || !pieces[j].Enabled)
+                                _coeff *= _coeffVirt;
+
+
                             if (pieces[j].Empty)
                                 continue;
-                            pieces[j].Value = pieces[j].Value / _coeff;
+                            if (dc == null || dc.Value < limitDC)
+                            {
+                                pieces[j].Value = pieces[j].Value / _coeff;
+                            }
                             //pieces[j].EffectMain = coeffEnabled < _coeff;
 
                         }
@@ -3256,541 +1234,6 @@ namespace pdb.gen.albums
 }
 ]]></content>
   </file>
-  <file path="\PieceDb.Consolid\auto\CalcAuto.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using pdb.util;
-using Math = pdb.util.Math;
-
-namespace pdb.gen.auto
-{
-    public partial class ConfMedianneVirt : TuningBase
-    {
-        public bool linkconv { get { return _linkconv; } set { _linkconv = value; calcProduct(); } }
-
-        private void calcProduct()
-        {
-            this.linkProduct = calcProduct(this.v, this.a);
-        }
-
-        public decimal calcProduct(decimal dcoeffp, decimal dconvergence)
-        {
-            var linkProduct = this.linkProduct;
-            try
-            {
-                linkProduct = dcoeffp / dconvergence;
-                // 1 0,9 -> 10
-                // 0.1 0,99 
-            }
-            catch
-            {
-            }
-
-            return linkProduct;
-        }
-
-        private void calcConv()
-        {
-            this.a = calcConv(this.v, this.linkProduct);
-        }
-
-        public decimal LinkProduct
-        {
-            get
-            {
-                if (linkProduct == 0m)
-                    calcProduct();
-                return linkProduct;
-            }
-            set
-            {
-                linkProduct = value;
-                calcConv();
-
-            }
-        }
-
-        public decimal calcConv(decimal dcoeffp, decimal linkProduct)
-        {
-            var dconvergence = this.a;
-            try
-            {
-                // 1- conv = coeff / prod
-                dconvergence = dcoeffp / linkProduct; //1/10
-            }
-            catch
-            {
-
-            }
-            return dconvergence;
-        }
-
-        public void checkCoeffOld()
-        {
-            if (coeffOldAuto)
-            {
-                coeffOld = (decimal)pdb.util.Math.Pow(coeffVirt, coeffOldAutoLevel);
-            }
-        }
-
-        private void verifMaxV()
-        {
-
-            var _dxmax = (coeffVirt - 1) * d0;
-            var _dx = v * pas;
-            if (_dx > _dxmax)
-            {
-                var vv = _dxmax / pas;
-                misc.log("verifMaxV {0}->{1}", v.FormatE(4), vv.FormatE(4));
-                v = vv;
-            }
-        }
-
-        private void verifMaxA()
-        {
-            var _dxmax = (coeffVirt - 1) * d0;
-            var _dx = 2 * a * pas * pas;
-
-            if (_dx > _dxmax)
-            {
-                var aa = _dxmax / (2 * pas * pas);
-                misc.log("verifMaxA {0}->{1}", a.FormatE(4), aa.FormatE(4));
-                a = aa;
-            }
-        }
-
-        private void verifBas()
-        {
-            var dx = v * pas;
-            if (dx < epsilon)
-            {
-                //dx = epsilon;
-                v = epsilon / pas;
-            }
-
-            //dx = vv * pas;
-            //if (dx < epsilon)
-            //{
-            //    dx = epsilon;
-            //    vv = epsilon / pas;
-            //}
-
-            var dv = a * pas;
-            if (dv < vepsilon)
-            {
-                // dv = vepsilon;
-                a = vepsilon / pas;
-
-            }
-
-            if (a < aepsilon)
-                a = aepsilon;
-
-            if (coeffVirt < 1)
-                coeffVirt = 1;
-        }
-        private decimal _v0;
-        public bool calcAuto(bool selectedByCoeff)
-        {
-            var coeffVirt0 = coeffVirt;
-            if (coeffOldSwap)
-            {
-                coeffVirt = coeffOld;
-            }
-            var _c0 = coeffVirt;
-            _v0 = v;
-            var oldSameDirection = Math.Abs(_nbSameDirection);
-
-            // vv = v;
-            var dv0 = dv;
-            var _a0 = a;
-
-            if (-_nbSameDirectionBox > serialm)
-                _nbSameDirectionBox = -serialm;
-            if (_nbSameDirectionBox > serialp)
-                _nbSameDirectionBox = serialp;
-
-            if (-_nbElastique > serialElastique)
-                _nbElastique = -serialElastique;
-            if (_nbElastique > serialElastique)
-                _nbElastique = serialElastique;
-
-
-            if (-_nbElastique2 > serialElastique)
-                _nbElastique2 = -serialElastique;
-            if (_nbElastique2 > serialElastique)
-                _nbElastique2 = serialElastique;
-
-
-            if (_nbAlt < 0)
-                _nbAlt = 0;
-            if (_nbAlt > serialAlt)
-                _nbAlt = serialAlt;
-
-            decimal ecart0 = System.Math.Max(_nbElastique, -_nbElastique2);
-
-            var last = lastAutoDirection;
-            var lastDelta_ = this.lastDelta;
-            lastAutoDirection = selectedByCoeff;
-
-            if (last.HasValue)
-            {
-                if (last != selectedByCoeff || (checkFall && selectedByCoeff))
-                {
-                    if (last != selectedByCoeff)
-                    {
-                        _nbAltHisto++;
-                        _nbSameDirection = 0;
-                        _nbAlt++;
-                    }
-                    else
-                    {
-                        _nbAltHisto = 0;
-                    }
-
-                    //if (_nbAltHisto > 1)
-                    //{
-                    if (selectedByCoeff)
-                    {
-                        _nbElastique -= coeffElastique1dm; // rapportmp* coeffElastique1r;
-                        _nbElastique2 -= coeffElastique2dm; // rapportmp* coeffElastique2;
-                    }
-                    else
-                    {
-                        _nbElastique -= coeffElastique1dp;
-                        _nbElastique2 -= coeffElastique2dp;
-                    }
-
-                    if (last != selectedByCoeff)
-                    {
-                        if (_nbAltHisto > 1)
-                        {
-                            if (currentStaticp > 1 && coeffStaticpRetour > 1)
-                            {
-                                currentStaticp /= coeffStaticpRetour;
-                                if (currentStaticp < 1)
-                                    currentStaticp = 1;
-                            }
-                            if (currentStaticm > 1 && coeffStaticmRetour > 1)
-                            {
-                                currentStaticm /= coeffStaticmRetour;
-                                if (currentStaticm < 1)
-                                    currentStaticm = 1;
-                            }
-                        }
-                    }
-
-                    else
-                    {
-                        if (coeffStaticpRetour > 1 && currentStaticp > coeffStaticpRetour)
-                        {
-                            currentStaticp /= coeffStaticpRetour;
-                            if (currentStaticp < 1)
-                                currentStaticp = 1;
-                        }
-                        currentStaticm *= coeffStaticm;
-                    }
-
-
-
-                    // }
-                    if (_nbSameDirectionBox > 0 && selectedByCoeff)
-                        _nbSameDirectionBox--;
-                    if (_nbSameDirectionBox < 0 && !selectedByCoeff)
-                        _nbSameDirectionBox++;
-
-                }
-                else
-                {
-                    _nbAlt--;
-                    _nbAltHisto = 0;
-
-
-                    if (selectedByCoeff)
-                    {
-                        _nbSameDirectionBox--;
-                        // _nbSameDirection--;
-                        _nbElastique += coeffElastique1sm; // coeffElastique1* rapportmp;
-                        _nbElastique2 += coeffElastique2sm; // coeffElastique2r* rapportmp;
-                    }
-                    else
-                    {
-                        _nbElastique += coeffElastique1sp;
-                        _nbElastique2 += coeffElastique2sp;
-                        _nbSameDirectionBox++;
-                        // _nbSameDirection++;
-                    }
-                }
-
-                if (selectedByCoeff)
-                {
-                    _nbSameDirection--;
-                }
-                else
-                {
-                    _nbSameDirection++;
-                }
-            }
-
-            if (!auto)
-                return false;
-
-            var lastProduct = linkProduct;
-
-
-            var c0 = v;
-            //verifHaut();
-            //verifBas();
-
-
-            if (last.HasValue)
-            {
-                var aux = a;
-
-
-
-
-                lastDelta = null;
-                if (last != selectedByCoeff) // if (_nbAltHisto > 1)
-                {
-                    if (_nbAlt > serialAlt || _nbElastique2 < -serialElastique)
-                    {
-                        lastDelta = false;
-                    }
-                }
-                else if (checkFall && selectedByCoeff)
-                {
-                }
-                else
-                {
-                    bool applyanti = false;
-                    // bof. pour l'instant seul currentStaticm est géré
-                    if (selectedByCoeff)
-                    {
-                        if (coeffStaticpRetour > 1 && currentStaticp > coeffStaticpRetour)
-                        {
-                            currentStaticp /= coeffStaticpRetour;
-                            if (currentStaticp < 1)
-                                currentStaticp = 1;
-                        }
-                        currentStaticm *= coeffStaticm;
-
-                    }
-                    else if (coeffStaticRetourLarge)
-                    {
-
-                        if (currentStaticm > 1)
-                        {
-                            currentStaticm /= coeffStaticmRetour;
-                            if (currentStaticm < 1)
-                                currentStaticm = 1;
-                        }
-
-                        //if (coeffStaticmRetour > 1 && currentStaticm > coeffStaticmRetour)
-                        //    currentStaticm /= coeffStaticmRetour;
-                        currentStaticp *= coeffStaticp;
-                    }
-
-                    if (selectedByCoeff && -_nbSameDirectionBox > serialm)
-                        applyanti = true;
-                    else if (!selectedByCoeff && _nbSameDirectionBox > serialp)
-                        applyanti = true;
-                    else if (_nbElastique > serialElastique)
-                        applyanti = true;
-                    //else if (_nbElastique2 > serialElastique)
-                    //    applyanti = true;
-
-                    if (applyanti)
-                        lastDelta = true;
-                    else
-                        lastDelta = null;
-                    if (_linkconv)
-                        calcConv();
-
-
-                }
-
-
-
-                bool onAugmente = lastDelta.HasValue && (lastDelta_ == null || lastDelta_ == lastDelta);
-                if (onAugmente)
-                {
-                    a *= (1 + aa);
-                    //verifHaut();
-                    //verifBas();
-                }
-                else
-                {
-                    decimal ecart1 = System.Math.Max(_nbElastique, -_nbElastique2);
-
-
-                    if (ecart1 > 0 && ecart1 < ecart0)
-                    {
-                        if (a > aepsilon)
-                        {
-                            a /= (1 + aa);
-                            if (a < aepsilon)
-                                a = aepsilon;
-                        }
-
-                        //verifHaut();
-                        //verifBas();
-
-                    }
-                }
-
-                //if (c0 == v || !onAugmente)
-                //{
-
-                //    var ecart1 = System.Math.Max(System.Math.Abs(_nbElastique), System.Math.Abs(_nbElastique2));
-                //    if (ecart1 < ecart0)
-                //    {
-                //        a /= (1 + aa);
-                //        if (a < aepsilon)
-                //            a = aepsilon;
-
-                //    }
-                //}
-                //else
-                //{
-                //    a *= (1 + aa);
-                //    verifHaut();
-                //    verifBas();
-
-                //}
-
-
-                // vv += pas * a;
-
-
-
-                verifMaxA();
-
-                if (lastDelta.HasValue)
-                {
-                    //verifMaxA();
-                    if (false == lastDelta)
-                    {
-                        var _v = _v0 - pas * a;
-                        var limit = _v0 / vv;
-                        if (_v < limit)
-                        {
-                            _v = limit;
-                            a = (_v0 - _v) / pas;
-                        }
-                        v = _v;
-
-                        if (_linkconv)
-                            calcConv();
-
-                    }
-                    else if (true == lastDelta)
-                    {
-                        var deltav = pas * a;
-                        var limit = _v0 * (vv - 1);
-                        var limit2 = vepsilon / pas;
-
-                        if (limit < limit2)
-                            limit = limit2;
-
-
-                        if (deltav > limit)
-                        {
-                            deltav = limit;
-                            a = deltav / pas;
-                        }
-
-                        v = _v0 + deltav;
-
-                    }
-
-                    //  verifMaxV();
-                    //verifHaut();
-                    //verifBas();
-                }
-
-
-                verifMaxV();
-
-
-                misc.log("convergence {0:0.##}->{1:0.######}", c0, v);
-                misc.log("evol convergence {0:0.######}->{1:0.######}", aux, a);
-            }
-
-            string montee = selectedByCoeff ? "down" : "up";
-
-            verifBas();
-            var _rapportTmp = rapportmp;
-            if (selectedByCoeff)
-            {
-                if (rapportmp > 1)
-                {
-                    if (oldSameDirection > rapportmp)
-                    {
-                        _rapportTmp = 2 * rapportmp - oldSameDirection;
-                        if (_rapportTmp < 1)
-                            _rapportTmp = 1;
-                    }
-                }
-
-                coeffVirt -= pas * v * _rapportTmp / currentStaticp;
-            }
-            else
-                coeffVirt += pas * v / currentStaticm;
-
-
-            if (selectedByCoeff)
-            {
-                verifMaxA();
-                verifMaxV();
-
-                verifBas();
-                coeffVirt = _c0 - pas * v * _rapportTmp / currentStaticp;
-                verifBas();
-            }
-
-
-
-
-            //verifHaut();
-            //verifBas();
-            dx = Math.Abs(coeffVirt - _c0);
-            if (_c0 > 0)
-                dcoeff = 1 + dx / _c0;
-
-            if (selectedByCoeff)
-                dx /= _rapportTmp;
-
-
-            dv = Math.Abs(v - _v0);
-            if (dv == 0)
-                dv = dv0 * (a / _a0);
-
-
-
-            // da = Math.Abs(a - _a0);
-            misc.log("{0} {1:0.### ###} {2:0.### ###}->{3:0.### ###}", montee, dx, c0, coeffVirt);
-
-
-            histo.Add(new HistoValue(coeffVirt, dx, a, v / currentStaticm, dv, v));
-
-            checkCoeffOld();
-
-            if (coeffOldSwap)
-            {
-                coeffOld = coeffVirt;
-                coeffVirt = coeffVirt0;
-            }
-
-            return dx != 0;
-        }
-
-    }
-}
-]]></content>
-  </file>
   <file path="\PieceDb.Consolid\auto\ConfMedianneVirt.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
@@ -3852,7 +1295,14 @@ namespace pdb.gen.auto
         public bool noAddAll;
         public bool virtAlignSelected;
         public bool virtAlignPrec;
+        /// <summary>
+        /// calcul du coeff en fonction du nombre de pistes
+        /// </summary>
         public bool coeffVirtAuto;
+        /// <summary>
+        ///  calcul du coeff en fonction du nombre de pistes dans tous les cas
+        /// </summary>
+        public bool coeffVirtAutoAll; 
         public bool coeffVirtAdjust;
 
         public bool removeEpsilon;
@@ -4098,6 +1548,7 @@ namespace pdb.gen.auto
             virtAlignSelected = o.virtAlignSelected;
             virtAlignPrec = o.virtAlignPrec;
             coeffVirtAuto = o.coeffVirtAuto;
+            coeffVirtAutoAll = o.coeffVirtAutoAll; 
 
             coeffVirtAdjust = o.coeffVirtAdjust;
             removeEpsilon = o.removeEpsilon;
@@ -4186,6 +1637,7 @@ namespace pdb.gen.auto
             buildb("virtAlignSelected", v => virtAlignSelected = v);
             buildb("virtAlignPrec", v => virtAlignPrec = v);
             buildb("coeffVirtAuto", v => coeffVirtAuto = v);
+            buildb("coeffVirtAutoAll", v => coeffVirtAutoAll = v);
             buildb("coeffVirtAdjust", v => coeffVirtAdjust = v);
 
             buildb("removeEpsilon", v => removeEpsilon = v);
@@ -4451,6 +1903,7 @@ namespace pdb.gen.auto
             write("virtAlignSelected", virtAlignSelected);
             write("virtAlignPrec", virtAlignPrec);
             write("coeffVirtAuto", coeffVirtAuto);
+            write("coeffVirtAutoAll", coeffVirtAutoAll);
             write("coeffVirtAdjust", coeffVirtAdjust);
 
             write("removeEpsilon", removeEpsilon);
@@ -4642,376 +2095,1124 @@ namespace pdb.gen.auto
 }
 ]]></content>
   </file>
-  <file path="\PieceDb.Db\piece\data\CPieceDataClassement.cs">
+  <file path="\PieceDb.Consolid\stat\StatBuilder.cs">
     <content><![CDATA[using System;
-using pdb.db.piece.type;
-using pdb.db.piece.value;
-using pdb.db.piece.version;
-using pdb.util;
-using pdb.db.obj;
 using System.Collections.Generic;
-using System.Xml;
-namespace pdb.db.piece.data
+using System.IO;
+using System.Text;
+using System.Text.RegularExpressions;
+using pdb.util;
+using Math = pdb.util.Math; 
+
+namespace pdb.gen.stat
 {
-
-
-    public class CPieceClassement : CPieceData<Classement>
+    class StatBuilder
     {
 
-        private const string TOKEN_CLASSEMENT = "classement";
-        public CPieceClassement(CPieceClassement o)
-            : base(o)
+
+        private List<Piece> list;
+        private StreamWriter st;
+        private int level;
+        private int sub;
+        private int delta;
+
+        private decimal coeff;
+
+        public const int VAL_MAX = 6000;
+        private int min;
+        private int nbCurrent;
+        private int index; 
+        private Regex reg = new Regex("[6789]");
+        public const int NB_MEDIANE = 36;
+        private StatConteneur conteneur = new StatConteneur();
+        public StatBuilder(IEnumerable<Piece> list)
         {
+            this.list = new List<Piece>(list);
+            this.list.Reverse();
         }
 
-        public CPieceClassement(System.Xml.XmlElement a_node)
-            : base(a_node)
+        private void record()
         {
-            if (XMLTool.NodeLookUp(a_node, getToken()) == null)
-            {
-                CPieceDataValueClassement l_data = new CPieceDataValueClassement(a_node);
-                m_list.Add(new CPieceDataVersion<Classement>(DateTime.MinValue, l_data));
-            }
-            //  int count = m_list.Count;
-            //            if (count > 0)
-            //            {
-            //                var version = m_list[count - 1];
-            //                if (string.IsNullOrEmpty(version.Data.Value.ClassList))
-            //                {
-            //                    version.Consider = false;
-            //                    //  empty = Bool.not_defined; 
-            //                }
-            //#if ASC
-            //                var versionF = m_list[0];
-            //                var valueOrg = versionF.Data;
-            //                var classOrg = valueOrg.Value.ClassList;
-            //                var rating = valueOrg.Value.Rating;
-            //                if (classOrg.StartsWith("0"))
-            //                {
-            //                    classOrg = "1";
-            //                    rating = 0; 
-            //                  //  classOrg = classOrg.Remove(0, 1);
-            //                }
+            st.Write((double)min / 1000);
+            st.Write("\t");
+            st.WriteLine(nbCurrent);
+        }
+        private void record3()
+        {
+            var _min = (decimal)min / 100000m; 
+            st.Write(_min);
+            st.Write("\t");
+            var v = (decimal)nbCurrent / coeff;
+            st.Write(v.ToString("0.#####"));
 
-            //                valueOrg.Value = new Classement(classOrg, rating); 
+            st.Write("\t");
+            decimal cur = Piece.getRapport(_min);            
+            st.WriteLine(cur.ToString("0.######")); 
+        }
 
-            //#endif
-            //            }
+        private void record4()
+        {
+            var _min = (decimal)min / (10000 * loupeCoeff); 
+            st.Write(_min);
+            st.Write("\t");
+            double v = (double)nbCurrent / (double)coeff;
+            st.Write(v.ToString("0.#####"));
 
+            st.Write("\t");
+            decimal cur = Piece.getRapport(_min);
+            st.WriteLine(cur.ToString("0.######")); 
 
         }
 
-        public void initClassementIfEmpty(string classement)
+        private void record2()
         {
-            if (m_list.Count > 0)
+            conteneur.record(level, sub, min, nbCurrent);
+        }
+
+        public void gener()
+        {
+            gener("stats.txt");
+        }
+
+        public void gener0()
+        {
+            gener0("stats.txt");
+        }
+
+
+        public void gener0(string file)
+        {
+            decimal EPSILON = 0.00000001m;
+            int count = list.Count;
+            if (count == 0)
                 return;
-            var cl = pdb.db.piece.type.Classement.create(classement);
-            m_list.Add(new CPieceDataVersion<Classement>(Now, new CPieceDataValueClassement(cl)));
-        }
-
-        public void eraseClassement()
-        {
-            m_list = new List<CPieceDataVersion<Classement>>();
-            initClassementIfEmpty("0.0");
-        }
-
-        public CPieceClassement(string strClassement)
-        {
-            var cl = pdb.db.piece.type.Classement.create(strClassement);
-            m_list.Add(new CPieceDataVersion<Classement>(Now, new CPieceDataValueClassement(cl)));
-        }
-
-        public CPieceClassement(string a_class, int a_rating)
-        {
-            Classement l_class = new Classement(a_class, a_rating);
-            m_list.Add(new CPieceDataVersion<Classement>(Now, new CPieceDataValueClassement(l_class)));
-            // empty = Bool.not_defined; 
-
-        }
-
-        public CPieceClassement(int a_rating)
-            : this("", a_rating)
-        {
-        }
-        public CPieceClassement()
-            : base()
-        {
-        }
-
-        protected override bool CheckLegacyConsistency()
-        {
-            return false;
-        }
-        public override CPieceDataValue<Classement> createPieceDataValue(System.Xml.XmlElement a_node)
-        {
-            return new CPieceDataValueClassement(a_node);
-        }
-
-        public override string getToken()
-        {
-            return TOKEN_CLASSEMENT;
-        }
-
-        public override CPieceDataValue<Classement> createPieceDataValue(string a_str)
-        {
-            return null;
-        }
-
-        public override Classement getNullValue()
-        {
-            return new Classement("", 0);
-        }
-        public override CPieceDataValue<Classement> createPieceDataValueT(Classement value)
-        {
-            return new CPieceDataValueClassement(value);
-        }
-
-        public override bool isSignificant(Classement value)
-        {
-            return value.ClassList != "";
-        }
-
-        public string ClassList
-        {
-            get { return Value.ClassList; }
-
-
-            //TODO A REVOIR
-            set
+            using (Stream stream = new FileStream(@"..\" + file, FileMode.Create))
             {
-                if (m_list.Count == 0)
+                using (st = new StreamWriter(stream, Encoding.ASCII))
                 {
-                    int l_rating = Rating;
-                    Classement l_new = new Classement(value, l_rating);
-                    m_list.Add(new CPieceDataVersion<Classement>(Now, new CPieceDataValueClassement(l_new)));
-                    //  empty = Bool.False;
-                }
-                else
-                {
-                    if (Value.ClassList != value)
+                    try
                     {
-                        //int l_rating = Rating;
-                        //Classement l_new = new Classement(value, l_rating);
-                        //m_list.Add(new CPieceDataVersion<Classement>(now, new CPieceDataValueClassement(l_new)));
-                        m_list[0].Data.Value.ClassList = value;
+                        int deltaBase = 10000;
+                        for (level = 0; level < 4; level++)
+                        {
+                            deltaBase /= 10;
+                            int nb = VAL_MAX / deltaBase;
+                            //  var tab = new int[nb]; 
+                            for (sub = 3; sub >= 1; sub--)
+                            {
+                                // level 0 > 0,1,2,3,4,5 puis 01, 23,45, puis 0,3
+                                delta = sub * deltaBase;
+                                //   nb =(int)( 6 / sub * Math.Pow(10, 4 - level)); 
+                                // level = 1 =>600
+
+                                // parcourir la liste triée
+                                // pour chaque pièce comparer classNameAndRating
+                                int index = 0;
+                                st.WriteLine();
+                                st.Write("\t\t\tlevel:"); st.Write(level); st.Write(" sub:"); st.WriteLine(sub);
+
+                                min = 0;
+                                int max = delta;
+
+
+                                var current = list[index].ClassementValueDecimal0;
+                                nbCurrent = 0;
+
+                                bool _end = false;
+                                while (true)
+                                {
+                                    if (min >= VAL_MAX)
+                                        break;
+
+                                    if (current * 1000 + EPSILON >= max || _end)
+                                    {
+                                        //if (!reg.IsMatch(min.ToString()))
+                                        record();
+
+                                        min = max;
+                                        while (reg.IsMatch(min.ToString()))
+                                            min += deltaBase;
+
+                                        max = min + delta;
+                                        nbCurrent = 0;
+
+                                    }
+                                    else
+                                    {
+                                        nbCurrent++;
+                                        index++;
+                                        if (index >= list.Count)
+                                        {
+
+                                            _end = true;
+                                            continue;
+                                        }
+                                        current = list[index].ClassementValueDecimal0;
+                                    }
+                                }
+
+                            }
+                        }
                     }
-                    // empty = Bool.not_defined;
-                }
-            }
-        }
-
-        protected override void writeSimple(XmlWriter w)
-        {
-            w.WriteStartElement(getToken());
-            m_list[0].Data.write(w);
-            w.WriteEndElement();
-        }
-
-        public void setClassement(string className, int rating)
-        {
-            Classement cl = new Classement(className, rating);
-            if (m_list.Count == 0)
-                m_list.Add(new CPieceDataVersion<Classement>(Now, new CPieceDataValueClassement(cl)));
-            else
-                m_list[0].Data.Value = cl;
-            sortAndCompact();
-        }
-
-        public void eraseClassement2()
-        {
-            Classement cl = Classement.create("0.0");
-            eraseClassement2(cl);
-        }
-
-        public void eraseClassement2(Classement cl)
-        {
-            m_list = new List<CPieceDataVersion<Classement>>();
-            m_list.Add(new CPieceDataVersion<Classement>(DateTime.MinValue, new CPieceDataValueClassement(cl)));
-        }
-
-        public int Rating
-        {
-            get { return Value.Rating; }
-            set { Value.Rating = value; }
-        }
-
-
-
-        protected override bool canErase()
-        {
-            return true;
-        }
-
-        public override void Consolid(CPieceData<Classement> remote, mergePriority a_priority)
-        {
-            base.Consolid(remote, a_priority);
-            this.checkList(remote);
-        }
-
-        public override void LegacyConsolid(CPieceData<Classement> local)
-        {
-            base.LegacyConsolid(local);
-            this.checkList(local);
-        }
-
-        public bool isClassListNumeric { get { return Value.isClassListNumeric; } }
-
-
-
-        public String Evol
-        {
-            get
-            {
-
-                if (m_list.Count <= 1) return "++";
-
-                Classement last = m_list[0].Data.Value;
-                Classement before = m_list[1].Data.Value;
-
-                String strLast = last.ClassNameAndRating;
-                String strBefore = before.ClassNameAndRating;
-
-                int cmp = compareClassNameAndRating(strLast, strBefore);
-                if (cmp == 0)
-                    return "=";  // normalement impossible
-                if (cmp < 0) return "+";
-                return "-";
-            }
-
-        }
-
-        public static int compareClassNameAndRating(string strX, string strY)
-        {
-            int max = strX.Length > strY.Length ? strX.Length : strY.Length;
-            for (int i = 0; i < max; i++)
-            {
-                int iX = strX.getInt(i); // CUtil.getInt(strX, i);
-                int iY = strY.getInt(i);//CUtil.getInt(strY, i);
-                if (iX != iY)
-                    return -iX.CompareTo(iY);
-            }
-            return 0;
-        }
-
-        public List<DateTime> getDates()
-        {
-            var list = new List<DateTime>();
-            foreach (var version in new List<CPieceDataVersion<Classement>>(m_list))
-            {
-                list.Add(version.Date);
-            }
-            return list;
-
-        }
-
-        public override CListDate Dates
-        {
-            get
-            {
-                var list = new List<DateTime>();
-                //    double current = -1;
-              // sortAndCompact();
-                foreach (var version in new List<CPieceDataVersion<Classement>>(m_list))
-                {
-                    //double aux = version.Data.Value.getNormValue();
-                    //if (aux != current)
-                    //{
-                    list.Add(version.Date);
-                    // current = aux; 
-                    //}
-                }
-                return new CListDate(list);
-            }
-        }
-
-        public void Menage(CPiece piece)
-        {
-            sortAndCompact();
-            //   misc.log("ménage " + this); 
-
-            var aux = new List<CPieceDataVersion<Classement>>(m_list);
-
-
-            //// 1. parcours jusqu'à trouver 1.0
-            //int index1 = -1;
-            //int count = aux.Count;
-
-            //for (int i = 0; i < count; i++)
-            //{
-            //   CPieceDataVersion <Classement> clv = aux[i];
-            //   if (clv.Data.Value.getNormValue() == 1)
-            //   {
-            //       index1 = i;
-            //       break; 
-            //   }
-            //}
-
-            //if (index1 >= 0)
-            //{
-            //    while (aux.Count > index1 + 1)
-            //    {
-            //        misc.log( piece  + " suppression " + aux[index1 + 1] + " cause départ à 1");
-            //        aux.RemoveAt(index1 + 1);
-            //    }
-            //}
-
-            //2. vérification des allez-retours 
-            int count = aux.Count;
-
-            while (count > 2)
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var clv0 = aux[i].Data.Value;
-                    if (i + 2 >= count)
+                    catch (Exception ex)
                     {
-                        count = -1;
-                        break;
+                        Console.WriteLine(ex);
                     }
-                    var clv2 = aux[i + 2].Data.Value;
-                    if (clv2.getNormValue() == clv0.getNormValue())
+                    st.WriteLine();
+
+                    try
                     {
-                        misc.log(piece + "suppression " + aux[i] + " cause doublon avec " + aux[i + 2]);
-                        aux.RemoveAt(i);
-                        count = aux.Count;
-                        break;
+                        //phase deux déterminer les tantièmes
+                        //1,2,3..10,20,30..100,
+                        double nbTot = count;
+                        double portion = nbTot;
+                        int K = 1;
+                        decimal valueFrom = 0;
+
+                        decimal classTo = 6.0m;
+                        decimal classFrom = 0.0m;
+
+                        List<Tranche> tranches = new List<Tranche>();
+                        const int DETAIL = 1000;
+
+                        for (int i = 0; i < 6 * DETAIL; i++)
+                        {
+                            if (reg.IsMatch(i.ToString()))
+                                continue;
+                            tranches.Add(new Tranche(i));
+                        }
+                        for (level = 1; level < 2; level++)
+                        {
+
+
+
+                            for (int div = 2; div <= NB_MEDIANE; div++)
+                            {
+
+
+                                //  st.Write("\t\t\tlevel:"); st.Write(level); st.Write(" div:"); st.WriteLine(div);
+                                valueFrom = 0;
+                                int iFrom = 0;
+                                int iTo = count - 1;
+                                portion = nbTot / div;
+                                classFrom = 0;
+                                for (sub = 1; sub <= div; sub++)
+                                {
+
+                                    double to = sub * portion;
+                                    iTo = 0;
+                                    if (to > 0)
+                                        iTo = (int)to - 1;
+                                    if (iTo >= list.Count)
+                                        iTo = list.Count - 1;
+                                    if (iTo < 0)
+                                        iTo = 0;
+                                    decimal rapport = list[iTo].RapportClassementDecimal;
+                                    classTo = list[iTo].ClassementValueDecimal0;
+
+
+                                    //st.Write(classFrom);
+                                    ////st.Write("\t");
+                                    //st.Write(classTo);
+                                    //st.Write("\t");
+                                    ////st.Write(valueFrom);
+                                    ////
+                                    //st.Write(rapport);
+                                    //st.Write("\t");
+
+
+                                    //int nb = (iTo - iFrom + 1);                          
+                                    //st.Write(nb);
+                                    //st.Write("\t");
+                                    decimal densite = 0;
+                                    if (rapport != valueFrom)
+                                        densite = 1.0m / ((rapport - valueFrom) * (decimal)div);
+                                    //st.Write("\t");
+                                    //st.Write(densite);
+                                    //st.WriteLine(); 
+
+                                    for (int i = 0; i < 6 * DETAIL; i++)
+                                    {
+                                        if (i < classFrom * DETAIL)
+                                            continue;
+                                        if (i > classTo * DETAIL)
+                                            continue;
+                                        if (reg.IsMatch(i.ToString()))
+                                            continue;
+                                        Tranche tranche = tranches.Find(t => t.index == i);
+                                        tranche.densites[div - 1] = densite;
+                                    }
+
+                                    valueFrom = rapport;
+                                    iFrom = iTo;
+                                    classFrom = classTo;
+                                }
+                            }
+                            K *= 10;
+                        }
+
+                        st.WriteLine();
+                        st.Write("\t");
+                        st.Write("\t");
+                        st.Write("\t");
+
+                        for (int i = 0; i < NB_MEDIANE; i++)
+                        {
+                            st.Write(i + 2);
+                            st.Write("\t");
+                            st.Write(i + 2);
+                            st.Write("\t");
+                        }
+                        Tranche last = null;
+                        foreach (Tranche tranche in tranches)
+                        {
+                            st.WriteLine();
+                            st.Write((double)tranche.index / DETAIL);
+                            st.Write("\t");
+
+                            for (int i = 0; i < NB_MEDIANE; i++)
+                            {
+                                var densite = tranche.densites[i];
+                                st.Write(densite);
+                                st.Write("\t");
+                                if (last == null || last.densites[i] != densite)
+                                {
+                                    st.Write(densite);
+                                }
+                                else
+                                    st.Write(0);
+                                st.Write("\t");
+                            }
+                            last = tranche;
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
                     }
                 }
-
             }
-
-            m_list = aux;
-            sortAndCompact();
-
-
-
         }
 
-        public override string ToString()
-        {
-            return Value.ToString();
-        }
 
-        protected override void changeNativeValue(Classement value)
+        //public void gener3(bool generDistrib)
+        //{
+        //    gener3("stats3.txt", generDistrib);
+        //}
+        public void gener3(string file, bool generDistrib)
         {
-            observer.changeNativeValueClassement(value);
-        }
-
-        #region on repart de zero
-        private static DateTime dateMin;
-        public static DateTime DateMin { set { dateMin = value; } }
-
-        protected override Classement getPlainValue()
-        {
-            if (m_list[0].Date < dateMin)
+            decimal EPSILON = 0.00000001m;
+            int VAL_MAX = StatBuilder.VAL_MAX * 100;
+            int count = list.Count;
+            if (count == 0)
+                return;
+            while (true)
             {
-                if (m_list[0].Data.Empty)
-                    return getNullValue();
-                return new Classement("0", 0);
+                try
+                {
+                    misc.log("gener " + file);
+
+
+                    var filename = Path.GetFileNameWithoutExtension(file);
+                    var ext = Path.GetExtension(file);
+                    string _file = @"..\" + filename + "_med" + ext;
+                    string f0 = @"..\" + file;
+                    string f0tmp = f0 + ".tmp";
+                    string f1tmp = _file + ".tmp";
+                    int NBLINE = 65500;
+                    int nbLine = 0;
+                    using (Stream stream = new FileStream(f0tmp, FileMode.Create))
+                    {
+                        using (st = new StreamWriter(stream, Encoding.ASCII))
+                        {
+                            try
+                            {
+                                int deltaBase = 1000000;
+                                for (level = 5; level >= 0; level--)
+                                {
+                                    if (nbLine >= NBLINE) break;
+                                    deltaBase /= 10;
+                                    int nb = VAL_MAX / deltaBase;
+
+                                    for (sub = 3; sub >= 1; sub--)
+                                    {
+                                        if (nbLine >= NBLINE) break;
+                                        coeff = Math.Pow(6, level - 1) * (decimal)sub;
+                                        // level 0 > 0,1,2,3,4,5 puis 01, 23,45, puis 0,3
+                                        delta = sub * deltaBase;
+                                        index = 0;
+                                        st.WriteLine(); nbLine++;
+                                        st.Write("\t\t\tlevel:"); st.Write(level); st.Write(" sub:"); st.WriteLine(sub); nbLine++;
+
+                                        min = 0;
+                                        int max = delta;
+
+
+                                        decimal current = list[index].ClassementValueDecimal0;
+                                        nbCurrent = 0;
+
+                                        bool _end = false;
+                                        while (true)
+                                        {
+                                            if (min >= VAL_MAX)
+                                                break;
+
+                                            if (current * 100000 + EPSILON >= max || _end)
+                                            {
+
+                                                record3();
+
+                                                nbLine++;
+                                                if (nbLine >= NBLINE) break;
+
+
+                                                min = max;
+                                                while (reg.IsMatch(min.ToString()))
+                                                    min += deltaBase;
+
+                                                max = min + delta;
+                                                nbCurrent = 0;
+
+                                            }
+                                            else
+                                            {
+                                                nbCurrent++;
+                                                index++;
+                                                if (index >= list.Count)
+                                                {
+
+                                                    _end = true;
+                                                    continue;
+                                                }
+                                                current = list[index].ClassementValueDecimal0;
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
+                                throw; 
+                            }
+
+                        }
+                    }
+
+                    File.Copy(f0tmp, f0, true);
+                    File.Delete(f0tmp);
+
+                    misc.log("fin gener " + file);
+
+                    if (!generDistrib)
+                        return;
+
+                    misc.log("gener distrib " + _file);
+
+                    using (FileStream stream2 = new FileStream(f1tmp, FileMode.Create))
+                    {
+                        using (st = new StreamWriter(stream2, Encoding.UTF8))
+                        {
+
+                            try
+                            {
+                                //phase deux déterminer les tantièmes
+                                //1,2,3..10,20,30..100,
+                                double nbTot = count;
+                                double portion = nbTot;
+                                int K = 1;
+                                decimal valueFrom = 0;
+
+                                decimal classTo = 6.0m;
+                                decimal classFrom = 0.0m;
+
+                                List<Tranche> tranches = new List<Tranche>();
+                                Dict<int, Tranche> dict = new Dict<int, Tranche>();
+                                const int DETAIL = 10000;
+
+                                for (int i = 0; i < 6 * DETAIL; i++)
+                                {
+                                    if (reg.IsMatch(i.ToString()))
+                                        continue;
+                                    var tranche = new Tranche(i);
+                                    tranches.Add(tranche);
+                                    dict[i] = tranche;
+                                }
+                                for (level = 1; level < 2; level++)
+                                {
+
+
+
+                                    for (int div = 2; div <= NB_MEDIANE; div++)
+                                    {
+
+
+                                        //  st.Write("\t\t\tlevel:"); st.Write(level); st.Write(" div:"); st.WriteLine(div);
+                                        valueFrom = 0;
+                                        int iFrom = 0;
+                                        int iTo = count - 1;
+                                        portion = nbTot / div;
+                                        classFrom = 0;
+                                        for (sub = 1; sub <= div; sub++)
+                                        {
+
+                                            double to = sub * portion;
+                                            iTo = 0;
+                                            if (to > 0)
+                                                iTo = (int)to - 1;
+                                            if (iTo >= list.Count)
+                                                iTo = list.Count - 1;
+                                            if (iTo < 0)
+                                                iTo = 0;
+                                            decimal rapport = list[iTo].RapportClassementDecimal;
+                                            classTo = list[iTo].ClassementValueDecimal0;
+
+
+                                            //st.Write(classFrom);
+                                            ////st.Write("\t");
+                                            //st.Write(classTo);
+                                            //st.Write("\t");
+                                            ////st.Write(valueFrom);
+                                            ////
+                                            //st.Write(rapport);
+                                            //st.Write("\t");
+
+
+                                            //int nb = (iTo - iFrom + 1);                          
+                                            //st.Write(nb);
+                                            //st.Write("\t");
+                                            decimal densite = 0m;
+                                            if (rapport != valueFrom)
+                                                densite = 1.0m / ((rapport - valueFrom) * div);
+                                            //st.Write("\t");
+                                            //st.Write(densite);
+                                            //st.WriteLine(); 
+
+                                            for (int i = 0; i < 6 * DETAIL; i++)
+                                            {
+                                                if (i < classFrom * DETAIL)
+                                                    continue;
+                                                if (i > classTo * DETAIL)
+                                                    continue;
+                                                if (reg.IsMatch(i.ToString()))
+                                                    continue;
+                                                Tranche tranche = dict[i];
+                                                //  Tranche tranche = tranches.Find(t => t.index == i);
+                                                tranche.densites[div - 1] = densite;
+                                            }
+
+                                            valueFrom = rapport;
+                                            iFrom = iTo;
+                                            classFrom = classTo;
+                                        }
+                                    }
+                                    K *= 10;
+                                }
+
+                                st.WriteLine();
+                                st.Write("\t");
+                                st.Write("\t");
+                                st.Write("\t");
+
+                                for (int i = 0; i < NB_MEDIANE; i++)
+                                {
+                                    st.Write(i + 2);
+                                    st.Write("\t");
+                                    st.Write(i + 2);
+                                    st.Write("\t");
+                                }
+                                Tranche last = null;
+                                foreach (Tranche tranche in tranches)
+                                {
+                                    st.WriteLine();
+                                    st.Write((double)tranche.index / DETAIL);
+                                    st.Write("\t");
+
+                                    for (int i = 0; i < NB_MEDIANE; i++)
+                                    {
+                                        var densite = tranche.densites[i];
+                                        st.Write(densite);
+                                        st.Write("\t");
+                                        if (last == null || last.densites[i] != densite)
+                                        {
+                                            st.Write(densite);
+                                        }
+                                        else
+                                            st.Write(0);
+                                        st.Write("\t");
+                                    }
+                                    last = tranche;
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                                throw; 
+                            }
+                        }
+
+                    }
+
+                    File.Copy(f1tmp, _file, true);
+                    File.Delete(f1tmp);
+
+                    misc.log("fin gener distrib " + _file);
+                    break; 
+                }
+                catch (Exception e)
+                {
+                    misc.log(e.ToString()); 
+                }
             }
-            return base.getPlainValue();
         }
-        #endregion
+
+        private int loupe;
+        private decimal loupeCoeff;
+        public int Loupe { set { loupe = value; loupeCoeff =  pdb.util.Math.Pow(1000, loupe); } }
+        public void gener4(string file)
+        {
+            decimal EPSILON = 0.00000000001m / loupeCoeff;
+            decimal VAL_MAX = StatBuilder.VAL_MAX * 10; // on laisse inchangé pour faire seulement une partie
+            int count = list.Count;
+            //if (count == 0)
+            //    return;
+           // misc.log("gener " + file + loupe);
+
+            while (true)
+            {
+                try
+                {
+                    var filename = Path.GetFileNameWithoutExtension(file);
+                    var ext = Path.GetExtension(file);
+                    var str = "";
+                    if (loupe > 0)
+                        str = loupe.ToString();
+                    string _file = @"..\" + filename + "_med" + str + ext;
+                    string f0 = @"..\" + filename + str + ext;
+
+                    misc.log("gener " + f0);
+
+                    string f0tmp = f0 + ".tmp";
+                    //   string f1tmp = _file + ".tmp";
+                    using (Stream stream = new FileStream(f0tmp, FileMode.Create))
+                    {
+                        using (st = new StreamWriter(stream, Encoding.ASCII))
+                        {
+                            try
+                            {
+                                int deltaBase = (int)(100000);
+                                for (level = 4; level >= 0; level--)
+                                {
+                                    deltaBase /= 10;
+                                    //int nb = VAL_MAX / deltaBase;
+
+                                    for (sub = 3; sub >= 1; sub--)
+                                    {
+                                        coeff = Math.Pow(6, level - 3 * loupe) * sub; /// loupeCoeff;
+                                        // level 0 > 0,1,2,3,4,5 puis 01, 23,45, puis 0,3
+                                        int delta = (int)(sub * deltaBase);
+                                        index = 0;
+                                        st.WriteLine();
+                                        st.Write("\t\t\tlevel:"); st.Write(level); st.Write(" sub:"); st.WriteLine(sub);
+
+                                        min = 0;
+                                        var max = delta;
+
+                                        decimal current = 0m; 
+                                        if (count >0)
+                                         current = list[index].ClassementValueDecimal0;
+                                        nbCurrent = 0;
+
+                                        bool _end = false;
+                                        while (true)
+                                        {
+                                            if (min >= VAL_MAX)
+                                                break;
+
+                                            if (current * 10000 * loupeCoeff + EPSILON >= max || _end)
+                                            {
+
+                                                record4();
+
+                                                min = max;
+                                                while (reg.IsMatch(min.ToString()))
+                                                    min += (int)deltaBase;
+
+                                                max = min + delta;
+                                                nbCurrent = 0;
+
+                                            }
+                                            else
+                                            {
+                                                nbCurrent++;
+                                                index++;
+                                                if (index >= count)
+                                                {
+
+                                                    _end = true;
+                                                    continue;
+                                                }
+                                                current = list[index].ClassementValueDecimal0;
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
+                                throw;
+                            }
+
+                        }
+                    }
+
+                    File.Copy(f0tmp, f0, true);
+                    File.Delete(f0tmp);
+
+                    misc.log("fin gener " + f0);
+                    /*
+                    if (!generDistrib)
+                        return;
+
+                    misc.log("gener distrib " + _file);
+
+                    using (FileStream stream2 = new FileStream(f1tmp, FileMode.Create))
+                    {
+                        using (st = new StreamWriter(stream2, Encoding.UTF8))
+                        {
+
+                            try
+                            {
+                                //phase deux déterminer les tantièmes
+                                //1,2,3..10,20,30..100,
+                                double nbTot = count;
+                                double portion = nbTot;
+                                int K = 1;
+                                decimal valueFrom = 0;
+
+                                decimal classTo = 6.0m;
+                                decimal classFrom = 0.0m;
+
+                                List<Tranche> tranches = new List<Tranche>();
+                                Dict<int, Tranche> dict = new Dict<int, Tranche>();
+                                const int DETAIL = 10000;
+
+                                for (int i = 0; i < 6 * DETAIL; i++)
+                                {
+                                    if (reg.IsMatch(i.ToString()))
+                                        continue;
+                                    var tranche = new Tranche(i);
+                                    tranches.Add(tranche);
+                                    dict[i] = tranche;
+                                }
+                                for (level = 1; level < 2; level++)
+                                {
+
+
+
+                                    for (int div = 2; div <= NB_MEDIANE; div++)
+                                    {
+
+
+                                        //  st.Write("\t\t\tlevel:"); st.Write(level); st.Write(" div:"); st.WriteLine(div);
+                                        valueFrom = 0;
+                                        int iFrom = 0;
+                                        int iTo = count - 1;
+                                        portion = nbTot / div;
+                                        classFrom = 0;
+                                        for (sub = 1; sub <= div; sub++)
+                                        {
+
+                                            double to = sub * portion;
+                                            iTo = 0;
+                                            if (to > 0)
+                                                iTo = (int)to - 1;
+                                            if (iTo >= list.Count)
+                                                iTo = list.Count - 1;
+                                            if (iTo < 0)
+                                                iTo = 0;
+                                            decimal rapport = list[iTo].RapportClassementDecimal;
+                                            classTo = list[iTo].ClassementValueDecimal;
+
+
+                                            //st.Write(classFrom);
+                                            ////st.Write("\t");
+                                            //st.Write(classTo);
+                                            //st.Write("\t");
+                                            ////st.Write(valueFrom);
+                                            ////
+                                            //st.Write(rapport);
+                                            //st.Write("\t");
+
+
+                                            //int nb = (iTo - iFrom + 1);                          
+                                            //st.Write(nb);
+                                            //st.Write("\t");
+                                            decimal densite = 0m;
+                                            if (rapport != valueFrom)
+                                                densite = 1.0m / ((rapport - valueFrom) * div);
+                                            //st.Write("\t");
+                                            //st.Write(densite);
+                                            //st.WriteLine(); 
+
+                                            for (int i = 0; i < 6 * DETAIL; i++)
+                                            {
+                                                if (i < classFrom * DETAIL)
+                                                    continue;
+                                                if (i > classTo * DETAIL)
+                                                    continue;
+                                                if (reg.IsMatch(i.ToString()))
+                                                    continue;
+                                                Tranche tranche = dict[i];
+                                                //  Tranche tranche = tranches.Find(t => t.index == i);
+                                                tranche.densites[div - 1] = densite;
+                                            }
+
+                                            valueFrom = rapport;
+                                            iFrom = iTo;
+                                            classFrom = classTo;
+                                        }
+                                    }
+                                    K *= 10;
+                                }
+
+                                st.WriteLine();
+                                st.Write("\t");
+                                st.Write("\t");
+                                st.Write("\t");
+
+                                for (int i = 0; i < NB_MEDIANE; i++)
+                                {
+                                    st.Write(i + 2);
+                                    st.Write("\t");
+                                    st.Write(i + 2);
+                                    st.Write("\t");
+                                }
+                                Tranche last = null;
+                                foreach (Tranche tranche in tranches)
+                                {
+                                    st.WriteLine();
+                                    st.Write((double)tranche.index / DETAIL);
+                                    st.Write("\t");
+
+                                    for (int i = 0; i < NB_MEDIANE; i++)
+                                    {
+                                        var densite = tranche.densites[i];
+                                        st.Write(densite);
+                                        st.Write("\t");
+                                        if (last == null || last.densites[i] != densite)
+                                        {
+                                            st.Write(densite);
+                                        }
+                                        else
+                                            st.Write(0);
+                                        st.Write("\t");
+                                    }
+                                    last = tranche;
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e);
+                            }
+                        }
+
+                    }
+
+                    File.Copy(f1tmp, _file, true);
+                    File.Delete(f1tmp);
+
+                    misc.log("fin gener distrib " + _file);
+                     * 
+                     * */
+
+                    break; 
+                }
+                catch (Exception ex)
+                {
+                    misc.log(ex.ToString()); 
+                }
+
+            }
+        }
+
+        public void gener(string file)
+        {
+            int count = list.Count;
+            if (count == 0)
+                return;
+            decimal EPSILON = 0.00000001m;
+
+            var filename = Path.GetFileNameWithoutExtension(file);
+            var ext = Path.GetExtension(file);
+            string _file = @"..\" + filename + "2" + ext;
+            using (Stream stream = new FileStream(_file, FileMode.Create))
+            {
+                using (pdb.util.TextWriter st = new pdb.util.TextWriter(stream, Encoding.ASCII))
+                {
+                    try
+                    {
+                        int deltaBase = 10000;
+                        for (level = 3; level >= 0; level--)
+                        {
+                            deltaBase /= 10;
+                            int nb = VAL_MAX / deltaBase;
+                            //  var tab = new int[nb]; 
+                            for (sub = 3; sub >= 1; sub--)
+                            {
+                                // level 0 > 0,1,2,3,4,5 puis 01, 23,45, puis 0,3
+                                delta = sub * deltaBase;
+                                int index = 0;
+
+
+                                min = 0;
+                                int max = delta;
+
+
+                                var current = list[index].ClassementValueDecimal0;
+                                nbCurrent = 0;
+
+                                bool _end = false;
+                                while (true)
+                                {
+                                    if (min >= VAL_MAX)
+                                        break;
+
+                                    if (current * 1000 + EPSILON >= max || _end)
+                                    {
+                                        record2();
+
+                                        min = max;
+                                        while (reg.IsMatch(min.ToString()))
+                                            min += deltaBase;
+
+                                        max = min + delta;
+                                        nbCurrent = 0;
+
+                                    }
+                                    else
+                                    {
+                                        nbCurrent++;
+                                        index++;
+                                        if (index >= list.Count)
+                                        {
+
+                                            _end = true;
+                                            continue;
+                                        }
+                                        current = list[index].ClassementValueDecimal0;
+                                    }
+                                }
+
+                            }
+                        }
+
+                        var datas = conteneur.Datas;
+
+                        var results = new List<ResultLine>();
+
+                        min = 0;
+                        while (true)
+                        {
+                            while (reg.IsMatch(min.ToString()))
+                                min++;
+                            if (min >= VAL_MAX)
+                                break;
+                            results.Add(new ResultLine(min));
+                            min++;
+                        }
+
+                        foreach (StatItem item in datas)
+                        {
+                            var level = item.level;
+                            var sub = item.sub;
+                            var _min = item.min;
+                            var nb = item.nb;
+                            // Détermination de la colonne
+                            int col = 3 * level + sub - 1;
+
+                            // Détermination du coeff d'expansion / moyenne
+                            int coeff = (int)Math.Pow(6, level) * sub;
+
+                            ResultLine res0 = results.Find(r => r.min == _min);
+                            int index0 = results.IndexOf(res0);
+
+                            for (int i = 0; i < coeff; i++)
+                            {
+                                results[index0 + i][col] = (double)nb / (double)coeff;
+                            }
+
+                        }
+
+
+                        st.Append("min"); st.Append("\t");
+                        for (int l = 0; l < 4; l++)
+                        {
+                            for (int s = 1; s <= 3; s++)
+                            {
+                                st.Append(l); st.Append(" ");
+                                st.Append(s); st.Append("\t");
+                            }
+
+                        }
+                        st.AppendLine();
+                        st.AppendLine();
+
+
+                        foreach (ResultLine line in results)
+                        {
+                            line.getLine(st); st.AppendLine();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+
+                    try
+                    {
+
+                        st.AppendLine();
+                        st.AppendLine();
+                        //phase deux déterminer les tantièmes
+                        //1,2,3..10,20,30..100,
+                        double nbTot = count;
+                        double portion = nbTot;
+                        int K = 1;
+                        decimal valueFrom = 0m;
+
+                        decimal classTo = 6.0m;
+                        decimal classFrom = 0.0m;
+
+                        List<Tranche> tranches = new List<Tranche>();
+                        const int DETAIL = 1000;
+                        for (int i = 0; i < 6 * DETAIL; i++)
+                        {
+                            if (reg.IsMatch(i.ToString()))
+                                continue;
+                            tranches.Add(new Tranche(i));
+                        }
+                        for (level = 1; level < 2; level++)
+                        {
+
+
+
+                            for (int div = 2; div <= NB_MEDIANE; div++)
+                            {
+
+
+                                //  st.Write("\t\t\tlevel:"); st.Write(level); st.Write(" div:"); st.WriteLine(div);
+                                valueFrom = 0;
+                                int iFrom = 0;
+                                int iTo = count - 1;
+                                portion = nbTot / div;
+                                classFrom = 0;
+                                for (sub = 1; sub <= div; sub++)
+                                {
+
+                                    double to = sub * portion;
+                                    iTo = 0;
+                                    if (to > 0)
+                                        iTo = (int)to - 1;
+                                    if (iTo >= list.Count)
+                                        iTo = list.Count - 1;
+                                    if (iTo < 0)
+                                        iTo = 0;
+                                    var rapport = list[iTo].RapportClassementDecimal;
+                                    classTo = list[iTo].ClassementValueDecimal0;
+
+
+                                    //st.Write(classFrom);
+                                    ////st.Write("\t");
+                                    //st.Write(classTo);
+                                    //st.Write("\t");
+                                    ////st.Write(valueFrom);
+                                    ////
+                                    //st.Write(rapport);
+                                    //st.Write("\t");
+
+
+                                    //int nb = (iTo - iFrom + 1);                          
+                                    //st.Write(nb);
+                                    //st.Write("\t");
+                                    decimal densite = 0m;
+                                    if (rapport != valueFrom)
+                                        densite = 1.0m / ((rapport - valueFrom) * div);
+                                    //st.Write("\t");
+                                    //st.Write(densite);
+                                    //st.WriteLine(); 
+
+                                    for (int i = 0; i < 6 * DETAIL; i++)
+                                    {
+                                        if (i < classFrom * DETAIL)
+                                            continue;
+                                        if (i > classTo * DETAIL)
+                                            continue;
+                                        if (reg.IsMatch(i.ToString()))
+                                            continue;
+                                        Tranche tranche = tranches.Find(t => t.index == i);
+                                        tranche.densites[div - 1] = densite;
+                                    }
+
+                                    valueFrom = rapport;
+                                    iFrom = iTo;
+                                    classFrom = classTo;
+                                }
+                            }
+                            K *= 10;
+                        }
+
+                        st.AppendLine();
+                        st.Append("\t");
+                        st.Append("\t");
+                        st.Append("\t");
+
+                        for (int i = 0; i < NB_MEDIANE; i++)
+                        {
+                            st.Append(i + 2);
+                            st.Append("\t");
+                            st.Append(i + 2);
+                            st.Append("\t");
+                        }
+                        Tranche last = null;
+                        foreach (Tranche tranche in tranches)
+                        {
+                            st.AppendLine();
+                            st.Append((double)tranche.index / DETAIL);
+                            st.Append("\t");
+
+
+                            for (int i = 0; i < NB_MEDIANE; i++)
+                            {
+                                var densite = tranche.densites[i];
+                                st.Append(densite);
+                                st.Append("\t");
+                                if (last == null || last.densites[i] != densite)
+                                {
+                                    st.Append(densite);
+                                }
+                                else
+                                    st.Append(0);
+                                st.Append("\t");
+                            }
+                            last = tranche;
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+            }
+        }
+
 
     }
 }
