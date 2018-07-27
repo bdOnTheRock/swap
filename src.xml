@@ -783,14 +783,14 @@ namespace pdb.gen.auto
                     }
                 }
 
-                if (selectedByCoeff)
-                {
-                    _nbSameDirection -= getLimitedDelta(coeffElastique1dm, oldSameDirection); 
-                }
-                else
-                {
-                    _nbSameDirection++;
-                }
+                //if (selectedByCoeff)
+                //{
+                //    _nbSameDirection -= getLimitedDelta(coeffElastique1dm, oldSameDirection); 
+                //}
+                //else
+                //{
+                //    _nbSameDirection++;
+                //}
             }
 
             if (!auto)
@@ -979,7 +979,7 @@ namespace pdb.gen.auto
             var _rapportTmp = rapportmp;
             if (selectedByCoeff)
             {
-                _rapportTmp = getLimitedDelta(_rapportTmp, oldSameDirection); 
+                _rapportTmp = getLimitedDelta(_rapportTmp, oldSameDirection);
                 //if (rapportmp > 1)
                 //{
                 //    if (oldSameDirection > rapportmp)
@@ -991,9 +991,13 @@ namespace pdb.gen.auto
                 //}
 
                 coeffVirt -= pas * v * _rapportTmp / currentStaticp;
+                _nbSameDirection -= _rapportTmp;
             }
             else
+            {
                 coeffVirt += pas * v / currentStaticm;
+                _nbSameDirection++; 
+            }
 
 
             if (selectedByCoeff)
