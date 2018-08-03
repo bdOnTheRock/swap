@@ -1629,4 +1629,1938 @@ light           = tri uniquement sur la moyenne
 </UserControl>
 ]]></content>
   </file>
+  <file path="\pdb.util\FileRegister.cs">
+    <content><![CDATA[using System.IO;
+using System.Threading.Tasks;
+using pdb.util.list;
+using System.Collections.Generic;
+using System;
+
+namespace pdb.util
+{
+    public class FileRegister
+    {
+        private static FileRegister _instance = new FileRegister();
+        private BgDictString0<FileValue> dict = new BgDictString<FileValue>();
+        private BgDictString0<DirValue> dirs = new BgDictString<DirValue>();
+        private static volatile object _lock = new object();
+
+        /// <summary>
+        /// Thread de dépilage en parallèles des fichiers à checker
+        /// </summary>
+        private ThreadUtil th;
+        /// <summary>
+        /// Pile filo des fichiers à checker
+        /// </summary>
+        pdb.util.list.Stack<string> stack = new pdb.util.list.Stack<string>();
+        DateTime stackEmpty; 
+
+        public static void init(BgDictString0<FileValue> dict)
+        {
+            _instance.dict = dict;
+        }
+
+
+        private DirValue checkDir(FileInfo fmusic)
+        {
+            var dir = fmusic.Directory;
+            if (dirs.ContainsKey(dir.FullName))
+                return dirs[dir.FullName];
+            var dirV = new DirValue(fmusic);
+            dirs.Add(dirV.FullName, dirV);
+            return dirV;
+        }
+
+        private DirValue checkDir(string fmusic)
+        {
+            var dir = Path.GetDirectoryName(fmusic);
+            if (dirs.ContainsKey(dir))
+                return dirs[dir];
+            var dirV = new DirValue(fmusic);
+            dirs.Add(dirV.FullName, dirV);
+            return dirV;
+        }
+
+        public static DirValue CheckDir(FileInfo fmusic)
+        {
+            return _instance.checkDir(fmusic);
+        }
+
+        public static DirValue CheckDir(string fmusic)
+        {
+            return _instance.checkDir(fmusic);
+        }
+
+
+        private FileValue check(FileInfo infos)
+        {
+            if (!dict.ContainsKey(infos.FullName))
+            {
+                bool _exists = false;
+                string fullName = "";
+
+                long length = 0;
+                try
+                {
+
+                    _exists = infos.Exists;
+                    fullName = infos.FullName;
+
+
+
+                    if (_exists)
+                        length = infos.Length;
+
+                }
+                catch { }
+                var value = new FileValue(fullName, length, _exists);
+                dict.Add(fullName, value);
+                return value;
+            }
+
+            return dict[infos.FullName];
+        }
+
+        private FileValue check(string location)
+        {
+            if (!dict.ContainsKey(location))
+            {
+                bool _exists = false;
+                string fullName = "";
+
+                long length = 0;
+                try
+                {
+
+                    FileInfo infos = new FileInfo(location);
+                    _exists = infos.Exists;
+                    fullName = infos.FullName;
+
+                    //DirectoryInfo dir = infos.Directory;
+                    //dirAndFileName = dir.Name + Path.DirectorySeparatorChar + infos.Name; 
+
+                    if (_exists)
+                        length = infos.Length;
+
+                }
+                catch { }
+                var value = new FileValue(fullName, length, _exists);
+                if (dict.ContainsKey(location))
+                {
+                    misc.log("trop bizarre on a rempli le dict avec " + location);
+                }
+                else
+                    dict.Add(location, value);
+                return value;
+            }
+            return dict[location];
+        }
+
+        private FileValue delete(string location)
+        {
+            var value = check(location);
+            value.delete();
+            return value;
+
+        }
+
+        private void push(string location)
+        {
+            if (dict.ContainsKey(location))
+                return; 
+            stack.Push(location);
+           
+            if (th == null)
+            {
+                lock (_lock)
+                {
+                    if (th == null)
+                    {
+                        th = new ThreadUtil(loopCheck, "FileRegister.loopCheck");
+                        th.Start();
+                    }
+                }
+            }
+        }
+
+        private void loopCheck()
+        {
+            while (true)
+            {
+                var location = stack.Peek();
+                if (location == null)
+                {
+                    var now = DateTime.Now;
+                    if (stackEmpty > DateTime.MinValue)
+                    {
+                        if ((now - stackEmpty).TotalMinutes > 1)
+                        {
+                            lock (_lock)
+                            {
+                                location = stack.Peek();
+                                if (location == null)
+                                {
+                                    th = null;
+                                    return; 
+                                }
+                            }
+                        }
+                    }
+                    ThreadUtil.Sleep(30);
+                    continue;
+                }
+                check(location);
+               
+            }
+        }
+
+        public static FileValue Check(FileInfo f)
+        {
+            return _instance.check(f);
+        }
+
+        public static FileValue Check(string location)
+        {
+            return _instance.check(location);
+        }
+
+        public static bool Exist(string location)
+        {
+            return _instance.check(location).Exists;
+        }
+        public static string FullName(string location)
+        {
+            return _instance.check(location).FullName;
+        }
+        public static long Length(string location)
+        {
+            return _instance.check(location).Length;
+        }
+        public static FileValue Delete(string location)
+        {
+            return _instance.delete(location);
+        }
+        public static void Push(string location)
+        {
+            _instance.push(location);
+        }
+    }
+
+
+    public class FileValue
+    {
+        public readonly string FullName;
+        private bool _exists;
+        public long Length;
+        //public readonly string DirAndFileName;
+        public FileValue(string fullName, long length, bool exists)
+        {
+            this.FullName = fullName;
+            // this.DirAndFileName = dirAndFileName; 
+            this.Length = length;
+            this._exists = exists;
+        }
+
+        public bool Exists { get { return _exists; } }
+        public override string ToString()
+        {
+            return string.Format("{0} {1} {2}", Exists, FullName, Length);
+        }
+
+        public void delete() { _exists = false; }
+        public void copy(long length)
+        {
+            _exists = true;
+            Length = length;
+        }
+
+        public override bool Equals(object obj)
+        {
+            var o = obj as FileValue;
+            if (o == null) return false;
+            return FullName == o.FullName; //&& Exists == o.Exists;
+        }
+        public override int GetHashCode()
+        {
+            return FullName.GetHashCode(); // +Length.GetHashCode();
+        }
+    }
+
+    public class DirValue
+    {
+        private bool _exists;
+        public readonly string FullName;
+        public readonly List<FileValue> imgs = new List<FileValue>();
+        public DirValue(FileInfo f)
+        {
+
+            var dir = f.Directory;
+            FullName = dir.FullName;
+            init(dir);
+            _exists = true;
+        }
+        private void init(DirectoryInfo dir)
+        {
+            imgs.Clear();
+            foreach (FileInfo ff in dir.GetFiles())
+            {
+                if (ff.IsImage())
+                {
+                    var fff = FileRegister.Check(ff);
+                    imgs.Add(fff);
+                }
+            }
+
+        }
+
+        public DirValue(string path)
+        {
+            FullName = Path.GetDirectoryName(path);
+            _exists = Directory.Exists(FullName);
+            if (_exists)
+                init(new DirectoryInfo(FullName));
+        }
+
+        public bool Exist { get { return _exists; } set { _exists = value; } }
+    }
+
+
+}
+]]></content>
+  </file>
+  <file path="\pdb.util\pdb.util.csproj">
+    <content><![CDATA[<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C2B34CA9-3BB2-464F-8691-5F5B7CB2B997}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>pdb.util</RootNamespace>
+    <AssemblyName>pdb.util</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\pdb.util.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\pdb.util.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\</OutputPath>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AsyncFileWriter.cs" />
+    <Compile Include="BgDict.cs" />
+    <Compile Include="CalcMedianne.cs" />
+    <Compile Include="Chrono.cs" />
+    <Compile Include="CustomFormat.cs" />
+    <Compile Include="CUtil.cs" />
+    <Compile Include="DateUtil.cs" />
+    <Compile Include="DecimalIndex.cs" />
+    <Compile Include="DescBuilder.cs" />
+    <Compile Include="Dict.cs" />
+    <Compile Include="FileRegister.cs" />
+    <Compile Include="FileRotator.cs" />
+    <Compile Include="FileType.cs" />
+    <Compile Include="Generic\Attributs\AttributeHelper.cs" />
+    <Compile Include="Generic\Attributs\CustomAttribute.cs" />
+    <Compile Include="Generic\Attributs\Db\DbAttributes.cs" />
+    <Compile Include="Generic\Attributs\Db\SbAttributes.cs" />
+    <Compile Include="Generic\Attributs\GlobalAttributes.cs" />
+    <Compile Include="Generic\Attributs\Json\GlobalAttributes.cs" />
+    <Compile Include="Generic\Attributs\NameAttributeBase.cs" />
+    <Compile Include="Generic\Attributs\Sp\GlobalAttributes.cs" />
+    <Compile Include="Generic\Attributs\Xml\XmlAttributes.cs" />
+    <Compile Include="Generic\Encode\Getters.cs" />
+    <Compile Include="Generic\Encode\JSON.cs" />
+    <Compile Include="Generic\Encode\JsonEncoder.cs" />
+    <Compile Include="Generic\Encode\JsonParser.cs" />
+    <Compile Include="Generic\Encode\JsonSerializer.cs" />
+    <Compile Include="Generic\Encode\JsonXmlEncoder.cs" />
+    <Compile Include="Generic\Encode\SafeDictionary.cs" />
+    <Compile Include="Generic\INode.cs" />
+    <Compile Include="Generic\MappingException.cs" />
+    <Compile Include="Generic\Parse\DbParser.cs" />
+    <Compile Include="Generic\Parse\DbWrapper.cs" />
+    <Compile Include="Generic\Parse\JsonParser.cs" />
+    <Compile Include="Generic\Parse\Json\JsonBuilder.cs" />
+    <Compile Include="Generic\Parse\Json\JsonParseException.cs" />
+    <Compile Include="Generic\Parse\Json\JsonState.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateDeuxPoints.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateFinal.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateIni.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateName.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateValue.cs" />
+    <Compile Include="Generic\Parse\Json\JsonStateValueIni.cs" />
+    <Compile Include="Generic\Parse\Json\JsonWrapper.cs" />
+    <Compile Include="Generic\Parse\Node.cs" />
+    <Compile Include="Generic\Parse\Parser.cs" />
+    <Compile Include="Generic\Parse\ParserBase.cs" />
+    <Compile Include="Generic\Parse\XmlParser.cs" />
+    <Compile Include="Generic\Parse\XmlSerializer.cs" />
+    <Compile Include="Generic\Parse\XmlWrapper.cs" />
+    <Compile Include="Generic\TypeInfo.cs" />
+    <Compile Include="Generic\Utils.cs" />
+    <Compile Include="Generic\XmlParser.cs" />
+    <Compile Include="Generic\XmlSerializer.cs" />
+    <Compile Include="list\DictList.cs" />
+    <Compile Include="DictLocation.cs" />
+    <Compile Include="DisposableCounter.cs" />
+    <Compile Include="FileUtil.cs" />
+    <Compile Include="HashList.cs" />
+    <Compile Include="ILogger.cs" />
+    <Compile Include="list\LinkedList.cs" />
+    <Compile Include="list\SequentialDict.cs" />
+    <Compile Include="list\SequentialDictString.cs" />
+    <Compile Include="list\Stack.cs" />
+    <Compile Include="Locker.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="LoggerConsole.cs" />
+    <Compile Include="Math.cs" />
+    <Compile Include="MemUtil.cs" />
+    <Compile Include="misc.cs" />
+    <Compile Include="OutputRecorder.cs" />
+    <Compile Include="PathUtil.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Queue.cs" />
+    <Compile Include="serialize\Serializer.cs" />
+    <Compile Include="serialize\TextSerializer.cs" />
+    <Compile Include="StringUtil.cs" />
+    <Compile Include="TextWriter.cs" />
+    <Compile Include="ThreadUtil.cs" />
+    <Compile Include="TimeSpan.cs" />
+    <Compile Include="TuningBase.cs" />
+    <Compile Include="XMLTool.cs" />
+    <Compile Include="ZipUtil.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>]]></content>
+  </file>
+  <file path="\pdb.util\ThreadUtil.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Threading;
+
+namespace pdb.util
+{
+    public class ThreadUtil
+    {
+        private Thread th;
+        private static volatile object _lock = new object();
+        private static Logger log = Logger.getLogger("ThreadUtil",false); 
+
+        private ThreadStart exec;
+        private static List<ThreadUtil> list = new List<ThreadUtil>();
+        private static bool _log = true;
+        public static bool Log { set { _log = value; } }
+        private bool _end;
+        public bool End { get { return _end; } }
+        private static void displayScan(List<ThreadUtil> list)
+        {
+            if (!_log) return;
+
+            log.log("nb Threads:" + list.Count);
+            foreach (ThreadUtil thread in list)
+                log.logNoDate(thread.ToString());
+        }
+
+        public ThreadUtil(ThreadStart exec, string name)
+        {
+            this.exec = exec;
+            th = new Thread(execute);
+            try
+            {
+                th.Name = name;
+            }
+            catch
+            {
+            }
+        }
+
+        public void Start()
+        {
+            th.Start();
+        }
+        public static void Sleep(int ms)
+        {
+            Thread.Sleep(ms); 
+        }
+
+        public string Name { get { return th.Name; } }
+
+        public ThreadState State { get { return th.ThreadState; } }
+
+
+        private void execute()
+        {
+            List<ThreadUtil> aux = null;
+            lock (_lock)
+            {
+                list.Add(this);
+                if (_log)
+                    aux = new List<ThreadUtil>(list);
+            }
+
+            log.log("===> démarrage de " + Name);
+            displayScan(aux);
+            try
+            {
+                exec();
+            }
+         
+            catch(System.Runtime.CompilerServices.RuntimeWrappedException)
+            {
+                log.log("erreur non gérée");
+            }
+            catch (Exception e)
+            {
+                log.log(e.ToString());
+            }
+            finally
+            {
+                _end = true; 
+                log.log("===> fin de " + Name);
+                lock (_lock)
+                {
+                    list.Remove(this);
+                    if (_log)
+                        aux = new List<ThreadUtil>(list);
+                }
+                displayScan(aux);
+            }
+        }
+
+       
+
+        public void Abort()
+        {
+            th.Abort(); 
+        }
+
+        public override string ToString()
+        {
+            if (string.IsNullOrEmpty(Name))
+                return th.ManagedThreadId.ToString();
+            return Name;
+
+        }
+
+        public override bool Equals(object obj)
+        {
+            var o = obj as ThreadUtil;
+            if (o == null) return false;
+            return th.ManagedThreadId.Equals(o.th.ManagedThreadId);
+        }
+
+
+        public override int GetHashCode()
+        {
+            return th.ManagedThreadId.GetHashCode();
+        }
+
+
+    }
+}
+]]></content>
+  </file>
+  <file path="\pdb.util\list\Stack.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace pdb.util.list
+{
+    /// <summary>
+    /// Pile Filo synchronisée
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    class Stack<T> where T : class
+    {
+        private LinkedList first;
+        private volatile object _lock = new object();
+        /// <summary>
+        /// Ajout d'un élément en début de liste
+        /// </summary>
+        /// <param name="item"></param>
+        public void Push(T item)
+        {
+            lock (_lock)
+            {
+                var ll = new LinkedList(item);
+
+                if (first == null)
+                {
+                  //  misc.log("Stack.Push {0} first=null", item); 
+                    first = ll;
+                }
+                else
+                {
+                  //  misc.log("Stack.Push {0} first={1}", item, first); 
+                    ll.next = first;
+                    first = ll;
+                }
+            }
+        }
+        /// <summary>
+        /// Récupération - et retrait du premier élément de la pile
+        /// </summary>
+        /// <returns></returns>
+        public T Peek()
+        {
+            var peek = first;
+            if (peek == null)
+                return null;
+            lock (_lock)
+            {
+                peek = first;
+                if (peek == null)
+                    return null;
+                first = peek.next; 
+            }
+            return peek.item; 
+        }
+        /// <summary>
+        /// Liste liée
+        /// </summary>
+        private class LinkedList
+        {
+            public readonly T item;
+            public LinkedList next;
+            public LinkedList(T data)
+            {
+                this.item = data;
+            }
+
+            public override string ToString()
+            {
+                return string.Format("{0} {1}", item, next == null ? "" : next.item.ToString()); 
+            }
+        }
+    }
+}
+]]></content>
+  </file>
+  <file path="\PieceDb.Db\CDb.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Xml;
+using pdb.db.obj;
+using pdb.db.piece.data;
+using pdb.obj;
+using pdb.util;
+using Math = System.Math;
+
+namespace pdb.db
+{
+    public enum mergePriority
+    {
+        left = -1,
+        right = 1,
+        none = 0
+    }
+    /// <summary>
+    /// g�re la persistence
+    /// </summary>  
+    /// <remarks></remarks>
+    public class CDb
+    {
+        public const int CURRENT_VERSION = 3;
+        // const string ZIP_KEY = "db"; 
+        public static int Version;
+
+        const string SEQ_PIECE = "seq_piece";
+        const string SEQ_LIST = "seq_list";
+        private static int pieceSequenceId = 0;
+        private static int listSequenceId = 0;
+        private static int getPieceNextId { get { pieceSequenceId++; return pieceSequenceId; } }
+        private static int getListNextId { get { listSequenceId++; return listSequenceId; } }
+        private FileInfo LOCAL_FILE;
+        private FileInfo REMOTE_FILE;
+        private FileInfo LastFullFile;
+        private FileInfo DiffFile;
+        private FileInfo SOV;
+        private CListPiece m_list;
+        private CListPiece lastFull; private CListPiece remoteOrg;
+        private CListPiece trace;
+        private DateTime now;
+        private string sovRep;
+        private DateTime lastSov;
+        private int nbOpe;
+
+        private bool loadRemote;
+        private bool loadTrace;
+        //private bool loadLastFull;
+        //private bool loadDiff;
+
+
+
+        private FileInfo remoteTrace;
+        private DataConf conf;
+
+        private dbMode mode;
+        public dbMode Mode { get { return mode; } }
+        public CDb(DataConf conf)
+        {
+            this.conf = conf;
+            LOCAL_FILE = conf.dbLocal;
+            REMOTE_FILE = conf.dbRemote;
+            remoteTrace = conf.dbTrace;
+            LastFullFile = conf.dbLastFull;
+            DiffFile = conf.dbDiff;
+            SOV = conf.dbSov;
+            this.mode = conf.mode;
+
+            init();
+        }
+
+        public string DefaultFolder { get { return conf.defaultFolder; } }
+
+        private void init()
+        {
+            this.now = DateTime.Now;
+            lastSov = now;
+            sovRep = now.ToString("yy-MM-dd_HH-mm-ss");
+
+
+
+            System.DateTime l_localDate = System.DateTime.MinValue;
+            System.DateTime l_remoteDate = System.DateTime.MinValue;
+
+            if (LOCAL_FILE.Exists)
+                l_localDate = LOCAL_FILE.LastWriteTime;
+            if (REMOTE_FILE.Exists)
+                l_remoteDate = REMOTE_FILE.LastWriteTime;
+
+
+            TimeSpan l_dif = l_localDate.Subtract(l_remoteDate);
+            double l_sec = l_dif.TotalSeconds;
+            if (REMOTE_FILE.Exists)
+            {
+
+                if (Math.Abs(l_sec) > 3 || (LOCAL_FILE.Exists && REMOTE_FILE.Length != LOCAL_FILE.Length))
+                {
+                    loadRemote = true;
+                }
+                else
+                {
+                    log("not load remote, same file");
+                }
+            }
+            else
+            {
+                log("remote file does not exist");
+            }
+
+            if (remoteTrace != null && remoteTrace.Exists)
+                loadTrace = true;
+
+
+
+
+        }
+
+        public void loadData()
+        {
+            if (conf.compressID)
+            {
+                compressIds();
+                WriteDB1();
+
+                return;
+            }
+            else if (conf.synchroID)
+            {
+                synchroIds();
+                WriteDB1();
+                return;
+            }
+            // cas diff-> je mémorise lastFull, je r�cup�re l'instantan�
+            // cas full -> je ne m�morise pas lastFull, je r�cup�re le diff et fait le merge
+
+            // gestion des diff
+            //if (mode == dbMode.diff)
+            //{
+            // je sauvegarde lastFull
+            misc.log("mode:{0}  LastFullFile.Exists: {1} DiffFile.Exists: {2}", mode, LastFullFile.Exists, DiffFile.Exists);
+            if (mode == dbMode.diff)
+            {
+                if (LastFullFile.Exists)
+                {
+                    log("load lastFull");
+                    lastFull = loadData(LastFullFile);
+                }
+                else
+                {
+                    log("load local for lastFull");
+                    lastFull = loadData(LOCAL_FILE);
+                    File.Copy(LOCAL_FILE.FullName, LastFullFile.FullName, true);
+                }
+
+                log("load local");
+                m_list = loadData(LOCAL_FILE);
+            }
+
+            else
+            {
+
+                log("load local");
+                m_list = loadData(LOCAL_FILE);
+                if (DiffFile.Exists)
+                {
+
+
+                    log("load diff");
+                    var diff = loadData(DiffFile);
+
+
+                    log("consolid diff and local");
+                    foreach (CPiece pdiff in diff)
+                    {
+                        m_list.Consolid(pdiff, mergePriority.right);
+                    }
+
+                    var sov = DiffFile.FullName.Replace(".xml", ".sov.xml");
+                    DiffFile.CopyTo(sov, true);
+                    DiffFile.Delete();
+
+
+                    write();
+
+                    log("load local consolidé for lastFull");
+                    lastFull = loadData(LOCAL_FILE);
+                    File.Copy(LOCAL_FILE.FullName, LastFullFile.FullName, true);
+                    addToZip(true, LOCAL_FILE.FullName);
+                }
+                else
+                {
+                    log("load local for lastFull");
+                    lastFull = loadData(LOCAL_FILE);
+                    File.Copy(LOCAL_FILE.FullName, LastFullFile.FullName, true);
+
+                    if (loadRemote)
+                    {
+                        log("load remote");
+                        remoteOrg = loadData(REMOTE_FILE);
+                        log("consolid remote and local");
+                        m_list.Consolid(remoteOrg);
+                    }
+                }
+            }
+
+
+            if (loadTrace)
+            {
+                log("load trace");
+                trace = loadData(remoteTrace);
+            }
+        }
+
+        public void eraseClassementForEnabled()
+        {
+
+            foreach (CPiece piece in m_list)
+            {
+                if (piece.Enabled)
+                {
+                    piece.eraseClassement();
+                }
+            }
+        }
+
+        public List<ITrackIdentity> Files
+        {
+            get
+            {
+                return new List<ITrackIdentity>(m_list.getList());
+            }
+        }
+
+        // r�cup�ration des infos externes
+        public void LegacyConsolid(CListPiece list, DateTime date)
+        {
+            misc.log("Cdb::LegacyConsolid");
+
+            DateTime now = DateTime.Now;
+            ChronoData.refreshDate(date);
+
+            foreach (CPiece ext in list)
+            {
+                m_list.legacyConsolid(ext);
+            }
+
+            m_list.bilanNatives();
+
+            // setAlbumArtistFromFile();
+
+        }
+
+        public void LegacyConsolid(CPiece ext)
+        {
+            m_list.legacyConsolid(ext);
+        }
+
+        public void SynchroNative(DateTime date)
+        {
+            misc.log("Cdb::SynchroNative");
+            ChronoData.refreshDate(date);
+            foreach (CPiece piece in m_list)
+            {
+                piece.SynchroNative();
+            }
+
+        }
+
+        //private void setAlbumArtistFromFile()
+        //{
+        //    foreach (ITrackMetaData piece in m_list)
+        //    {
+        //        setAlbumArtistFromFile(piece);
+        //    }
+        //}
+
+
+
+        private void setAlbumArtistFromFile(ITrackMetaData piece)
+        {
+
+            try
+            {
+                string location = piece.Location;
+                if (location.isNullorEmpty())
+                    return;
+                FileInfo file = new FileInfo(location);
+                DirectoryInfo dAlbum = file.Directory;
+                string dirAlbum = dAlbum.Name;
+                string dirArtist = dAlbum.Parent.Name;
+                string artist = piece.Artist;
+                string album = piece.Album;
+
+                string newArtist = artist;
+                string newAlbum = album;
+
+
+
+
+                if (artist.isNullorEmpty())
+                {
+                    if (!TrackIdentity.UNKNOW_ARTIST.Equals(dirArtist))
+                        newArtist = dirArtist;
+                    //if (!UNKNOW_ARTIST.Equals(newArtist))
+                    //    piece.Artist = newArtist;
+                }
+
+                if (album.isNullorEmpty())
+                {
+                    if (!dirAlbum.Contains(TrackIdentity.UNKNOW_ALBUM))
+                    {
+                        newAlbum = dirAlbum;
+                        if (newArtist.NotNullOrEmpty())
+                        {
+                            if (!TrackIdentity.UNKNOW_ARTIST.Equals(newArtist))
+                                newAlbum = newAlbum.Replace(newArtist, "");
+                        }
+                    }
+                }
+
+                //if (TrackIdentity.UNKNOW_ARTIST.Equals(newArtist))
+                //    piece.Artist = "";
+                //else 
+                if (newArtist != artist)
+                    piece.Artist = newArtist;
+
+                //if (TrackIdentity.UNKNOW_ALBUM.Equals(newAlbum))
+                //    piece.Album = "";
+                //else
+                if (newAlbum != album)
+                    piece.Album = newAlbum;
+
+            }
+            catch (Exception e)
+            {
+                misc.log(e.ToString());
+            }
+        }
+
+
+
+        #region "sauvegarde"
+
+
+
+        //public void Sov(string fileIt)
+        //{
+        //    if (SOV == null)
+        //        return;
+        //    var list = new List<string> { fileIt, LOCAL_FILE.FullName };
+        //    if (loadRemote)
+        //        list.Add(REMOTE_FILE.FullName);
+        //    if (loadTrace)
+        //        list.Add(remoteTrace.FullName);
+
+        //    ZipUtil.compress(SOV.FullName, sovRep, list);
+        //}
+
+        public void SovIni()
+        {
+            ZipUtil.Enter();
+            if (SOV == null)
+                return;
+            var list = new List<string> { LOCAL_FILE.FullName, LastFullFile.FullName, DiffFile.FullName };
+            if (loadRemote)
+                list.Add(REMOTE_FILE.FullName);
+            if (loadTrace)
+                list.Add(remoteTrace.FullName);
+
+            list.AddRange(conf.othersIni);
+
+            ZipUtil.CompressAsync(SOV.FullName, sovRep, list);
+            ZipUtil.Release();
+        }
+
+
+        #endregion
+
+        public void removeVersions()
+        {
+            misc.log("Suppression des versions !!!");
+            foreach (CPiece piece in m_list)
+            {
+                piece.removeVersions();
+            }
+        }
+
+        public void Menage()
+        {
+            foreach (CPiece piece in m_list)
+            {
+                piece.Menage();
+            }
+        }
+
+        public void WriteDB1()
+        {
+
+            misc.log("CDb:WriteDB1");
+
+            lock (lockSave)
+            {
+                ZipUtil.Enter();
+                write();
+                File.Copy(REMOTE_FILE.FullName + ".tmp", REMOTE_FILE.FullName, true);
+                misc.log("CDb:fin WriteDB1");
+                ZipUtil.Release();
+            }
+
+        }
+        public void saveAsync()
+        {
+            lock (this)
+            {
+                _goSave = true;
+                if (thSave == null)
+                {
+                    thSave = new Thread(loopSave);
+                    thSave.Start();
+                }
+            }
+        }
+        private Thread thSave;
+        private bool _goSave;
+        private volatile object lockSave = new object();
+
+        public void export(string filename, List<CPiece> l)
+        {
+
+            var list = new List<CPiece>();
+            var hs = new HashSet<int>();
+            foreach (CPiece p in l)
+            {
+                if (hs.Add(p.PieceId))
+                    list.Add(p);
+                if (p.PieceParentId > 0)
+                {
+                    var parent = m_list.getPiece(p.PieceParentId);
+                    if (hs.Add(parent.PieceId))
+                        list.Add(p);
+                }
+            }
+
+            m_list.Sort(list);
+
+            var f = conf.getFilename(filename);
+            var settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.Encoding = Encoding.UTF8;
+            using (XmlWriter writer = XmlWriter.Create(f, settings))
+            {
+                writer.WriteStartElement("db");
+                writer.WriteAttributeString("version", CURRENT_VERSION.ToString());
+                writer.WriteAttributeString(SEQ_PIECE, pieceSequenceId.ToString());
+                writer.WriteAttributeString(SEQ_LIST, listSequenceId.ToString());
+
+
+                writer.WriteStartElement(CListPiece.PIECES);
+
+                foreach (CPiece l_piece in list)
+                {
+                    l_piece.write(writer);
+                }
+                writer.WriteEndElement();
+
+
+                writer.WriteEndDocument();
+                writer.Flush();
+            }
+        }
+
+        private void write()
+        {
+            try
+            {
+                ZipUtil.Enter();
+                var settings = new XmlWriterSettings();
+                settings.Indent = true;
+                settings.Encoding = Encoding.UTF8;
+                using (XmlWriter writer = XmlWriter.Create(REMOTE_FILE.FullName + ".tmp", settings))
+                {
+                    writer.WriteStartElement("db");
+                    writer.WriteAttributeString("version", CURRENT_VERSION.ToString());
+                    writer.WriteAttributeString(SEQ_PIECE, pieceSequenceId.ToString());
+                    writer.WriteAttributeString(SEQ_LIST, listSequenceId.ToString());
+                    m_list.write(writer);
+                    writer.WriteEndDocument();
+                    writer.Flush();
+                }
+
+                File.Copy(REMOTE_FILE.FullName + ".tmp", REMOTE_FILE.FullName, true);
+
+
+
+                if (lastFull != null)
+                {
+                    try
+                    {
+                        var diff = DiffFile.FullName;
+                        if (mode == dbMode.full)
+                            diff = diff.Replace(".xml", ".d.xml");
+
+                        using (XmlWriter writer = XmlWriter.Create(diff + ".tmp", settings))
+                        {
+                            writer.WriteStartElement("db");
+                            writer.WriteAttributeString("version", CURRENT_VERSION.ToString());
+                            writer.WriteAttributeString(SEQ_PIECE, pieceSequenceId.ToString());
+                            m_list.writeDiff(writer, lastFull);
+                            writer.WriteEndDocument();
+                            writer.Flush();
+                        }
+
+                        File.Copy(diff + ".tmp", DiffFile.FullName, true);
+                    }
+                    catch (Exception ex)
+                    {
+                        misc.log(ex.ToString());
+                    }
+                }
+
+
+
+                WriteDB2();
+            }
+            finally
+            {
+                ZipUtil.Release();
+            }
+        }
+        private void loopSave()
+        {
+            while (true)
+            {
+                Thread.Sleep(1000);
+                if (!_goSave)
+                    continue;
+                lock (this)
+                    _goSave = false;
+
+                lock (lockSave)
+                {
+
+                    try
+                    {
+                        write();
+                    }
+                    catch (Exception ex)
+                    {
+                        misc.log(ex.ToString());
+                        lock (this)
+                            _goSave = true;
+                    }
+                }
+
+            }
+        }
+
+        private void WriteDB2()
+        {
+
+            misc.log("CDb:WriteDB2");
+
+            lock (lockSave)
+            {
+                ZipUtil.Enter();
+                REMOTE_FILE.CopyTo(LOCAL_FILE.FullName, true);
+                ZipUtil.Release();
+            }
+            misc.log("CDb:WriteDB2");
+
+            nbOpe++;
+            var now = DateTime.Now;
+            var ts = now - lastSov;
+            if (nbOpe >= conf.sovNb || ts > conf.sovMin)
+            {
+                nbOpe = 0;
+                lastSov = now;
+                DiffFile.Refresh();
+                if (DiffFile.Exists)
+                {
+                    var list = new List<string> { DiffFile.FullName };
+                    list.AddRange(conf.othersDiff);
+                    addToZip(true, list.ToArray());
+                    //var cp = DiffFile.DirectoryName + Path.DirectorySeparatorChar + now.ToString("yy-MM-dd_HH-mm-ss") + DiffFile.Name;
+                    //DiffFile.CopyTo(cp);
+                    //var list = new List<string> { cp };
+                    //ZipUtil.compress(SOV.FullName, sovRep, list);
+                    //File.Delete(cp); 
+                }
+            }
+        }
+
+        private void addToZip(bool withHorodate, params string[] list)
+        {
+            ZipUtil.CompressAsync(SOV.FullName, sovRep, list, withHorodate,true);
+            //   ZipUtil.compress(SOV.FullName, sovRep, list, withHorodate);
+        }
+
+
+        public CListPiece List
+        {
+            get
+            {
+                return m_list;
+
+            }
+
+        }
+
+        public CListPiece Remote
+        {
+            get
+            {
+                if (loadRemote)
+                    return remoteOrg;
+                return null;
+            }
+
+        }
+
+        public CListPiece Trace
+        {
+            get { return trace; }
+        }
+
+        private XmlElement loadList(FileInfo file, List<CPiece> list)
+        {
+            XmlElement root = null;
+            if (file.Exists)
+            {
+                XmlDocument l_doc = new XmlDocument();
+
+
+                l_doc.Load(file.FullName);
+
+                root = l_doc.DocumentElement;
+                var xmlTool = new XMLTool(root);
+                var version = xmlTool.getIntAttValue("version");
+                if (version > 0)
+                    Version = version;
+
+
+                var seqPiece = xmlTool.getIntAttValue(SEQ_PIECE);
+                if (seqPiece > pieceSequenceId)
+                {
+                    pieceSequenceId = seqPiece;
+                }
+
+                var seqList = xmlTool.getIntAttValue(SEQ_LIST);
+                if (seqList > listSequenceId)
+                {
+                    listSequenceId = seqList;
+                }
+
+                var pieceRoot = root;
+                if (version > 0)
+                    pieceRoot = root.ChildNodes[0] as XmlElement;
+
+
+
+                foreach (XmlElement l_xml in pieceRoot.ChildNodes)
+                {
+                    CPiece l_piece = new CPiece(l_xml);
+                   // FileRegister.Push(l_piece.Location); 
+
+                    list.Add(l_piece); //TODO provisoire
+                    if (version > 0)
+                        checkId(l_piece);
+                    else
+                    {
+                        if (m_list != null)
+                        {
+                            m_list.checkId(l_piece);
+                        }
+                        checkId(l_piece);
+                    }
+                    //}
+                }
+                misc.log("aux list: " + list.Count);
+
+
+
+
+            }
+            else
+            {
+
+            }
+
+            return root;
+        }
+
+
+        public void synchroIds()
+        {
+            misc.log("WARNING:::::::::::Compressids");
+            lastFull = loadData(LastFullFile);
+
+
+            m_list = loadData(LOCAL_FILE);
+
+            List<CPiece> listC = m_list.getList();
+
+            for (int i = 0; i < listC.Count; i++)
+            {
+                var p = listC[i];
+                var parent = p.Parent;
+
+
+                var org = lastFull.tryGetPiece(p);
+                // var org0 = lastFull.tryGetPieceWithoutId(p);
+                if (org.Location != p.Location)
+                {
+                    org = lastFull.tryGetPieceWithoutId(p);
+                }
+
+                if (p.PieceId == org.PieceId)
+                {
+
+                }
+                else
+                {
+                    // ????
+                    p.setId(org.PieceId);
+                }
+
+
+
+                if (parent != null)
+                {
+                    var porg = lastFull.tryGetPiece(parent);
+
+                    if (porg.Location != parent.Location)
+                        porg = lastFull.tryGetPieceWithoutId(parent);
+
+
+                    if (parent.PieceId == porg.PieceId)
+                    {
+
+                    }
+                    else
+                    {
+                        // ????
+                        p.PieceParentId = porg.PieceId;
+                    }
+                }
+
+            }
+            m_list.refresh(); 
+
+        }
+
+
+        public void compressIds()
+        {
+            misc.log("WARNING:::::::::::Compressids");
+
+            lastFull = loadData(LastFullFile);
+
+
+            List<CPiece> listFull = lastFull.getList();
+            // loadList(LastFullFile, listFull);
+            listFull.Sort((x, y) => x.PieceId.CompareTo(y.PieceId));
+            var dict = new Dict<int, int>();
+
+            int newID = 0;
+            for (int i = 0; i < listFull.Count; i++)
+            {
+                newID++;
+                var p = listFull[i];
+                dict[p.PieceId] = newID;
+            }
+
+            pieceSequenceId = newID;
+
+            for (int i = 0; i < listFull.Count; i++)
+            {
+                var p = listFull[i];
+                p.setId(dict[p.PieceId]);
+                if (p.PieceParentId > 0)
+                {
+                    p.PieceParentId = dict[p.PieceParentId];
+                }
+            }
+
+            //     lastFull = new CListPiece(listFull, LastFullFile.LastWriteTime);
+            lastFull.refresh();
+            var settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.Encoding = Encoding.UTF8;
+            using (XmlWriter writer = XmlWriter.Create(LastFullFile.FullName + ".tmp", settings))
+            {
+                writer.WriteStartElement("db");
+                writer.WriteAttributeString("version", CURRENT_VERSION.ToString());
+                writer.WriteAttributeString(SEQ_PIECE, pieceSequenceId.ToString());
+                writer.WriteAttributeString(SEQ_LIST, listSequenceId.ToString());
+                lastFull.write(writer);
+                writer.WriteEndDocument();
+                writer.Flush();
+            }
+
+            File.Copy(LastFullFile.FullName + ".tmp", LastFullFile.FullName, true);
+
+            m_list = loadData(LOCAL_FILE);
+
+            List<CPiece> listC = m_list.getList();
+
+            for (int i = 0; i < listC.Count; i++)
+            {
+                var p = listC[i];
+                var parent = p.Parent;
+
+                var newId = dict[p.PieceId];
+                if (newID > 0)
+                {
+                    var org = lastFull.tryGetPiece(p);
+                    var org0 = lastFull.tryGetPieceWithoutId(p);
+                    if (org == org0)
+                    {
+                        p.setId(newId);
+
+                        if (parent != null)
+                        {
+                            var newPId = dict[parent.PieceId];
+                            if (newPId > 0)
+                            {
+                                var porg = lastFull.tryGetPiece(parent);
+                                var porg0 = lastFull.tryGetPieceWithoutId(parent);
+
+                                if (porg == porg0)
+                                {
+                                    p.PieceParentId = porg.PieceId;
+                                }
+                                else
+                                {
+
+                                }
+                            }
+                            else
+                            {
+                                var porg = lastFull.tryGetPiece(parent);
+                                if (porg.Location == parent.Location)
+                                {
+                                    p.PieceParentId = porg.PieceId;
+                                }
+                                else
+                                {
+
+                                }
+                            }
+
+                        }
+
+                    }
+                    else
+                    {
+                        if (org0.Location == p.Location)
+                        {
+                            p.setId(org0.PieceId);
+                        }
+                    }
+                }
+                else
+                {
+                    var org = lastFull.tryGetPiece(p);
+                    if (org.Location == p.Location)
+                    {
+                        p.setId(org.PieceId);
+
+                        if (parent != null)
+                        {
+                            var newPId = dict[parent.PieceId];
+                            if (newPId > 0)
+                            {
+                                var porg = lastFull.tryGetPiece(parent);
+                                var porg0 = lastFull.tryGetPieceWithoutId(parent);
+
+                                if (porg == porg0)
+                                {
+                                    p.PieceParentId = porg.PieceId;
+                                }
+                                else
+                                {
+
+                                }
+                            }
+                            else
+                            {
+                                var porg = lastFull.tryGetPiece(parent);
+                                if (porg.Location == parent.Location)
+                                {
+                                    p.PieceParentId = porg.PieceId;
+                                }
+                                else
+                                {
+
+                                }
+                            }
+
+                        }
+                    }
+                    else
+                    {
+
+                    }
+
+
+
+                }
+
+
+            }
+            m_list.refresh();
+            //  m_list = new CListPiece(listC, LOCAL_FILE.LastWriteTime); 
+
+        }
+
+        private CListPiece loadData(FileInfo file)
+        {
+            if (file.Exists)
+            {
+
+                List<CPiece> l_list = new List<CPiece>();
+                var root = loadList(file, l_list);
+
+
+                misc.log("aux list: " + l_list.Count);
+                System.DateTime l_date = file.LastWriteTime; // File.GetLastWriteTime(a_path);
+
+                //chasse aux doublons
+                CListPiece l_ret = new CListPiece(l_list, l_date);
+                misc.log(" list: " + l_ret.Count);
+
+                var xLists = XMLTool.NodeLookUp(root, CListPiece.TOKEN_LISTS);
+
+                l_ret.loadListes(xLists);
+                return l_ret;
+            }
+            else
+            {
+                return new CListPiece();
+            }
+
+        }
+
+
+
+
+        public static void checkId(CPiece l_piece)
+        {
+            if (l_piece.PieceId < 0)
+                l_piece.setId(getPieceNextId);
+            if (l_piece.PieceId > pieceSequenceId)
+                pieceSequenceId = l_piece.PieceId;
+        }
+
+        public static void checkId(PlayList pl)
+        {
+            if (pl.ID < 0)
+                pl.ID = getListNextId;
+            if (pl.ID > listSequenceId)
+                listSequenceId = pl.ID;
+        }
+        private void log(String txt)
+        {
+            misc.log(txt);
+        }
+
+        public CPiece getPiece(string location)
+        {
+            return m_list.getPiece(location);
+        }
+
+        public CPiece getPiece(int id)
+        {
+            return m_list.getPiece(id);
+        }
+    }
+
+
+}
+
+
+]]></content>
+  </file>
+  <file path="\PieceDb.Db\CFIle.cs">
+    <content><![CDATA[using System;
+using System.IO;
+using pdb.obj;
+using pdb.util;
+namespace pdb.db
+{
+    public class CFile : IData
+    {
+        private const string TOKEN_FILE = "file";
+
+        private string m_file = "";
+        // private bool? _exists;
+        // private String path = "";
+        // private String ext;
+        private FileType fileType = FileType.none;
+        // private long size = 0;
+        //private bool _extern = false;
+        // private FileInfo infos;
+        public static String DefaultFolder = "";
+
+
+        FileValue fi;
+
+        public string getPath()
+        {
+            if (isExtern())
+                return m_file;
+            return DefaultFolder + m_file; 
+        }
+
+        private FileValue Info
+        {
+            get
+            {
+                if (fi == null)
+                {
+                    string path = getPath(); 
+                    fi = FileRegister.Check(path);
+                }
+                return fi;
+            }
+        }
+
+        public CFile(string a_file)
+        {
+            try
+            {
+                m_file = a_file.TrimSafe();
+                if (a_file.Contains(@"/"))
+                {
+                    m_file = XMLTool.FromXml(a_file.Trim());
+                    string prefix = "file://";
+                    string l_legacyDefaultFolder = new Uri(DefaultFolder).AbsoluteUri;
+                    //if (l_legacyDefaultFolder != null && l_legacyDefaultFolder.Contains(l_defaultFolder))
+                    //{
+                    //    l_defaultFolder = l_legacyDefaultFolder;
+                    //}
+                    if (!m_file.StartsWith(prefix))
+                    {
+                        m_file = l_legacyDefaultFolder + m_file;
+                    }
+                    string l_path = new Uri(m_file).LocalPath;
+                    m_file = l_path.Replace("\\\\localhost\\", "");
+
+
+                }
+                m_file = m_file.Replace(DefaultFolder, "");
+                string path = getPath();
+                FileRegister.Push(path); 
+               
+                //path = getPath();
+
+                //  _exists = true;
+
+
+                // FileInfo infos = new FileInfo(path);
+                //var _exists = FileRegister.Exist(path); // infos.Exists;
+                //if (false.Equals(_exists))
+                //    path = FileRegister.FullName(path); // infos.FullName;
+
+
+
+
+                //String ext = System.IO.Path.GetExtension(path).Replace(".", "").ToLower();
+                //fileType = getFileType(ext);
+                //if (_exists)
+                //    size = infos.Length;
+
+            }
+            catch (Exception e)
+            {
+                String message = String.Format("impossible de construire CFile {0}", m_file);
+                throw new ApplicationException(message, e);
+            }
+        }
+        public void write(ITextWriter a_sw)
+        {
+            XMLTool.writeValue(a_sw, TOKEN_FILE, XMLTool.FileToXml(m_file));
+        }
+
+        public void write(System.Xml.XmlWriter w)
+        {
+            w.WriteElementString(TOKEN_FILE, m_file);
+        }
+        public string File
+        {
+            get { return m_file; }
+        }
+        public bool exists()
+        {
+            return Info.Exists;
+        }
+        //public string getUri()
+        //{
+        //    return new Uri(path).AbsoluteUri;
+        //}
+        //private string getPath()
+        //{
+        //    if (isExtern())
+        //        return m_file;
+        //    return DefaultFolder + m_file;
+        //}
+
+        public override string ToString()
+        {
+            return Info.FullName;
+        }
+
+
+
+        public bool isExtern()
+        {
+            return m_file.Substring(1, 2).Equals(@":\");
+        }
+
+        public string Path
+        {
+            get
+            {
+                if (fi != null)
+                    return fi.FullName;
+                return getPath();
+                //string l_file = "";
+                ////if (m_file.Contains("\\"))
+                ////{
+                //// chemin windows D:\
+                //if (m_file.Substring(1, 2).Equals(@":\"))
+                //{
+                //    //chemin absolu
+                //    l_file = m_file;
+                //}
+                //else
+                //{
+                //    //chemin relatif
+                //    l_file = CLegacy.DefaultFolder + m_file;
+                //}
+                //return l_file;
+            }
+            //else
+            //{
+
+
+            //    if (m_file.Contains("file://"))
+            //    {
+            //        l_file = m_file;
+            //    }
+            //    else
+            //    {
+            //        string l_defaultFolder = "file://";
+            //        string l_legacyDefaultFolder =  new Uri( CLegacy.DefaultFolder).AbsoluteUri;
+            //        if (l_legacyDefaultFolder != null && l_legacyDefaultFolder.Contains(l_defaultFolder))
+            //        {
+            //            l_defaultFolder = l_legacyDefaultFolder;
+            //        }
+            //        l_file = l_defaultFolder + m_file;
+            //    }
+
+            //    string l_path = new Uri(l_file).LocalPath;
+            //    l_path = l_path.Replace("\\\\localhost\\", "");
+            //    return l_path;
+            //}
+            //}
+        }
+        public bool Equals(CFile other)
+        {
+            if (other == null)
+                return false;
+
+            return m_file.ToLower().Equals(other.m_file.ToLower());
+        }
+        public bool isPodcast
+        {
+            get
+            {
+                if (m_file.StartsWith("Podcasts/"))
+                    return true;
+                return false;
+            }
+        }
+        public FileType FileType
+        {
+            get
+            {
+                if (fileType == FileType.none)
+                {
+                    fileType = FileType.unknown;
+                    String ext = System.IO.Path.GetExtension(m_file).Replace(".", "").ToLower();
+
+
+                    try
+                    {
+                        fileType = (FileType)Enum.Parse(typeof(FileType), ext, true);
+                    }
+                    catch
+                    {
+                    }
+                }
+                return fileType;
+            }
+        }
+
+        public long Size
+        {
+            get
+            {
+
+                return Info.Length;
+            }
+        }
+
+        //public string DirAndFileName
+        //{
+        //    get
+        //    {
+        //        var ret = getPath();
+        //        try
+        //        {
+        //            var infos = FileRegister.Check(ret); // new FileInfo(path);
+        //            return infos.DirAndFileName;
+        //        }
+        //        catch
+        //        {
+
+        //        }
+        //        return ret;
+        //    }
+        //}
+
+
+
+
+
+    }
+}
+
+]]></content>
+  </file>
 </db>
