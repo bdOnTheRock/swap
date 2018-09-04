@@ -1,3 +1,5 @@
 Sub refreshDyn()
 Sheets("_cinematique").Range("A1").QueryTable.refresh BackgroundQuery:=False
 End Sub
+
+	<note path="_global\notes\main\{0:00}" single="_global\notes\main\{0:00}s" unique="_global\notes\main\{0:00}u" min="0" max="15" durees="4;6;9" retards="3;7;14;21">
