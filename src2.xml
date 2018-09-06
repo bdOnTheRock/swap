@@ -66,7 +66,7 @@ namespace pdb.podcast
             logAuto = Logger.getLogger("Auto", true);
             logAuto.NoReset = true;
 
-            FileRegister.init(new Dictionary<string,FileValue>());
+            FileRegister.init(new Dictionary<string, FileValue>());
             _instance.go(args);
         }
 
@@ -107,7 +107,7 @@ namespace pdb.podcast
                     while (db.Writing)
                     {
                         log.log("waiting db writing");
-                        Thread.Sleep(1000); 
+                        Thread.Sleep(1000);
                     }
                 }
 
@@ -187,7 +187,7 @@ namespace pdb.podcast
         {
             if (db == null)
                 return;
-            log.log("SyncDb checkInOut= " + checkInOut); 
+            log.log("SyncDb checkInOut= " + checkInOut);
             foreach (TrackInfoItunes t in list)
             {
                 if (checkInOut)
@@ -201,7 +201,7 @@ namespace pdb.podcast
                 tdb.synch(t);
 
             }
-            log.log("Fin SyncDb checkInOut= " + checkInOut); 
+            log.log("Fin SyncDb checkInOut= " + checkInOut);
 
         }
 
@@ -255,7 +255,7 @@ namespace pdb.podcast
                 if (Conf.UseMock)
                     loader = new MockLoader(itConf.DefaultFolder);
                 else
-                    loader = new Loader(itConf, import, db, 
+                    loader = new Loader(itConf, import, db,
                         () =>
                         {
                             misc.Pre = "[Load " + step + "] ";
@@ -477,7 +477,7 @@ namespace pdb.podcast
 #else
                             listIt = new List<TrackInfoItunes>();
                             Dict<string, TrackInfoItunes> dictLoc = new Dict<string, TrackInfoItunes>();
-                           // GroupStat trackStat = new GroupStat();
+                            // GroupStat trackStat = new GroupStat();
 
                             loader.saveIds();
                             foreach (ITrackInfoItunes _track in listTrack)
@@ -492,10 +492,10 @@ namespace pdb.podcast
                                         //t.Delete();
                                         continue;
                                     }
-                                    FileRegister.Push(location); 
+                                    FileRegister.Push(location);
                                     dictLoc[t.Location] = t;
                                     listIt.Add(t);
-                                   // if (!t.Played)
+                                    // if (!t.Played)
                                     //    trackStat.recordTrack(t, typeState.all);
                                     //trackStat.recordTrack(t, typeState.all);
                                 }
@@ -554,7 +554,7 @@ namespace pdb.podcast
                                 PlayList.StartOpe();
                                 Freewheel(root);
                                 log.log("Freewheel : fin sans enregistrement DB");
-                                return; 
+                                return;
                             }
 
 
@@ -586,6 +586,7 @@ namespace pdb.podcast
                             }
 
 
+
                             if (Conf.Sort.checkBefore)
                             {
                                 Album.Init();
@@ -607,7 +608,7 @@ namespace pdb.podcast
 
                             }
 
-                           
+
 
                             if (_fin)
                             {
@@ -631,8 +632,8 @@ namespace pdb.podcast
                                 chrono.bip("db.write()", true);
                                 db.writeAsync();
                             }
-                            bool changeDate = false; 
-                            if ( Conf.Sort.enabled == Tuning.Sort.sortMode.once_all ||! Conf.DateRef.offset)
+                            bool changeDate = false;
+                            if (Conf.Sort.enabled == Tuning.Sort.sortMode.once_all || !Conf.DateRef.offset)
                             {
                                 changeDate = dateRefBuilder.auto(loaded);
                                 TrackInfoItunes.setDate0(Conf.Date0);
@@ -642,8 +643,8 @@ namespace pdb.podcast
                             AutoBuilder.init(true);
                             if (Conf.Sort.stopOnOffset && changeDate)
                             {
-                                log.log("fin cause stopOnOffset");                              
-                                return; 
+                                log.log("fin cause stopOnOffset");
+                                return;
                             }
 
                             if (Conf.Sort.stopOnPub2 && Album.NbModifPertinent > 0)
@@ -732,13 +733,20 @@ namespace pdb.podcast
                             //**********************************************************************************
 
                             Album.Init();
-                            if (Conf.Sort.enabled == Tuning.Sort.sortMode.reset || Conf.Sort.enabled == Tuning.Sort.sortMode.once || (Conf.Sort.enabled == Tuning.Sort.sortMode.once_all && !firstlaunched))
+
+                            if (Conf.Sort.enabled == Tuning.Sort.sortMode.reset ||
+                                Conf.Sort.enabled == Tuning.Sort.sortMode.once ||
+                                Conf.Sort.enabled == Tuning.Sort.sortMode.white ||
+                                (Conf.Sort.enabled == Tuning.Sort.sortMode.once_all && !firstlaunched))
                             {
-                                var sorter = new Sorter(Conf.Sort, list);
-                                sorter.build();
-                                _fin = Conf.Sort.enabled == Tuning.Sort.sortMode.once || Conf.Sort.enabled == Tuning.Sort.sortMode.reset;
+                                if (Sorter.NbLaunch == 0 || (Conf.Sort.enabled != Tuning.Sort.sortMode.white && Conf.Sort.enabled != Tuning.Sort.sortMode.once))
+                                {
+                                    var sorter = new Sorter(Conf.Sort, list);
+                                    sorter.build();
+                                }
+                                _fin = Conf.Sort.enabled == Tuning.Sort.sortMode.white || Conf.Sort.enabled == Tuning.Sort.sortMode.reset;
                                 if (!_fin && Album.NbModif > 0)
-                                    resetLoad(root); 
+                                    resetLoad(root);
                             }
 
                             firstlaunched = true;
@@ -756,16 +764,16 @@ namespace pdb.podcast
 
                                 //***************** Lancement "pour de faux" ***************************************
                                 AutoBuilder.Init3();
-                                chrono.bip("AutoBuilder.Init3()"); 
+                                chrono.bip("AutoBuilder.Init3()");
                                 LimitItemLoader.ModeSelection = false;
                                 phase2(root);
                                 Selection(root);
-                                chrono.bip("Selection(root) 2"); 
+                                chrono.bip("Selection(root) 2");
                                 LimitItemLoader.ModeSelection = true;
                                 //**********************************************************************************
                             }
                             Exporter.TopCopy();
-                            chrono.bip("selection"); 
+                            chrono.bip("selection");
 
 
 
@@ -794,7 +802,7 @@ namespace pdb.podcast
                             if (_fin || Album.NbModif > 0)
                             {
                                 log.log("{0} éléments ont la Pub2 modifiée", Album.NbModif);
-                                SyncDb(list, true); 
+                                SyncDb(list, true);
                                 //foreach (TrackInfoItunes t in list)
                                 //{
                                 //    var tdb = db.get(t);
@@ -831,7 +839,7 @@ namespace pdb.podcast
                                     //    s.Exclu = item;
                                 }
                             }
-                            chrono.bip("selection exclu"); 
+                            chrono.bip("selection exclu");
 
                             if (Conf.GenFeed)
                             {
@@ -877,10 +885,10 @@ namespace pdb.podcast
 
                             //  AutoBuilder.Log();
                             AutoBuilder.init(false);
-                            chrono.bip("AutoBuilder.init(false)"); 
+                            chrono.bip("AutoBuilder.init(false)");
                             bool cangoAuto = AutoBuilder.Check(feeds);
 
-                            chrono.bip("AutoBuilder"); 
+                            chrono.bip("AutoBuilder");
                             AutoBuilder.Log();
                             if (!cangoAuto && Conf.AutoBlock)
                             {
@@ -953,7 +961,7 @@ namespace pdb.podcast
                                 Logger.LogConsole = false;
                                 log.log(sb3.ToString());
                                 Logger.LogConsole = true;
-                                chrono.bip("rapport", true); 
+                                chrono.bip("rapport", true);
                                 break;
                             }
                         }
@@ -1179,7 +1187,7 @@ namespace pdb.podcast
 
 
                         if (Conf.UseMock)
-                            _fin = true; 
+                            _fin = true;
 
 
 
@@ -1188,7 +1196,7 @@ namespace pdb.podcast
 
 
                             log.log("fin");
-                          
+
                             return;
                         }
 
@@ -1536,7 +1544,7 @@ namespace pdb.podcast
                         loader.reviveIfNecessary(track);
                     }
                 }
-              
+
 
 
                 var rootIt = Conf.RootIt;
@@ -1631,8 +1639,8 @@ namespace pdb.podcast
                         if (!string.IsNullOrEmpty(str))
                             nname = str;
                     }
-                    List<IFile> l = null; 
-                   
+                    List<IFile> l = null;
+
                     if (list_ != null)
                     {
                         l = new List<IFile>();
@@ -1642,14 +1650,14 @@ namespace pdb.podcast
                                 l.Add(t);
                         }
                     }
-                   
+
 
                     for (int i = 0; i < folders.Count; i++)
                     {
                         var aux = folder;
                         folder = folder.getComposite(folders[i]);
                         if (folder == null)
-                            folder = loader.getOrCreateFolder(aux, folders[i], l==null? true : l.Count > 0);
+                            folder = loader.getOrCreateFolder(aux, folders[i], l == null ? true : l.Count > 0);
                         if (folder == null)
                             return;
                     }
@@ -1663,7 +1671,7 @@ namespace pdb.podcast
                         //if (list.Count > 0)
 
 
-                        playlist.mergeList(l, _instance, Conf.OnlyEnabled, Conf.OnlyUnRead); 
+                        playlist.mergeList(l, _instance, Conf.OnlyEnabled, Conf.OnlyUnRead);
                         //  loader.mergeList(playlist, l, false, _instance, null);
                         //else
                         //    loader.removeList(folder, name);
@@ -1746,7 +1754,7 @@ namespace pdb.podcast
                         playlist.setPrior(prior);
 
 
-                    playlist.mergeList(l, _instance, false, false); 
+                    playlist.mergeList(l, _instance, false, false);
 
                 }
 
@@ -1804,7 +1812,7 @@ namespace pdb.podcast
 
         private void resetLoad(DirConf dir)
         {
-            recursif(dir, action.resort, action.none); 
+            recursif(dir, action.resort, action.none);
         }
 
 
@@ -1836,7 +1844,7 @@ namespace pdb.podcast
 
         private void Freewheel(DirConf dir)
         {
-            dir.Loader.LimitsLoader.Freewheel(); 
+            dir.Loader.LimitsLoader.Freewheel();
         }
 
         private void WritePlayList(DirConf dir)
@@ -1910,13 +1918,13 @@ namespace pdb.podcast
                             if (!t.Selected)
                                 continue;
                             if (!hs.Add(t.AlbumKey))
-                                continue; 
+                                continue;
                             if (t.Pub.Date <= ContexteBuilder.Instance.Debut)
                             {
-                                  if (!hsGlobal.Add(t.AlbumKey))
-                                      continue; 
+                                if (!hsGlobal.Add(t.AlbumKey))
+                                    continue;
                             }
-                          
+
                             ls.Add(t);
                         }
 
@@ -2775,7 +2783,7 @@ namespace pdb.podcast.Sort
                 var t = list[i];
                 if (erased && conf.erasedDone)
                 {
-                    eraseSort(t, "");
+                    eraseSort(t, "", t.Pub);
                     continue;
                 }
 
@@ -2824,7 +2832,7 @@ namespace pdb.podcast.Sort
                 if (t.Pub >= dt || conf.enabled == sortMode.reset || erased && conf.erasedDone)
                 {
                     erased = true;
-                    eraseSort(t, "");
+                    eraseSort(t, "", t.Pub);
                 }
                 else
                 {
@@ -2847,7 +2855,7 @@ namespace pdb.podcast.Sort
                     //{
                     //}
 
-                    writeComment(t, dt, "");
+                    writeComment(t, dt, "", t.Pub);
                     //nb++;
                 }
 
@@ -3000,15 +3008,15 @@ namespace pdb.podcast.Sort
             TrackSort last = lastRead;
             DateTime lastPub2 = lastRead.Pub2;
             DateTime lastPubTh = lastRead.Pub2;
+            DateTime pubMoy = lastRead.Pub2;
+            DateTime pubMoyForCalcul = pubMoy;
 
             while (true)
             {
                 if (index0 >= count - 1)
                     break;
 
-                if (this.album.Album == "Interception" && index0 >= indexCourant - 10)
-                {
-                }
+
 
                 var current = list[index0];
                 bool played = current.Played;
@@ -3043,19 +3051,28 @@ namespace pdb.podcast.Sort
                 // DateTime lastExists = lastRead.Pub;
 
                 DateTime finFutur = DateTime.Now;
-
+                DateTime debutFutur = current.Pub;
+                int indexDebut = index0;
+                var deltaTotal = futur;
                 if (futur > 0)
                 {
                     finFutur = current.Pub.AddDays(futur);
                     if (finFutur > DateTime.Now)
+                    {
                         finFutur = DateTime.Now;
+                        indexDebut = 0;
+                        debutFutur = finFutur.AddDays(-futur);
+                    }
                     // chopper l'intervalle majoritaire pour éviter le poids des erreurs. 
                     Dict<int, int> spectreDelta = new Dict<int, int>();
                     DateTime lastExists = lastRead.Pub;
-                    for (int i = index0; i < count; i++)
+                    for (int i = indexDebut; i < count; i++)
                     {
-                        nbRestant++;
                         var t = list[i].Pub;
+                        if (t < debutFutur)
+                            continue;
+                        nbRestant++;
+
 
 
 
@@ -3071,14 +3088,13 @@ namespace pdb.podcast.Sort
                         }
                         else if (nbRestant >= TrackAlbum.NB_MIN_POUR_FREQUENT)
                         {
-
                             break;
                         }
                     }
 
                     if (nbFutur == 0)
                         nbFutur = 1;
-                    var deltaTotal = (finFutur - current.Pub).TotalDays;
+                    deltaTotal = (finFutur - debutFutur).TotalDays;
                     if (deltaTotal > 0)
                     {
                         intervalleFactMoy = deltaTotal / (double)nbFutur;
@@ -3104,7 +3120,6 @@ namespace pdb.podcast.Sort
                     intervalleFactMin = dpMaj;
 
                     if (nbRestant < TrackAlbum.NB_MIN_POUR_FREQUENT && !rare)
-                    // if (nbFutur < TrackAlbum.NB_MIN_POUR_FREQUENT && !rare)
                     {
                         // this.album.RareEffect = true;
                         rare = true;
@@ -3282,7 +3297,7 @@ namespace pdb.podcast.Sort
                         }
 
                         var recup = intervalleMin0 - atterissageMin;
-                        var recupVar = intervalleMin0Var - atterissageMinVar;
+                     //   var recupVar = intervalleMin0Var - atterissageMinVar;
 
 
                         delta = intervalle; // conf.getIntervalle(album.Rare);
@@ -3296,11 +3311,19 @@ namespace pdb.podcast.Sort
 
                         rapportBorne = conf.getHorizonCorrec(rapport, intervalleX);
 
+                        if (this.album.Album == "Sur les épaules de Darwin" && index0 >= indexCourant - 10)
+                        {
+                        }
 
                         deltaHorizon0 = intervalleMin0 + recup * (1 - rapport) / rapport + (1 - densite) / (densite * rapport);
                         //deltaHorizon0Var = intervalleMin0Var + recupVar * (1 - rapport) / rapport + (1 - 1 / intervalleFactMoy) / (rapport / intervalleFactMoy); 
                         //deltaHorizon0Var = intervalleFactMoy + ((1 - rapport) / rapport) * (intervalleFactMoy - atterissageMinVar); // ça pue
-                        deltaHorizon0Var = (intervalleFactMoy - atterissageMinVar * (1 - rapportBorne)) / rapportBorne;
+                        var deltaMoy = System.Math.Min((lastPub2 - pubMoyForCalcul).TotalDays, (lastPub2 - last.Pub).TotalDays); 
+                        if (deltaMoy < 0)
+                            deltaMoy = 0;
+
+                        var correcMoy = (deltaTotal - deltaMoy* rapportBorne) / nbFutur;
+                        deltaHorizon0Var = (correcMoy - atterissageMinVar * (1 - rapportBorne)) / rapportBorne;
                         // im=7, rapport=0.9
 
 
@@ -3357,6 +3380,7 @@ namespace pdb.podcast.Sort
                         var _deltaVar0 = borne(coeffVar, intervalleVar, intervalleMinVar);
 
 
+                     
 
                         var _delta = borne(coeff, intervalleCorrec, intervalleMin); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
                         var _deltaVar = borne(coeffVar, intervalleCorrecVar, intervalleMinVar);
@@ -3432,6 +3456,21 @@ namespace pdb.podcast.Sort
                     }
 
 
+                    if (this.album.Album == "Sur les épaules de Darwin" && index0 >= indexCourant - 10)
+                    {
+                    }
+
+                    if (intervalleMin > delta)
+                        intervalleMin = delta;
+                    if (intervalleMin0 > intervalleMin)
+                        intervalleMin0 = intervalleMin;
+                    if (atterissageMin > intervalleMin)
+                        atterissageMin = intervalleMin; 
+                  
+
+                   
+
+
                 }
 
 
@@ -3494,7 +3533,8 @@ namespace pdb.podcast.Sort
                 DateTime limitFuture = lastPubTh.AddDays(delta).truncateToMinute();
                 DateTime l = pub2.AddDays(atterissageMin).truncateToMinute();
                 if (limitFuture < l)
-                    limitFuture = l; 
+                    limitFuture = l;
+                //  limitFuture = pub2.AddDays(delta).truncateToMinute();
                 TrackSort _next = list[indexLastRead + 1];
                 double ecart = (limitFuture - _next.Pub).TotalDays;
 
@@ -3653,11 +3693,11 @@ namespace pdb.podcast.Sort
                     var t = current; // list[indexNext];
 
                     var _deltaAtterrissage = deltaAtterrissage;
-                    var _atterrissageMin = atterissageMin; 
+                    var _atterrissageMin = atterissageMin;
                     if (conf.vacances && firstSel)
                     {
                         _deltaAtterrissage = atterrissageVacance;
-                        _atterrissageMin = delta * rapport + atterissageMin * (1 - rapport); 
+                        _atterrissageMin = delta * rapport + atterissageMin * (1 - rapport);
                     }
 
                     DateTime dt = lastPub2;
@@ -3665,7 +3705,7 @@ namespace pdb.podcast.Sort
                     if (index0 == indexPrelastRead + 1 && !conf.useVirtuel2)
                     {
                         dt = limitFuture;
-                        lastPubTh = limitFuture; 
+                        lastPubTh = limitFuture;
                     }
                     else
                     {
@@ -3706,11 +3746,13 @@ namespace pdb.podcast.Sort
                             firstSel = true;
                     }
 
+                    pubMoy = pubMoy.AddDays(intervalleFactMoy);
+                    pubMoyForCalcul = pubMoyForCalcul.AddDays(intervalleFactMoy);
 
                     if (t.Pub >= dt || conf.enabled == sortMode.reset)
                     {
 
-                        eraseSort(t, deltas);
+                        eraseSort(t, deltas, pubMoy);
                     }
                     else
                     {
@@ -3745,15 +3787,29 @@ namespace pdb.podcast.Sort
                         }
 
                         if (t.Pub >= dt)
-                            eraseSort(t, deltas);
+                            eraseSort(t, deltas, pubMoy);
                         else
-                            writeComment(t, dt, deltas);
+                            writeComment(t, dt, deltas, pubMoy);
                         //nb++;
                     }
 
 
                     last = t;
-                    lastPub2 = t.Pub2;
+                    lastPub2 = dt;
+                    if (t.Pub2 < lastPub2)
+                    {
+                        if (t.Pub != t.Pub2)
+                        {
+                        }
+                        lastPub2 = t.Pub2;
+                    }
+
+                    //  lastPub2 = System.Math.Min(dt, t.Pub2); // dt;  //t.Pub2; FIX BUG ??
+                    if (lastPubTh > lastPub2)
+                        lastPubTh = lastPub2;
+
+                    if (pubMoyForCalcul > lastPub2)
+                        pubMoyForCalcul = lastPub2;
 
                     if (played)
                     {
@@ -4202,9 +4258,9 @@ namespace pdb.podcast.Sort
 
 
 
-        private void eraseSort(TrackSort track, string desc)
+        private void eraseSort(TrackSort track, string desc, DateTime dateMoy)
         {
-            writeComment(track, track.Pub, desc);
+            writeComment(track, track.Pub, desc, dateMoy);
             //bool go = apply;
             //if (!go)
             //{
@@ -4260,7 +4316,7 @@ namespace pdb.podcast.Sort
         //    writeComment(track, track.Pub2, false, true, Conf.Date0, Conf.NewDate0);
         //}
 
-        private void writeComment(TrackSort track, DateTime dt, string desc)
+        private void writeComment(TrackSort track, DateTime dt, string desc, DateTime pubMoy)
         {
             dt = dt.truncateToMinute();
             //bool go = apply;
@@ -4340,23 +4396,37 @@ namespace pdb.podcast.Sort
             var delta = (dt - track.Pub).TotalDays;
             var delta0 = (track.pub20 - track.Pub).TotalDays;
 
+            var deltaMoy0 = (track.pub20 - pubMoy).TotalDays;
+            var deltaMoy1 = (dt - pubMoy).TotalDays;
+
+
             var sbDelta = new StringBuilder();
             sbDelta.Append("(");
             var strD0 = delta0.ToString("#.#");
             var strD1 = delta.ToString("#.#");
-            if (delta0 > 0)
+
+            var strDM0 = deltaMoy0.ToString("#.#");
+            var strDM1 = deltaMoy1.ToString("#.#");
+            if (delta0 > 0 || deltaMoy0 != 0)
             {
-                sbDelta.Append(strD0);
+                if (delta0 > 0)
+                    sbDelta.Append(strD0);
+                sbDelta.Append("|");
+                //  if (deltaMoy0 > 0)
+                sbDelta.Append(strDM0);
             }
-            if (strD0 != strD1)
+            if (strD0 != strD1 || strDM1 != strDM0)
             {
                 sbDelta.Append("->");
                 if (delta > 0)
                     sbDelta.Append(strD1);
+                sbDelta.Append("|");
+                //  if (deltaMoy1 > 0)
+                sbDelta.Append(strDM1);
             }
             sbDelta.Append(")");
 
-            while (sbDelta.Length < 12)
+            while (sbDelta.Length < 20)
                 sbDelta.Append(" ");
 
             var strDelta = sbDelta.ToString();
@@ -4372,6 +4442,12 @@ namespace pdb.podcast.Sort
                     var d = System.Math.Abs((track.pub20 - dt).TotalHours);
                     if (d > 1)
                         nbModifPertinent++;
+
+                    var dd = System.Math.Abs((track.pub20 - dt).TotalMinutes);
+                    if (dd <= 5)
+                    {
+                        log.log("poil de cul {0}", track);
+                    }
 
                     // var str = string.Format("\t{0}\t{1}=>\t{2}({3})\t{4} {5}", track.Pub, track.pub20, dt, strDelta, desc, track.Name);
                     var str = string.Format("\t{0} {1}{2}\t{3}\t{4}", track.Pub.ToString(DATE_FORMAT), dt.ToString(DAY_FORMAT), strDelta, desc, track.Name); // ", track.pub20, dt, strDelta, desc, track.Name);
@@ -4409,10 +4485,11 @@ namespace pdb.podcast.Sort
 
         private static double borne(double coeff, double intervalle, double intervalleMin)
         {
+
+            if (intervalle < intervalleMin)
+                intervalleMin = intervalle;
             if (coeff <= 1)
                 return coeff * intervalleMin;
-            if (intervalle <= intervalleMin)
-                return intervalle;
             coeff -= 1; // 9  0.11
             var dminmax = intervalle - intervalleMin;
 
@@ -4489,6 +4566,973 @@ namespace pdb.podcast.Sort
 
 
         }
+    }
+}]]></content>
+  </file>
+  <file path="\pdb.podcast\Sort\Sorter.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using pdb.util;
+using pdb.podcast.Tuning.Sort;
+using pdb.iit;
+
+namespace pdb.podcast.Sort
+{
+    class Sorter
+    {
+        private List<TrackInfoItunes> tracks;
+        private pdb.podcast.Tuning.Sort.Sort sort;
+        private Dictionary<string, Album> dict = new Dictionary<string, Album>();
+        private static int nbLaunch; 
+
+        public Sorter(pdb.podcast.Tuning.Sort.Sort sort, IEnumerable<TrackInfoItunes> _list)
+        {
+            this.sort = sort;
+            tracks = new List<TrackInfoItunes>();
+            //   timeSpan limit = timeSpan.FromMinutes(sort.dureeMin); 
+            foreach (TrackInfoItunes t in _list)
+            {
+                // if (t.Duree >= limit)
+                tracks.Add(t);
+            }
+            tracks.Sort(new PodCastComparer());
+
+            foreach (TrackInfoItunes track in tracks)
+            {
+                check(track);
+            }
+        }
+
+
+        private void check(TrackInfoItunes track)
+        {
+            var album = track.TrackAlbum;
+
+            string key = album.Album.ToLowerWithoutDiacritics();
+            if (string.IsNullOrEmpty(key))
+            {
+                misc.log("pas d'album pour " + track);
+                return;
+            }
+
+            if (!dict.ContainsKey(key))
+            {
+                SortItem item = sort;
+                var _surcharge = sort.getItem(key);
+
+                if (_surcharge != null)
+                {
+                    item = _surcharge;
+                    Album found = null;
+                    foreach (string sub in _surcharge.name)
+                    {
+                        if (dict.ContainsKey(sub))
+                        {
+                            found = dict[sub];
+                            found.check(track);
+                            return;
+                        }
+                    }
+                }
+                else
+                {
+                    var _rule = sort.getRule(album);
+                    if (_rule != null)
+                        item = _rule;
+                }
+
+
+                Album a = new Album(item, album);
+                if (_surcharge != null)
+                {
+                    foreach (string sub in _surcharge.name)
+                        dict.Add(sub, a);
+                }
+                else
+                    dict.Add(key, a);
+            }
+            dict[key].check(track);
+        }
+
+
+        public void build()
+        {
+            Album.Init();
+
+
+            foreach (Album a in dict.Values)
+            {
+                a.init();
+            }
+
+            foreach (Album a in dict.Values)
+            {
+                a.Build();
+            }
+
+            Album.Bilan();
+            nbLaunch++; 
+        }
+        public static int NbLaunch { get { return nbLaunch; } }
+
+        public void rebuild(List<TrackInfoItunes> selected)
+        {
+            var longs = new List<TrackInfoItunes>();
+            var limit = timeSpan.FromMinutes(sort.dureeMin);
+            foreach (TrackInfoItunes t in selected)
+            {
+                if (t.Duree >= limit)
+                    longs.Add(t);
+            }
+            selected.Sort(new PodcastComparerPubPub2());
+        }
+
+
+    }
+}
+]]></content>
+  </file>
+  <file path="\pdb.podcast\Tuning\Sort.cs">
+    <content><![CDATA[using System.Xml;
+using pdb.util;
+using System;
+using System.Collections.Generic;
+using pdb.podcast.Albums;
+
+namespace pdb.podcast.Tuning.Sort
+{
+    public enum sortMode
+    {
+        no,
+        reset,
+        white,
+        once,
+        once_all,
+        all,
+        //  histo
+    }
+
+    public enum histoMode
+    {
+        /// <summary>
+        /// Démarrage de l'histo sur Date0
+        /// </summary>
+        fix,
+        /// <summary>
+        /// Démarrage de l'histo sur le premier sélectionné
+        /// </summary>
+        selected,
+        /// <summary>
+        /// Démarrage de l'histo sur le dernier lu
+        /// </summary>
+        read
+
+    }
+    public class SortItem : SelectParamBase
+    {
+        /// <summary>
+        /// nom de l'album ou suite d'albums
+        /// </summary>
+        new public List<string> name = new List<string>();
+
+        public sortMode enabled;
+        public bool checkBefore;
+        public bool selectionBefore;
+       
+        ///// <summary>
+        ///// prise en compte des longs podcasts
+        ///// </summary>
+        //public double dureeMin;
+        /// <summary>
+        /// intervalle max entre deux écoutes (une semaine)
+        /// </summary>
+        private double intervalle = 7;
+        /// <summary>
+        /// intervalle min entre deux écoutes (un jour)
+        /// </summary>
+        private double intervalleMin = 1;
+        /// <summary>
+        /// intervalle standard entre deux écoutes (un jour)
+        /// </summary>
+        private double intervalleMin0 = 1;
+        /// <summary>
+        /// intervalle max entre deux écoutes pour un rare
+        /// </summary>
+        private double intervalleR;
+        /// <summary>
+        /// intervalle min entre deux écoutes pour un rare
+        /// </summary>
+        private double intervalleMinR = 7;
+        /// <summary>
+        /// intervalle standard entre deux écoutes pour un rare
+        /// </summary>
+        private double intervalleMinR0 = 7;
+        /// <summary>
+        /// coeff intervalle par heure du dernier lu
+        /// </summary>
+        public double rapportDuree = 0;
+        /// <summary>
+        /// coeff intervalle par heure du dernier lu rare
+        /// </summary>
+        public double rapportDureeR = 0;
+        /// <summary>
+        /// On prend en compte la durée pour augmenter le coeff
+        /// </summary>
+        public bool dureeCoeff;
+        /// <summary>
+        /// On prend en compte la durée pour augmenter les bornes
+        /// </summary>
+        public double dureeBorne;
+        /// <summary>
+        /// On prend en compte la durée pour augmenter les bornes mais on n'augmente que le delta
+        /// </summary>
+        public double dureeBorneDelta;
+        /// <summary>
+        /// Densité en-dessous de laquelle l'album est considéré comme rare
+        /// </summary>
+        public double densiteMin = 0.1;
+        /// <summary>
+        /// On utilise la durée dans le calcul d'intervalleMin; 
+        /// </summary>
+        public bool minUseDuree = true;
+        /// <summary>
+        /// On utilise la durée dans le calcul d'intervalleMin pour les rares
+        /// </summary>
+        public bool minUseDureeR = true;
+        /// <summary>
+        /// On utilise la durée dans le calcul d'intervalleMax 
+        /// </summary>
+        public bool maxUseDuree = true;
+        ///  <summary>
+        /// On utilise la durée dans le calcul d'intervalleMax pour les rares
+        /// </summary>
+        public bool maxUseDureeR = true;
+        ///// <summary>
+        ///// nb d'écoutes maximum dans l'intervalle (typiquement 5)
+        ///// </summary>
+        //private double ecouteMax;
+        ///// <summary>
+        ///// nb d'écoutes maximum dans l'intervalle pour un rare
+        ///// </summary>
+        //private double ecouteMaxR;
+        /// <summary>
+        /// durée sur laquelle on fait des stats pour calculer la fréquence d'écoute
+        /// </summary>
+        private double histo;
+        /// <summary>
+        /// durée sur laquelle on fait des stats pour calculer la fréquence d'écoute pour un rare
+        /// </summary>
+        private double histoR;
+        /// <summary>
+        /// nombre d'items pris en comptepour l'historique
+        /// </summary>
+        private int nbHisto;
+        /// <summary>
+        /// nombre d'items pris en comptepour l'historique pour un rare
+        /// </summary>
+        private int nbHistoR;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : nombre minimum d'éléments à prendre en compte
+        /// </summary>
+        public int deltaNbMin;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : rab d'éléments à prendre en compte
+        /// </summary>
+        public int deltaNbRab;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : intervalle minimum à prendre en compte en jours
+        /// </summary>
+        public double deltaMin;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : rab d'intervalle à prendre en compte
+        /// </summary>
+        public double deltaRab;
+        /// <summary>
+        /// Dans le calcul de delta entre deux à suivre : rab d'intervalle à prendre en compte, en proportion de l'écart initial
+        /// </summary>
+        public double coeffRab;
+        /// <summary>
+        /// Ecart min entre deux podcasts non rares à l'atterrissage
+        /// </summary>
+        public double atterrissageMin = 0.5;
+
+        /// <summary>
+        /// Ecart min absolu
+        /// </summary>
+        private double atterrissageMin0 = 0.5;
+        /// <summary>
+        /// Ecart min entre deux podcasts rares à l'atterrissage
+        /// </summary>
+        public double atterrissageMinR = 1;
+
+        /// <summary>
+        /// Détermination de la densité à venir sur N jours
+        /// </summary>
+        public double futur = -1;
+        /// <summary>
+        /// Détermination de la densité à venir sur N jours pour les rares
+        /// </summary>
+        public double futurR = -1;
+
+        /// <summary>
+        /// Dans la correction du delta par rapport à la proportion de lus, une tolérance pour pouvoir par exemple laisser courir pendant une semaine
+        /// </summary>
+        public double tolerance = 35;
+
+        /// <summary>
+        /// Dans la correction du delta par rapport à la proportion de lus, une tolérance pour pouvoir par exemple laisser courir pendant un mois 
+        /// </summary>
+        public double toleranceR = 35;
+
+        /// <summary>
+        /// Dans le calcul de la tolérance, nb de morceaux à prendre en compte; 
+        /// </summary>
+        public int nbTolerance;
+
+        /// <summary>
+        /// Dans le calcul de la tolérance, nb de morceaux à prendre en compte pour les rares; 
+        /// </summary>
+        public int nbToleranceR;
+
+        /// <summary>
+        /// si dépassement on rappelle
+        /// </summary>
+        public bool toleranceNegative;
+
+        /// <summary>
+        /// pas d'empilage des tracks repoussés
+        /// </summary>
+        public bool noCollision;
+        /// <summary>
+        /// recalcul peut entrainer une date plus récente
+        /// </summary>
+        public bool canGoBack;
+        /// <summary>
+        /// recalcul peut entrainer une date plus récente, mais si ça le rend non séléctionné, on bricole pour qu'il soit quand même selectionné
+        /// </summary>
+        public bool canGoBackButForceSelected;
+        /// <summary>
+        /// écart constant entre les poscasts repoussés
+        /// </summary>
+        public bool deltaConst;
+
+        /// <summary>
+        /// Date0 lors de l'écoute du dernier podcast externe
+        /// </summary>
+        public DateTime extLast0;
+        /// <summary>
+        /// Décalage entre date du podcast supplémentaire et la date0
+        /// </summary>
+        public double extDelta;
+        /// <summary>
+        /// coefficient permettant le calcul de la prochaine date en fonction du retard entre la date0 et maintenant
+        /// </summary>
+        public double extPente;
+        /// <summary>
+        /// check de la date de dernière lecture
+        /// </summary>
+        public bool limitRead;
+        ///// <summary>
+        ///// Dans le calcul de delta ne pas inclure les non-selectionnés
+        ///// </summary>
+        //public bool deltaCheckSelected;
+        /// <summary>
+        /// handicap pour les nouveaux podcasts
+        /// </summary>
+        public int totalMin;
+        /// <summary>
+        /// Coefficient de rappel vers la valeur initiale pour les lus
+        /// </summary>
+        public double elastique = 1;
+
+        /// <summary>
+        /// Coefficient de rappel vers la valeur initiale pour les non lus
+        /// </summary>
+        public double elastique2 = 1;
+
+        /// <summary>
+        /// Cumul max de retard pour les non-rares
+        /// </summary>
+        public double cumulMax = -1;
+
+        /// <summary>
+        /// Cumul max de retard pour les rares
+        /// </summary>
+        public double cumulMaxR = -1;
+
+        /// <summary>
+        /// Cumul min de retard pour les non-rares
+        /// </summary>
+        public double cumulMin = -1;
+
+        /// <summary>
+        /// Cumul min de retard pour les rares
+        /// </summary>
+        public double cumulMinR = -1;
+
+        /// <summary>
+        /// Pas d'amortissement pour les vieux podcasts, vieux en jours par rapport à la date0
+        /// </summary>
+        public int deltaConstLate = -1;
+
+        /// <summary>
+        /// Utilisation de track virtuels pour éviter accidents (tracks manquants)
+        /// </summary>
+        public bool useVirtuel;
+
+        /// <summary>
+        /// Utilisation de track virtuels pour affectation pub2
+        /// </summary>
+        public bool useVirtuel2;
+
+        /// <summary>
+        /// Dès la pub2 remise à zero, les suivants aussi
+        /// </summary>
+        public bool erasedDone;
+        /// <summary>
+        /// On recalcule tout
+        /// </summary>
+        public bool recheck;
+        /// <summary>
+        /// En mode vacance on tasse moins les tracks. implique !recheck
+        /// </summary>
+        public bool vacances;
+        /// <summary>
+        /// on fait comme avant
+        /// </summary>
+        public bool oldMode;
+
+        /// <summary>
+        /// Dans le coeff, on prend en compte la densité
+        /// </summary>
+        public bool coeffDensite;
+
+
+        /// <summary>
+        /// On utilise des intervalles en fonction de la répartition effective ( et non pas déclarative ) des tracks. En clair les intervalles de 7j ou de 1j sont plus finement évalués
+        /// </summary>
+        public bool intervalleVar;
+        /// <summary>
+        /// Proportion entre 0 et 1 de l'atterrissage par rapport à intervalleMin
+        /// </summary>
+        public double atterrissageMinVar = 1;
+
+        /// <summary>
+        /// Détermination plutôt que déclaration de intervalleMin0
+        /// </summary>
+        private bool useintervalleFactMin;
+
+        /// <summary>
+        /// on limite aux valeurs "rare" (14j * duree) 
+        /// </summary>
+        private bool intervalleBorne;
+        /// <summary>
+        /// Un petit coup de rallonge pour les bientôt finis
+        /// </summary>
+        public bool honneurAuxVieux;
+        /// <summary>
+        /// On n'applique l'horizon qu'à la fin
+        /// </summary>
+        public bool horizonFinal;
+        /// <summary>
+        /// l'interpolation n'est pas linéaire mais au carré entre 0 et un et asymptotique vers 2 après
+        /// </summary>
+        public bool mixCarre;
+        /// <summary>
+        /// Aggrégation de la densite et de la duree positionnement du variable
+        /// </summary>
+        private bool mixVarDuree;
+
+        /// <summary>
+        /// Arret quand la date0 change
+        /// </summary>
+        public bool stopOnOffset;
+
+        /// <summary>
+        /// Arret quand une pub2 change
+        /// </summary>
+        public bool stopOnPub2;
+
+        /// <summary>
+        /// Coeff > 1 appliqué au rapport en vue de déterminer l'horizon. Permet de diminuer l'horiszon et nous donner un peu d'air - marre des séries à +10j
+        /// </summary>
+        public double rapportHorizonCoeff = 1.0;
+        /// <summary>
+        /// Coeff > 1 appliqué au rapport en vue de déterminer l'horizon pour les rares. Permet de diminuer l'horiszon et nous donner un peu d'air - marre des séries à +10j
+        /// </summary>
+        public double rapportHorizonCoeffR = 1.0; 
+
+        public histoMode histoMode;
+
+        private ITrackSelector selector;
+
+        public SortItem()
+        {
+        }
+
+        public SortItem(XmlElement parent, XmlElement node)
+            : base(parent, node)
+        {
+
+            if (node == null)
+                return;
+            var str = "";
+            builds("name", v => str = v);
+
+            if (!string.IsNullOrEmpty(str))
+            {
+                foreach (string album in str.Split('|'))
+                {
+                    if (!string.IsNullOrWhiteSpace(album))
+                        name.Add(album.ToLowerWithoutDiacritics());
+                }
+            }
+
+            builds("enabled", v => str = v);
+
+            if (!string.IsNullOrEmpty(str))
+                enabled = (sortMode)Enum.Parse(typeof(sortMode), str);
+
+            buildd("dureeMin", v => dureeMin = v);
+            buildd("intervalle", v => intervalle = v);
+            buildd("intervalleMin", v => intervalleMin = v);
+            buildd("intervalleMin0", v => intervalleMin0 = v);
+            buildd("intervalleR", v => intervalleR = v);
+            buildd("intervalleMinR", v => intervalleMinR = v);
+            buildd("intervalleMinR0", v => intervalleMinR0 = v);
+
+            buildd("atterrissageMin", v => atterrissageMin = v);
+            buildd("atterrissageMinR", v => atterrissageMinR = v);
+            buildd("histo", v => histo = v);
+            buildd("histoR", v => histoR = v);
+            buildi("nbHisto", v => nbHisto = v);
+            buildi("nbHistoR", v => nbHistoR = v);
+
+            buildd("futur", v => futur = v);
+            buildd("futurR", v => futurR = v);
+            //buildd("ecouteMax", v => ecouteMax = v);
+            //buildd("ecouteMaxR", v => ecouteMaxR = v);
+
+            buildDate("extLast0", v => extLast0 = v);
+            buildd("extDelta", v => extDelta = v);
+            buildd("extPente", v => extPente = v);
+
+
+
+
+            buildb("deltaConst", v => deltaConst = v);
+            buildb("toleranceNegative", v => toleranceNegative = v);
+            buildi("deltaConstLate", v => deltaConstLate = v);
+            buildb("useVirtuel", v => useVirtuel = v);
+            buildb("useVirtuel2", v => useVirtuel2 = v);
+
+            buildb("noCollision", v => noCollision = v);
+            buildb("checkBefore", v => checkBefore = v);
+            buildb("selectionBefore", v => selectionBefore = v);
+            buildb("limitRead", v => limitRead = v);
+            buildb("canGoBack", v => canGoBack = v);
+            // buildb("deltaCheckSelected", v => deltaCheckSelected = v);
+
+            #region lissage
+            buildi("deltaNbMin", v => deltaNbMin = v);
+            buildi("deltaNbRab", v => deltaNbRab = v);
+
+            buildd("deltaMin", v => deltaMin = v);
+            buildd("deltaRab", v => deltaRab = v);
+
+            #endregion
+
+            builds("histoMode", v => str = v);
+            histoMode = (histoMode)Enum.Parse(typeof(histoMode), str);
+
+            buildi("totalMin", v => totalMin = v);
+
+            buildd("elastique", v => elastique = v);
+            buildd("elastique2", v => elastique2 = v);
+
+
+
+            buildd("cumulMin", v => cumulMin = v);
+            buildd("cumulMinR", v => cumulMinR = v);
+            buildd("cumulMax", v => cumulMax = v);
+            buildd("cumulMaxR", v => cumulMaxR = v);
+            buildd("rapportDuree", v => rapportDuree = v);
+            buildd("rapportDureeR", v => rapportDureeR = v);
+            buildd("coeffRab", v => coeffRab = v);
+
+
+            buildb("dureeCoeff", v => dureeCoeff = v);
+            buildd("dureeBorne", v => dureeBorne = v);
+            buildd("dureeBorneDelta", v => dureeBorneDelta = v);
+            buildd("densiteMin", v => densiteMin = v);
+
+
+            buildb("minUseDuree", v => minUseDuree = v);
+            buildb("maxUseDuree", v => maxUseDuree = v);
+
+            buildb("minUseDureeR", v => minUseDureeR = v);
+            buildb("maxUseDureeR", v => maxUseDureeR = v);
+
+            buildb("erasedDone", v => erasedDone = v);
+            buildb("recheck", v => recheck = v);
+            buildb("vacances", v => vacances = v);
+            buildb("oldMode", v => oldMode = v);
+
+            buildd("tolerance", v => tolerance = v);
+            buildd("toleranceR", v => toleranceR = v);
+
+            buildi("nbTolerance", v => nbTolerance = v);
+            buildi("nbToleranceR", v => nbToleranceR = v);
+
+            buildb("coeffDensite", v => coeffDensite = v);
+            buildb("intervalleVar", v => intervalleVar = v);
+            buildd("atterrissageMinVar", v => atterrissageMinVar = v);
+            buildb("useintervalleFactMin", v => useintervalleFactMin = v);
+            buildb("intervalleBorne", v => intervalleBorne = v);
+            buildb("honneurAuxVieux", v => honneurAuxVieux = v);
+            buildb("horizonFinal", v => horizonFinal = v);
+            buildd("atterrissageMin0", v => atterrissageMin0 = v);
+            buildb("mixCarre", v => mixCarre = v);
+            buildb("mixVarDuree", v => mixVarDuree = v);
+            buildb("stopOnOffset", v => stopOnOffset = v);
+            buildb("stopOnPub2", v => stopOnPub2 = v);
+
+            buildd("rapportHorizonCoeff", v => rapportHorizonCoeff = v);
+            buildd("rapportHorizonCoeffR", v => rapportHorizonCoeffR = v); 
+
+            this.selector = new TrackSelector(this);
+        }
+        /// <summary>
+        /// donne l'intervalle plafond
+        /// </summary>
+        /// <param name="rare">album rare</param>
+        /// <param name="duree">duree du dernier track en heures</param>
+        /// <returns></returns>
+        public double getIntervalle(bool rare, double duree, double intervalleMin0)
+        {
+            var _intervalle = rare && intervalleR > 0 ? intervalleR : intervalle;
+            var _rapportDuree = rare ? rapportDureeR : rapportDuree;
+            return getIntervalle(_intervalle, _rapportDuree, duree, intervalleMin0);
+        }
+
+        
+
+        private double getIntervalle(double intervalle, double rapportDuree, double duree, double intervalleMin0)
+        {
+            var ret0 = intervalle;
+            var ret1 = ret0;
+            var ret2 = ret0;
+            var coeff = duree * rapportDuree;
+            if (coeff > 1)
+            {
+                if (dureeBorne > 0)
+                {
+
+                    // ex coeff =2
+                    // avec dureeBornee = 0 => ret0
+                    // avec dureeBornee = 0.1 =>0.9 +0.2    =>1.1 *ret0
+                    // avec dureeBorne = 0.5 => 0.5 +1      =>1.5 *ret0
+                    // avec dureeBorne = 0.9 => 0.1+1.8     =>1.9 *ret0
+                    ret1 = ret0 * ((1 - dureeBorne) + coeff * dureeBorne);
+
+                }
+                if (dureeBorneDelta > 0)
+                {
+                    var delta = ret0 - intervalleMin0;
+                    delta *= ((1 - dureeBorneDelta) + coeff * dureeBorneDelta);
+                    ret2 = intervalleMin0 + delta;
+                }
+            }
+
+            if (ret1 > ret2)
+                return ret1;
+            else
+                return ret2;
+
+
+        }
+
+        private double getMix(double i, double ir, double X, double rapportDuree, double duree)
+        {
+            var coeff = rapportDuree * duree;
+            if (coeff > 1)
+                X *= coeff;
+            return getMix(i, ir, X); 
+        }
+        /// <summary>
+        /// Corrige le rapport pour determination de l'horizon 
+        /// </summary>
+        /// <param name="rapport"></param>
+        /// <param name="X"></param>
+        /// <returns></returns>
+        public double getHorizonCorrec(double rapport, double X)
+        {
+            double r = rapportHorizonCoeffR;
+            if (X < 0)
+                r = rapportHorizonCoeff;
+            //else if (X > 1)
+            //{
+            //}
+            else
+                r = rapportHorizonCoeff + X * (rapportHorizonCoeffR - rapportHorizonCoeff); 
+            // r = getMix(rapportHorizonCoeff, rapportHorizonCoeffR, X);
+            if (r < 1)
+                r = 1; 
+            var rapportModif = r * rapport;
+            if (rapportModif > 1)
+                rapportModif = 1;
+
+            return rapportModif; 
+
+        }
+
+        private double getMix(double i, double ir, double X)
+        {
+            if (X <= 0)
+                return i;
+            else if (X >= 1 && intervalleBorne)
+                return ir;
+            if (mixCarre)
+            {
+                if (X <= 1)
+                    return i + X * X * (ir - i); 
+                // 1=> ir v = 2 *(ir-i)
+                // y= ax2
+                return (2 * ir) - ir / X; 
+            }
+            return i + X * (ir - i);
+            // avec i=2 et ir =1 
+            //X=0.1 => 2+ 0.01*-1=> 1.99 correct
+            //X=0.9 => 2 -0.81 = 1.19
+            //X=1.1=> 2- 1/1.1
+
+        }
+        public double getIntervalleVar(bool rare, double X, double duree, double intervalleMin0)
+        {
+            var _rapportDuree = rare ? rapportDureeR : rapportDuree;
+            if (mixVarDuree)
+                return getMix(intervalle, intervalleR, X, _rapportDuree, duree); 
+           
+            double _intervalle = getMix(intervalle, intervalleR,X);
+            return getIntervalle(_intervalle, _rapportDuree, duree, intervalleMin0);
+        }
+
+        private double getCoeffDuree(double rapportDuree, double duree)
+        {
+            var coeff = duree * rapportDuree;
+            if (coeff > 1)
+                return coeff;
+            return 1; 
+        }
+
+        public double getRapport(bool rare, double duree)
+        {
+            var rapport0 = rare ? intervalleR / intervalleMinR0 : intervalle / intervalleMin0;
+            var coeff = rare ? duree * rapportDureeR : duree * rapportDuree;
+            if (coeff > 1)
+                return rapport0 * coeff;
+            return rapport0;
+        }
+
+        public bool applyDuree(bool min, bool rare)
+        {
+            if (dureeCoeff)
+                return false;
+            bool use = rare ? (min ? minUseDureeR : maxUseDureeR) : (min ? minUseDuree : maxUseDuree);
+            return use;
+        }
+        public double getIntervalleMin(bool rare, double duree)
+        {
+            var ret0 = rare && intervalleMinR > 0 ? intervalleMinR : intervalleMin;
+            if (applyDuree(true, rare))
+            {
+                var coeff = rare ? duree * rapportDureeR : duree * rapportDuree;
+                if (coeff > 1)
+                    return ret0 * coeff;
+            }
+            return ret0;
+        }
+
+        public double getIntervalleMinVar(bool rare, double X, double duree)
+        {
+            if (mixVarDuree )
+            {                
+                if (applyDuree(true, rare))
+                {
+                    var _rapportDuree = rare ? rapportDureeR : rapportDuree;
+                    return getMix(intervalleMin, intervalleMinR, X, rapportDuree, duree); 
+                }
+                else
+                    return getMix(intervalleMin, intervalleMinR, X); 
+                   
+            }
+            var ret0 = getMix(intervalleMin, intervalleMinR, X); 
+            if (applyDuree(true, rare))
+            {
+                var coeff = rare ? duree * rapportDureeR : duree * rapportDuree;
+                if (coeff > 1)
+                    return ret0 * coeff;
+            }
+            return ret0;
+        }
+
+        public double getCoeff(bool rare, double coeff0, double duree)
+        {
+
+            var coeff = rare ? duree * rapportDureeR : duree * rapportDuree;
+            if (coeff > 1)
+                return coeff0 * coeff;
+
+            return coeff0;
+
+        }
+
+        public double getFutur(bool rare)
+        {
+            return rare ? futurR : futur;
+        }
+
+        public double getTolerance(bool rare)
+        {
+            return rare ? toleranceR : tolerance;
+        }
+
+        public int getNbTolerance(bool rare)
+        {
+            return rare ? nbToleranceR : nbTolerance;
+        }
+
+
+        public double getIntervalleMin0(bool rare)
+        {
+            var ret0 = rare && intervalleMinR0 > 0 ? intervalleMinR0 : intervalleMin0;
+            return ret0;
+        }
+
+        public double getIntervalleMin0Var(double X, double intervalleFactMin)
+        {
+            if (useintervalleFactMin)
+                return intervalleFactMin;
+            return getMix(intervalleMin0, intervalleMinR0, X);            
+        }
+
+
+        public double getatterrissageMinVar(double X, double intervalleFactMin)
+        {
+            if (useintervalleFactMin)
+                return intervalleFactMin * atterrissageMinVar;
+            var ret =  getMix(atterrissageMin, atterrissageMinR, X);
+            if (ret < atterrissageMin0)
+                ret = atterrissageMin0;
+            return ret; 
+
+        }
+        public double getHisto(bool rare)
+        {
+            return rare && histoR > 0 ? histoR : histo;
+        }
+        public int getNbHisto(bool rare)
+        {
+            return rare && nbHisto > 0 ? nbHistoR : nbHisto;
+        }
+        //public double getEcouteMax(bool rare)
+        //{
+        //    return rare && ecouteMaxR > 0 ? ecouteMaxR : ecouteMax;
+        //}
+        ///// <summary>
+        ///// Donne le recalage max par morceau pour atterissage: typiquement pour un non-rare :0.5, pour un rare, disons 1
+        ///// </summary>
+        ///// <param name="rare"></param>
+        ///// <returns></returns>
+        //public double getRecupMax(bool rare)
+        //{
+        //    double ini = getIntervalleMin0(rare);
+        //    if (rare)
+        //        return ini - atterrissageMinR;
+        //    else
+        //        return ini - atterrissageMin; 
+        //}
+
+        public double getAtterrissageMin(bool rare)
+        {
+            return rare ? atterrissageMinR : atterrissageMin;
+        }
+
+        internal bool select(ISelectable album)
+        {
+            return selector.select(album);
+        }
+
+        public double getCumulMax(bool rare)
+        {
+            return rare && cumulMaxR > 0 ? cumulMaxR : cumulMax;
+        }
+        public double getCumulMin(bool rare)
+        {
+            return rare && cumulMinR > 0 ? cumulMinR : cumulMin;
+        }
+
+
+    }
+    public class Sort : SortItem
+    {
+        private List<SortItem> items = new List<SortItem>();
+        private List<SortItem> rules = new List<SortItem>();
+
+        public SortItem getItem(string key)
+        {
+            foreach (SortItem g in items)
+            {
+                if (g.name.Contains(key))
+                    return g;
+
+            }
+            return null;
+        }
+
+        public SortItem getRule(TrackAlbum album)
+        {
+            foreach (SortItem r in rules)
+            {
+                if (r.select(album))
+                    return r;
+            }
+
+            return null;
+        }
+        public Sort()
+        {
+
+        }
+
+        public Sort(XmlElement node)
+            : base(null, node)
+        {
+            if (node == null)
+                return;
+            foreach (XmlNode sub in node.ChildNodes)
+            {
+                if (sub is XmlElement)
+                {
+                    if (sub.Name == "album")
+                    {
+                        items.Add(new SortItem(node, sub as XmlElement));
+                    }
+                    else if (sub.Name == "rule")
+                    {
+                        rules.Add(new SortItem(node, sub as XmlElement));
+                    }
+                }
+            }
+
+
+        }
+
+
+
+
     }
 }]]></content>
   </file>
