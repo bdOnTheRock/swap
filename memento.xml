@@ -6,7 +6,7 @@
     </cdAlbum>
     <cdBib>
       <unit>Pixel</unit>
-      <value>1</value>
+      <value>0</value>
     </cdBib>
     <cdClassement>
       <unit>Star</unit>
@@ -63,12 +63,12 @@
             <WidthValue>188.02000000000032</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>17</DisplayIndex>
+            <DisplayIndex>24</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Piste</Header>
             <PropertyPath>TrackNumber</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>29.349999999999994</WidthValue>
+            <WidthValue>33.349999999999994</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>12</DisplayIndex>
@@ -76,10 +76,10 @@
             <PropertyPath>Duration</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>43.930000000000007</WidthValue>
+            <WidthValue>38.930000000000007</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>19</DisplayIndex>
+            <DisplayIndex>14</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Classement</Header>
             <PropertyPath>Classement</PropertyPath>
             <SortDirection i:nil="true" />
@@ -92,7 +92,7 @@
             <PropertyPath>MaxClassement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>60.039999999999949</WidthValue>
+            <WidthValue>68.039999999999949</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>10</DisplayIndex>
@@ -100,10 +100,10 @@
             <PropertyPath>DeepClassement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>80.396666666666675</WidthValue>
+            <WidthValue>89.396666666666675</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>20</DisplayIndex>
+            <DisplayIndex>15</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">CC</Header>
             <PropertyPath>ClassementCompact</PropertyPath>
             <SortDirection i:nil="true" />
@@ -119,15 +119,15 @@
             <WidthValue>59.7</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>24</DisplayIndex>
+            <DisplayIndex>19</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Album</Header>
             <PropertyPath>Album</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>408.633333333333</WidthValue>
+            <WidthValue>163.63333333333299</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>25</DisplayIndex>
+            <DisplayIndex>23</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">MasterAlbum</Header>
             <PropertyPath>MasterAlbum</PropertyPath>
             <SortDirection i:nil="true" />
@@ -268,7 +268,7 @@
             <PropertyPath>AlbumUpdateClassement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>35</WidthValue>
+            <WidthValue>34</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>7</DisplayIndex>
@@ -276,7 +276,7 @@
             <PropertyPath>MasterAlbumUpdateClassement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>36</WidthValue>
+            <WidthValue>32</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>60</DisplayIndex>
@@ -303,12 +303,12 @@
             <WidthValue>32.536666666666669</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>13</DisplayIndex>
+            <DisplayIndex>20</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">NbClassements</Header>
             <PropertyPath>NbClass</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>22</WidthValue>
+            <WidthValue>20</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>28</DisplayIndex>
@@ -364,7 +364,7 @@
             <PropertyPath>EquivLight</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>136.00000000000003</WidthValue>
+            <WidthValue>122.00000000000003</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>35</DisplayIndex>
@@ -391,7 +391,7 @@
             <WidthValue>30.346666666666671</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>21</DisplayIndex>
+            <DisplayIndex>16</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">AlbumCount</Header>
             <PropertyPath>AlbumCount</PropertyPath>
             <SortDirection i:nil="true" />
@@ -436,7 +436,7 @@
             <PropertyPath>CoeffVirtuel</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>38.25</WidthValue>
+            <WidthValue>56.436666666666667</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>56</DisplayIndex>
@@ -463,7 +463,7 @@
             <WidthValue>632</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>14</DisplayIndex>
+            <DisplayIndex>21</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Keep</Header>
             <PropertyPath>Keep</PropertyPath>
             <SortDirection i:nil="true" />
@@ -471,12 +471,12 @@
             <WidthValue>26</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>16</DisplayIndex>
+            <DisplayIndex>25</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">NoCompact</Header>
             <PropertyPath>NoCompact</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>31</WidthValue>
+            <WidthValue>20</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>11</DisplayIndex>
@@ -484,34 +484,34 @@
             <PropertyPath>MainTrackNumber</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>29</WidthValue>
+            <WidthValue>25</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>22</DisplayIndex>
+            <DisplayIndex>17</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Recents</Header>
             <PropertyPath>NbRecentsInAlbum</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>34</WidthValue>
+            <WidthValue>31</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>15</DisplayIndex>
+            <DisplayIndex>22</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">KeepCoeff</Header>
             <PropertyPath>KeepCoeff</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>74.66</WidthValue>
+            <WidthValue>40</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>23</DisplayIndex>
+            <DisplayIndex>18</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Done</Header>
             <PropertyPath>NbDoneInAlbum</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>20</WidthValue>
+            <WidthValue>24</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>18</DisplayIndex>
+            <DisplayIndex>13</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Current</Header>
             <PropertyPath>PlusPetitEnabled</PropertyPath>
             <SortDirection i:nil="true" />
@@ -547,7 +547,7 @@
             <PropertyPath>Classement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>93.813333333333333</WidthValue>
+            <WidthValue>100.28333333333335</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>3</DisplayIndex>
@@ -555,7 +555,7 @@
             <PropertyPath>Album</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>394.25</WidthValue>
+            <WidthValue>612.02666666666676</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>4</DisplayIndex>
@@ -626,7 +626,7 @@
             <PropertyPath>Index</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>32.88</WidthValue>
+            <WidthValue>20</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>1</DisplayIndex>
@@ -666,7 +666,7 @@
             <PropertyPath>TrackNumber</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>38.35</WidthValue>
+            <WidthValue>35.063333333333333</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>6</DisplayIndex>
@@ -682,7 +682,7 @@
             <PropertyPath>Classement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>100.28333333333335</WidthValue>
+            <WidthValue>70.376666666666665</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>8</DisplayIndex>
@@ -690,7 +690,7 @@
             <PropertyPath>MaxClassement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>93.813333333333333</WidthValue>
+            <WidthValue>92.766666666666666</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>9</DisplayIndex>
@@ -698,7 +698,7 @@
             <PropertyPath>DeepClassement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>100.28333333333335</WidthValue>
+            <WidthValue>98.396666666666675</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>10</DisplayIndex>
@@ -706,7 +706,7 @@
             <PropertyPath>ClassementCompact</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>158.61666666666667</WidthValue>
+            <WidthValue>24.536666666666669</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>11</DisplayIndex>
@@ -714,7 +714,7 @@
             <PropertyPath>Rank</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>70.7</WidthValue>
+            <WidthValue>38.35</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>13</DisplayIndex>
@@ -722,7 +722,7 @@
             <PropertyPath>Album</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>277.21333333333337</WidthValue>
+            <WidthValue>88.98</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>12</DisplayIndex>
@@ -730,7 +730,7 @@
             <PropertyPath>MasterAlbum</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>277.21333333333337</WidthValue>
+            <WidthValue>88.98</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>14</DisplayIndex>
@@ -738,7 +738,7 @@
             <PropertyPath>Artist</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>399.18333333333334</WidthValue>
+            <WidthValue>80.893333333333345</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>15</DisplayIndex>
@@ -754,7 +754,7 @@
             <PropertyPath>RankAlbum</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>70.863333333333344</WidthValue>
+            <WidthValue>71.7</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>17</DisplayIndex>
@@ -794,7 +794,7 @@
             <PropertyPath>DeltaRank</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>63.806666666666672</WidthValue>
+            <WidthValue>71.7</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>22</DisplayIndex>
@@ -874,7 +874,7 @@
             <PropertyPath>LastRead</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>114.42</WidthValue>
+            <WidthValue>48.776666666666671</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>32</DisplayIndex>
@@ -930,7 +930,7 @@
             <PropertyPath>Added</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>115.42</WidthValue>
+            <WidthValue>44.81</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>39</DisplayIndex>
@@ -1002,7 +1002,7 @@
             <PropertyPath>Index2</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>32.88</WidthValue>
+            <WidthValue>20</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>48</DisplayIndex>
@@ -1042,7 +1042,7 @@
             <PropertyPath>File</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>847.22333333333336</WidthValue>
+            <WidthValue>429.40000000000003</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>53</DisplayIndex>
@@ -1092,7 +1092,7 @@
       <d2p1:Value i:type="ColumnInfos">
         <List>
           <ColumnInfo>
-            <DisplayIndex>2</DisplayIndex>
+            <DisplayIndex>0</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string" />
             <PropertyPath />
             <SortDirection i:nil="true" />
@@ -1100,7 +1100,7 @@
             <WidthValue>20</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>3</DisplayIndex>
+            <DisplayIndex>9</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string" />
             <PropertyPath>Exists</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1108,31 +1108,31 @@
             <WidthValue>20</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>4</DisplayIndex>
+            <DisplayIndex>12</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string" />
             <PropertyPath>Index</PropertyPath>
             <SortDirection i:nil="true" />
-            <WidthType>Auto</WidthType>
-            <WidthValue>20</WidthValue>
+            <WidthType>Pixel</WidthType>
+            <WidthValue>43.879999999999995</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>5</DisplayIndex>
+            <DisplayIndex>8</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">p</Header>
             <PropertyPath>TrackNumber</PropertyPath>
             <SortDirection i:nil="true" />
-            <WidthType>Auto</WidthType>
-            <WidthValue>20</WidthValue>
+            <WidthType>Pixel</WidthType>
+            <WidthValue>22.879999999999995</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>7</DisplayIndex>
+            <DisplayIndex>10</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Nom</Header>
             <PropertyPath>Name</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>91.306666666666672</WidthValue>
+            <WidthValue>117.30666666666667</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>8</DisplayIndex>
+            <DisplayIndex>1</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string" />
             <PropertyPath>MedianneStatus</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1140,15 +1140,15 @@
             <WidthValue>20</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>10</DisplayIndex>
+            <DisplayIndex>13</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Classement</Header>
             <PropertyPath>Classement</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>70.376666666666665</WidthValue>
+            <WidthValue>80.873333333333335</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>11</DisplayIndex>
+            <DisplayIndex>15</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">MaxClassement</Header>
             <PropertyPath>MaxClassement</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1156,7 +1156,7 @@
             <WidthValue>92.766666666666666</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>6</DisplayIndex>
+            <DisplayIndex>2</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">DeepClassement</Header>
             <PropertyPath>DeepClassement</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1164,39 +1164,39 @@
             <WidthValue>98.396666666666675</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>12</DisplayIndex>
+            <DisplayIndex>16</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">CC</Header>
             <PropertyPath>ClassementCompact</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>181.31333333333333</WidthValue>
+            <WidthValue>139.20666666666668</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>18</DisplayIndex>
+            <DisplayIndex>3</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Virtuel</Header>
             <PropertyPath>ClassementVirtuel</PropertyPath>
             <SortDirection i:nil="true" />
-            <WidthType>Auto</WidthType>
-            <WidthValue>181.31333333333333</WidthValue>
+            <WidthType>Pixel</WidthType>
+            <WidthValue>107.25333333333336</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>21</DisplayIndex>
+            <DisplayIndex>4</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Coeff</Header>
             <PropertyPath>CoeffVirtuel</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>38.25</WidthValue>
+            <WidthValue>56.436666666666667</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>19</DisplayIndex>
+            <DisplayIndex>21</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Virtuel2</Header>
             <PropertyPath>ClassementVirtuel2</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>181.31333333333333</WidthValue>
+            <WidthValue>158.61666666666667</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>20</DisplayIndex>
+            <DisplayIndex>22</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Coeff2</Header>
             <PropertyPath>CoeffVirtuel2</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1204,7 +1204,7 @@
             <WidthValue>44.72</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>13</DisplayIndex>
+            <DisplayIndex>17</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Durée</Header>
             <PropertyPath>Duration</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1212,7 +1212,7 @@
             <WidthValue>41.930000000000007</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>14</DisplayIndex>
+            <DisplayIndex>18</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Rank</Header>
             <PropertyPath>Rank</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1220,7 +1220,7 @@
             <WidthValue>38.35</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>15</DisplayIndex>
+            <DisplayIndex>19</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Maj</Header>
             <PropertyPath>UpdateClassement</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1228,7 +1228,7 @@
             <WidthValue>115.42</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>16</DisplayIndex>
+            <DisplayIndex>20</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">MajAlbum</Header>
             <PropertyPath>AlbumUpdateClassement</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1236,7 +1236,7 @@
             <WidthValue>115.42</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>17</DisplayIndex>
+            <DisplayIndex>7</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Delai</Header>
             <PropertyPath>UpdateClassement</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1244,7 +1244,7 @@
             <WidthValue>36.61</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>22</DisplayIndex>
+            <DisplayIndex>23</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">DelaiAlbum</Header>
             <PropertyPath>AlbumUpdateClassement</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1252,7 +1252,7 @@
             <WidthValue>71.436666666666667</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>23</DisplayIndex>
+            <DisplayIndex>24</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Motif</Header>
             <PropertyPath>SelectedMotif</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1260,23 +1260,23 @@
             <WidthValue>38.536666666666669</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>1</DisplayIndex>
+            <DisplayIndex>6</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">NbClassements</Header>
             <PropertyPath>NbClass</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>26.5</WidthValue>
+            <WidthValue>21.5</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>9</DisplayIndex>
+            <DisplayIndex>14</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">MasterAlbum</Header>
             <PropertyPath>MasterAlbum</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>153.02666666666676</WidthValue>
+            <WidthValue>200.02666666666676</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>24</DisplayIndex>
+            <DisplayIndex>25</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Grouping</Header>
             <PropertyPath>Grouping</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1284,15 +1284,15 @@
             <WidthValue>60.043333333333337</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>25</DisplayIndex>
+            <DisplayIndex>26</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Artiste</Header>
             <PropertyPath>Artist</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>128.89666666666668</WidthValue>
+            <WidthValue>44.323333333333338</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>26</DisplayIndex>
+            <DisplayIndex>27</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Année</Header>
             <PropertyPath>Year</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1300,15 +1300,15 @@
             <WidthValue>43.873333333333335</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>27</DisplayIndex>
+            <DisplayIndex>28</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Id</Header>
             <PropertyPath>PieceId</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>20.259999999999998</WidthValue>
+            <WidthValue>39.35</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>28</DisplayIndex>
+            <DisplayIndex>29</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">ParentId</Header>
             <PropertyPath>PieceParentId</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1316,7 +1316,7 @@
             <WidthValue>53.983333333333334</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>29</DisplayIndex>
+            <DisplayIndex>30</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">MasterId</Header>
             <PropertyPath>MasterId</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1324,15 +1324,15 @@
             <WidthValue>56.753333333333337</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>30</DisplayIndex>
+            <DisplayIndex>31</DisplayIndex>
             <Header i:nil="true" />
             <PropertyPath>StrPlaying</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>22.450000000000003</WidthValue>
+            <WidthValue>20</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>31</DisplayIndex>
+            <DisplayIndex>32</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Export</Header>
             <PropertyPath>ExportStatus</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1340,7 +1340,7 @@
             <WidthValue>43.900000000000006</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>32</DisplayIndex>
+            <DisplayIndex>33</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">IndexExport</Header>
             <PropertyPath>IndexExport</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1348,7 +1348,7 @@
             <WidthValue>72.733333333333334</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>33</DisplayIndex>
+            <DisplayIndex>34</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Rendement</Header>
             <PropertyPath>Rendement</PropertyPath>
             <SortDirection i:nil="true" />
@@ -1356,12 +1356,12 @@
             <WidthValue>70.706666666666678</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>34</DisplayIndex>
+            <DisplayIndex>5</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Keep</Header>
             <PropertyPath>Keep</PropertyPath>
             <SortDirection i:nil="true" />
-            <WidthType>Auto</WidthType>
-            <WidthValue>36.41</WidthValue>
+            <WidthType>Pixel</WidthType>
+            <WidthValue>24.409999999999997</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>35</DisplayIndex>
@@ -1380,12 +1380,12 @@
             <WidthValue>71.556666666666672</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>0</DisplayIndex>
+            <DisplayIndex>11</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">KeepCoeff</Header>
             <PropertyPath>KeepCoeff</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>48.66</WidthValue>
+            <WidthValue>57.66</WidthValue>
           </ColumnInfo>
         </List>
       </d2p1:Value>
@@ -1400,7 +1400,7 @@
             <PropertyPath>Album</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Pixel</WidthType>
-            <WidthValue>94.876666666666665</WidthValue>
+            <WidthValue>62.876666666666665</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>4</DisplayIndex>
@@ -1427,12 +1427,12 @@
             <WidthValue>24.436666666666667</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>7</DisplayIndex>
+            <DisplayIndex>8</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">EquivLight</Header>
             <PropertyPath>EquivLight</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>192.25333333333336</WidthValue>
+            <WidthValue>163.08666666666667</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
             <DisplayIndex>1</DisplayIndex>
@@ -1475,12 +1475,12 @@
             <WidthValue>21.510000000000005</WidthValue>
           </ColumnInfo>
           <ColumnInfo>
-            <DisplayIndex>8</DisplayIndex>
+            <DisplayIndex>7</DisplayIndex>
             <Header xmlns:d7p1="http://www.w3.org/2001/XMLSchema" i:type="d7p1:string">Current</Header>
             <PropertyPath>PlusPetitEnabled</PropertyPath>
             <SortDirection i:nil="true" />
             <WidthType>Auto</WidthType>
-            <WidthValue>78.873333333333335</WidthValue>
+            <WidthValue>98.283333333333346</WidthValue>
           </ColumnInfo>
         </List>
       </d2p1:Value>
@@ -1489,8 +1489,8 @@
   <selectedPlaylist>root\gen\all</selectedPlaylist>
   <winPos>
     <Height>1056</Height>
-    <Left>-1958</Left>
-    <Top>46</Top>
+    <Left>-1984</Left>
+    <Top>10</Top>
     <Width>1936</Width>
   </winPos>
 </Memento>
