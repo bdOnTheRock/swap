@@ -1,1286 +1,1264 @@
 <db path="C:\bernard\db4">
-  <file path="\pdb.player\ViewModel\DetailAlbumViewModel.cs">
+  <file path="\pdb.player\App.xaml.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows.Input;
-using pdb.player.ViewModel.Commande.PlayList;
-using pdb.gen.albums;
-using System.Text.RegularExpressions;
-using pdb.player.ViewModel.Commande.Link;
-using pdb.player.ViewModel.Commande;
-using pdb.db;
-using System.Windows.Media.Imaging;
-using System.IO;
-using pdb.util;
-using System.Windows.Media;
-using pdb.player.model;
-using System.Collections.ObjectModel;
-using pdb.obj;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Threading;
+using pdb.db;
+using pdb.db.piece.data;
+using pdb.gen;
 using pdb.gen.conf;
+using pdb.gen.Tuning;
+using pdb.obj;
+using pdb.ordo;
+using pdb.player.ViewModel;
+using pdb.player.ViewModel.Commande.PlayList;
+using pdb.player.ViewModel.gen;
+using pdb.player.Vue;
+using pdb.util;
+using pdb.db.obj;
+using pdb.gen.albums;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Windows.Input;
 
-namespace pdb.player.ViewModel
+namespace pdb.player
 {
-
-    public enum albumMode
+    /// <summary>
+    /// Interaction logic for App.xaml
+    /// </summary>
+    public partial class App : Application, IIhm
     {
-        identique,
-        origine,
-        origineSiVirtuel,
-        plusLong,
-        plusCourt
-    }
-    class DetailAlbumViewModel : ViewModelBase, ISelectedTracks
-    {
-        public static ArtWorkManager artworkManager = new ArtWorkManager();
-        private TrackListViewModel humanSelected;
-        private Album currentAlbum;
-        // private List<TrackListViewModel> tracks;
-        private albumMode mode;
-        private bool albumVirtual;
-        private static Logger log = Logger.getLogger("AlbumViewModel");
-        private PlayList pl;
-        private PlayListViewModel plv;
-        public PlayListViewModel PlayListViewModel { get { return plv; } }
+        public static Logger log = Logger.getLogger("Program");
+        public static Logger logPerf = Logger.getLogger("Perf");
+        public static CDb Db;
+        public static Consolid gen;
+        //  public static LegacyApp app;
+        // internal static HomeLoader loader;
+        internal static BibViewModel bib;
+        static int step = -5;
+        public const string PHASE1 = "PHASE1";
+        public const string PHASE2 = "PHASE2";
 
+        private static Export export;
+        private static Import import;
+        public static DispatcherPriority DISPATCHER_PRIORITY = DispatcherPriority.Normal;
 
-        public albumMode Mode
+        public static void setDispatcherPriority()
         {
-            get
+            var str = CConf.DispatcherPriority;
+            if (!string.IsNullOrEmpty(str))
             {
-                return mode;
-            }
-            set
-            {
-                if (value != mode)
-                {
-                    mode = value;
-                    var client = new SimpleClient("Mode", log);
-                    init(null, client);
-                    OnPropertyChanged("");
-                }
+                DISPATCHER_PRIORITY = (DispatcherPriority)Enum.Parse(typeof(DispatcherPriority), str);
             }
         }
 
-        public DetailAlbumViewModel()
+        private class UIItem
         {
-            TrackListViewModel.CurrentHumanSelectedChanged += new EventHandler<ClientEventArgs>(TrackListViewModel_CurrentSelectedChanged);
-            App.refreshArtWork += App_refreshArtWork;
-        }
-
-        private void App_refreshArtWork(object sender, ClientEventArgs e)
-        {
-            initImg(TrackListViewModel.HumanSelected, e.client);
-        }
-
-
-
-
-        //  private ObservableCollection<ImageSource> images; 
-
-        private IClient client;
-        public void initImg(TrackListViewModel h, IClient client)
-        {
-            if (this.client != null)
-                this.client.cancel();
-            if (client == null)
-                client = new SimpleClient("DetailAlbum", Logger.defaultLogger);
-            this.client = client;
-            if (client.Cancel)
-                return;
-
-            new Thread(() =>
+            public readonly Action action;
+            public readonly IClient client;
+            public UIItem(Action action, IClient client)
             {
-                var delay = CConf.DisplayImg;
-                if (delay > 0)
-                {
-                    var dt = DateTime.Now.AddMilliseconds(delay);
-                    while (DateTime.Now < dt)
-                    {
-                        if (client.Cancel)
-                            return;
-                        Thread.Sleep(30);
-                    }
-                    while (App.Indispo)
-                    {
-                        if (client.Cancel)
-                            return;
-                        Thread.Sleep(30);
-                    }
-                }
-
-                if (client.Cancel)
-                    return;
-                App.Dispatch(() =>
-                {
-                    var img = DetailAlbumViewModel.artworkManager.get(h.PieceGen, client);
-                    client.log("DetailAlbum::init::artworkManager");
-                    if (client.Cancel)
-                        return;
-                    if (img != this.img)
-                    {
-                        this.img = img;
-                        OnPropertyChanged("ArtWork");
-                        client.log("DetailAlbum::init::OnPropertyChanged ArtWork");
-                    }
-
-                }, client);
-            }).Start();
+                this.action = action;
+                this.client = client;
+            }
         }
 
-        public void init(TrackListViewModel h, IClient client)
+        private pdb.util.Queue<UIItem> uiItems = new util.Queue<UIItem>();
+        // private DispatcherTimer uiTimer;
+
+
+        static ILogger logDispatch;
+        public static void Dispatch(Action action, IClient client)
         {
-            App.Dispatch(() =>
+            Instance.dispatch(action, client);
+        }
+        public void dispatch(Action action, IClient client)
+        {
+            if (!client.HasLog)
+                client.Log = logDispatch;
+            //if (uiTimer == null)
+            //{
+
+            //    lock (_lock)
+            //    {
+            //        if (uiTimer == null)
+            //        {
+            //            uiTimer = new DispatcherTimer();
+
+            //        }
+            //    }
+            //}
+
+            if (!CheckAccess())
             {
-                // tracks = null;
-                if (client.Cancel)
-                    return;
-                // img = null;
-                //images = new ObservableCollection<ImageSource>() ;
-                //  long sizeImgMax = 0;
-                // if (humanSelected == null)
-                if (h == null)
-                    humanSelected = TrackListViewModel.HumanSelected;
-                if (humanSelected != null)
-                {
-                    var p = humanSelected.PieceGen;
-                    var idOrg = p.PieceId;
-
-                    switch (mode)
-                    {
-                        case albumMode.identique:
-                        break;
-                        case albumMode.origine:
-                        p = p.Master;
-                        break;
-                        case albumMode.origineSiVirtuel:
-                        if (p.Virtual)
-                            p = p.Master;
-                        break;
-                        case albumMode.plusLong:
-                        if (p.Virtual)
-                        {
-                            var virt = p.PieceAlbum.Count;
-                            var master = p.Master.PieceAlbum.Count;
-                            if (master > virt)
-                                p = p.Master;
-                        }
-
-                        break;
-
-                        case albumMode.plusCourt:
-                        if (p.Virtual)
-                        {
-                            var virt = p.PieceAlbum.Count;
-                            var master = p.Master.PieceAlbum.Count;
-                            if (master < virt)
-                                p = p.Master;
-                        }
-
-                        break;
-
-
-                        default:
-                        break;
-                    }
-
-                    albumVirtual = idOrg != p.PieceId;
-
-                    if (client.Cancel)
-                        return;
-                    //App.Dispatch(() =>
-                    //    {
-                    //        img = artworkManager.get(humanSelected.PieceGen, client);
-                    //        client.log("DetailAlbum::init::artworkManager");
-                    //        OnPropertyChanged("ArtWork");
-
-                    //    }, client);
-
-                    // client.log("DetailAlbum::init::OnPropertyChanged ArtWork");
-
-                    //if (client.Cancel)
-                    //    return;
-                    currentAlbum = p.PieceAlbum;
-                    initAlbums();
-
-                    client.log("DetailAlbum::init::initAlbums");
-                    if (client.Cancel)
-                        return;
-                    if (!TrackListViewModel.HumanSelectedIsBusy)
-                        initImg(TrackListViewModel.HumanSelected, client);
-
-                }
-                else
-                {
-                    // currentAlbum = null;
-                    //tracks = new List<TrackListViewModel>();
-                }
-            }, client);
+                client.log("async");
+                client.isAsync = true;
+                Dispatcher.BeginInvoke(action, DISPATCHER_PRIORITY);
+            }
+            else
+            {
+                Dispatcher.BeginInvoke(action, DISPATCHER_PRIORITY);
+                //action();
+            }
         }
 
-        //public ObservableCollection<ImageSource> Images
+        //public void dispatchLessPrior(Action action, IClient client)
         //{
-        //    get
-        //    {
-        //        return images; 
-        //    }
+        //    Dispatcher.BeginInvoke(action, DispatcherPriority.ApplicationIdle);
         //}
 
-        void TrackListViewModel_CurrentSelectedChanged(object sender, ClientEventArgs e)
-        {
-            if (humanSelected != TrackListViewModel.HumanSelected)
-            {
-                init(null, e.client);
-            }
-        }
-        private class PieceTrackNumberComparer : IComparer<TrackListViewModel>
-        {
-            public int Compare(TrackListViewModel x, TrackListViewModel y)
-            {
-                var cmp = x.TrackNumber.CompareTo(y.TrackNumber);
-                if (cmp != 0)
-                    return cmp;
-                return x.getLocation().CompareTo(y.getLocation());
-                //  return x.TrackNumber.CompareTo(y.TrackNumber);
-            }
-        }
-        private class PieceVirtualClassementComparer : IComparer<TrackListViewModel>
-        {
-            private static PieceTrackNumberComparer tn = new PieceTrackNumberComparer();
-            public int Compare(TrackListViewModel x, TrackListViewModel y)
-            {
-                int cmp = x.PieceGen.getClassement(true).CompareTo(y.PieceGen.getClassement(true));
-                if (cmp != 0) return -cmp;
 
-                var xpd = x.PieceGen.DeepClassement;
-                var ypd = y.PieceGen.DeepClassement;
-                if (xpd.isPositive())
+
+        private void syncAction(Action action, IClient client)
+        {
+            client.log("debut Effectif");
+            action();
+            client.log("fin");
+        }
+
+        private static Thread thLoop;
+        private static bool __go;
+        private static bool __end;
+        private static volatile object _lock = new object();
+        private static ListWriter listWriter;
+        private static App _instance;
+        public static App Instance { get { return _instance; } }
+        private static DetailClassementViewModel detailClassementViewModel;
+        internal static DetailClassementViewModel DetailClassementViewModel { set { detailClassementViewModel = value; } }
+
+        public App()
+            : base()
+        {
+            var xmlConf = CConf.loadConf();
+            setDispatcherPriority();
+            pdb.player.ViewModel.Colors.MementoColor.recover();
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
+            this.DispatcherUnhandledException += new DispatcherUnhandledExceptionEventHandler(App_DispatcherUnhandledException);
+            Application.Current.DispatcherUnhandledException += new DispatcherUnhandledExceptionEventHandler(Current_DispatcherUnhandledException);
+            TaskScheduler.UnobservedTaskException += new EventHandler<UnobservedTaskExceptionEventArgs>(TaskScheduler_UnobservedTaskException);
+            _instance = this;
+        }
+
+        void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            e.SetObserved();
+            CheckException("Task", sender, e.Exception);
+        }
+
+        void Current_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            CheckException("AppDispatcher", sender, e.Exception);
+        }
+
+        void App_DispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
+        {
+            e.Handled = true;
+            CheckException("Dispatcher", sender, e.Exception);
+        }
+
+        void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            CheckException("Domain", sender, e.ExceptionObject);
+        }
+
+        private bool displayMsg;
+        private string lastMessage;
+        private void CheckException(string from, object sender, object ex)
+        {
+            if (ex is Exception)
+            {
+                var mess = (ex as Exception).Message;
+                if (mess == lastMessage)
                 {
-                    if (ypd.isPositive())
-                    {
-                        cmp = xpd.CompareTo(ypd);
-                        if (cmp != 0) return cmp;
-                    }
-                    else
-                        return -1;
-
+                    displayMsg = true;
                 }
-                else
-                {
-                    if (ypd.isPositive())
-                        return 1;
-
-                }
-
-                return tn.Compare(x, y);
+                lastMessage = mess;
 
             }
-        }
-
-        public List<TrackListViewModel> Album
-        {
-            get
+            string message = string.Format("Erreur:\r\n from->{0}\r\nsender ->{1}\r\n{2}", from, sender, ex.ToString());  // "Erreur->sender:" + sender +" from:" + from + " " + ex.ToString();
+            if (log != null)
+                log.log(message);
+            var msgBox = message;
+            if (msgBox.Length > 2000)
+                msgBox = msgBox.Substring(0, 1998);
+            if (!displayMsg)
             {
-                if (currentAlbum == null || plv == null)
-                    return new List<TrackListViewModel>();
-                var tracks = plv.Tracks;
-                tracks.Sort(new PieceVirtualClassementComparer());
-                //int index = 0;
-                //foreach (TrackListViewModel t in tracks)
-                //{
-                //    index++;
-                //    t.Index = index;
-                //    if (humanSelected != null && t.MasterId == humanSelected.MasterId)
-                //        t.IsSelected = true;
-                //    else
-                //        t.IsSelected = false; 
-                //}
-                return tracks;
-
-                //var tracks = new List<TrackListViewModel>(); 
-                //foreach (var t in currentAlbum.Tracks)
-                //{
-                //    TrackListViewModel trackList = TrackListViewModel.get(t.PieceId); 
-                //    //index++;
-                //    //TrackListViewModel trackList = PlayListViewModel.findTrack(App.bib.Musique, t.PieceId);
-                //    //if (trackList == null)
-                //    //    continue;
-                //    //trackList.Index = index;
-                //    //if (t.MasterId == humanSelected.MasterId)
-                //    //    trackList.IsSelected = true;
-                //    //else
-                //    //    trackList.IsSelected = false;
-                //    tracks.Add(trackList);
-                //}
-                // //if (tracks != null)
-                // //    return tracks;
-                //// tracks = new List<TrackListViewModel>();
-                // if (currentAlbum == null)
-                // {
-                //     //tracks = new List<TrackListViewModel>();
-                // }
-                // else
-                // {
-                //     // var ll = new List<TrackListViewModel>();
-
-                //   //  int index = 0;
-                //     foreach (var t in currentAlbum.Tracks)
-                //     {
-                //       //  index++;
-                //         TrackListViewModel trackList = TrackListViewModel.getOrCreate(t); // PlayListViewModel.findTrack(App.bib.Musique, t.PieceId);
-                //         if (trackList == null)
-                //             continue;
-                //        // trackList.Index = index;
-                //         if (t.PieceId == humanSelected.PieceId)
-                //             trackList.IsSelected = true;
-                //         else
-                //             trackList.IsSelected = false;
-                //         tracks.Add(trackList);
-                //     }
-                // }
-                //return tracks;
-
+                displayMsg = true;
+                var result = MessageBox.Show(msgBox, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                displayMsg = false;
             }
+
         }
-
-        public TrackListViewModel SelectedTrackInAlbumView
+        private static bool changing;
+        public static void setChanging() { changing = true; }
+        public static void releaseChanging() { changing = false; }
+        public static void invalidateAlbums()
         {
-            get
-            {
-
-
-                //var t = humanSelected;
-
-
-                //if (!albumVirtual)
-                //    return t;
-                //if (plv != null && !plv.contains(t.PieceId))
-                //{
-                //    t = plv.Tracks.Find(tt => tt.MasterId == humanSelected.MasterId);
-                //    if (t != null)
-                //        return t;
-                //}
-                return humanSelected;
-
-                //if (humanSelected == null)
-                //    return null;
-                //var tracks = Album;
-                //if (tracks == null || tracks.Count == 0)
-                //    return null;
-                //var tt = tracks.Find(t => t.MasterId == humanSelected.MasterId);
-                //return tt;
-            }
-            set
-            {
-                if (value == null)
-                    return;
-                if (humanSelected != null)
-                    humanSelected.IsSelected = false;
-                humanSelected = value;
-                if (humanSelected != null)
-                    humanSelected.IsSelected = true;
-                // TrackListViewModel.setHumanSelected(App.bib.Musique, value);
-                //  initAlbums(); 
-                // TrackListViewModel.HumanSelected = humanSelected; 
-                var client = new SimpleClient("SelectedTrackInAlbumView", log);
-                init(humanSelected, client);
-                OnPropertyChanged("");
-            }
-        }
-
-
-        #region cmd
-
-        private ICommand _contextCmdCheck;
-        public ICommand ContextCmdCheck { get { if (_contextCmdCheck == null) _contextCmdCheck = new CheckCmd(this); return _contextCmdCheck; } }
-
-        private ICommand _contextCmdUnCheck;
-        public ICommand ContextCmdUnCheck { get { if (_contextCmdUnCheck == null) _contextCmdUnCheck = new UnCheckCmd(this); return _contextCmdUnCheck; } }
-
-
-        private ICommand _contextLinkFather;
-        public ICommand LinkFather { get { if (_contextLinkFather == null) _contextLinkFather = new LinkFather(); return _contextLinkFather; } }
-
-        private ICommand _contextLinkChild;
-        public ICommand LinkChild { get { if (_contextLinkChild == null) _contextLinkChild = new LinkChild(); return _contextLinkChild; } }
-
-        private ICommand _contextLinkFusion;
-        public ICommand LinkFusion { get { if (_contextLinkFusion == null) _contextLinkFusion = new LinkFusion(); return _contextLinkFusion; } }
-
-        private ICommand _contextUnLink;
-        public ICommand LinkReset { get { if (_contextUnLink == null) _contextUnLink = new LinkReset(); return _contextUnLink; } }
-
-        private ICommand _contextDelete;
-        public ICommand DeleteTrack { get { if (_contextDelete == null) _contextDelete = new DeleteCmd(); return _contextDelete; } }
-
-        private ICommand _contexExplorer;
-        public ICommand Explorer { get { if (_contexExplorer == null) _contexExplorer = new Explorer(); return _contexExplorer; } }
-
-        private ICommand _contextInfo;
-        public ICommand Info { get { if (_contextInfo == null) _contextInfo = new InfoCmd(); return _contextInfo; } }
-
-
-
-        private ICommand _ContextCmdAddToList;
-        public ICommand ContextCmdAddToList { get { if (_ContextCmdAddToList == null) _ContextCmdAddToList = new AddToList(this, App.Instance); return _ContextCmdAddToList; } }
-
-        private ICommand _ContextCmdDbDeleteClassement;
-        public ICommand ContextCmdDbDeleteClassement { get { if (_ContextCmdDbDeleteClassement == null) _ContextCmdDbDeleteClassement = new DbDeleteLastClassement(this); return _ContextCmdDbDeleteClassement; } }
-
-        private ICommand _ContextCmdDbDeleteRead;
-        public ICommand ContextCmdDbDeleteRead { get { if (_ContextCmdDbDeleteRead == null) _ContextCmdDbDeleteRead = new DbDeleteLastRead(this); return _ContextCmdDbDeleteRead; } }
-
-
-        #endregion
-
-        //  static Regex reg = new Regex(@"\[(.*)\]");
-        /// <summary>
-        /// moche mais pour l'instant on s'en contente
-        /// </summary>
-        public string Grouping
-        {
-            get
-            {
-                return getGrouping(false);
-            }
-        }
-
-        private string getGrouping(bool albumVirt)
-        {
-            if (humanSelected == null)
-                return "";
-            var t = humanSelected.PieceGen;
-            if (albumVirt)
-                t = humanSelected.PieceGen.Master;
-
-            var a = t.PieceAlbum;
-            if (a == null)
-                return "";
-            string delta = "-";
-            var updateClassement = a.UpdateClassement;
-            if (updateClassement != null)
-                delta = ((int)(DateTime.Now.Date - updateClassement.Value.Date).TotalDays).ToString();
-
-            return string.Format("{0} {1} [{2}] {3}", t.StackIndex, delta, t.RankAlbumReverse, a.EquivLight);
-
-            //var str = t.Grouping;
-
-            //if (!reg.IsMatch(str))
-            //    return str;
-
-            //return reg.Match(str).Groups[1].Value;
-        }
-
-        public string GroupingAlt
-        {
-            get
-            {
-                return getGrouping(true);
-            }
-        }
-
-        public bool WithVirtualAlbum
-        {
-            get
-            {
-                if (humanSelected == null)
-                    return false;
-                return humanSelected.PieceGen.PieceAlbum.Virtual;
-            }
-        }
-
-        public string Name
-        {
-            get
-            {
-                if (humanSelected == null)
-                    return "";
-                return humanSelected.Album;
-            }
-        }
-
-        public string NameAlt
-        {
-            get
-            {
-                if (humanSelected == null)
-                    return "";
-                return humanSelected.Piece.Master.Album;
-            }
-        }
-
-        #region image
-        private ImageSource img;
-        public bool HasArtWork
-        {
-            get
-            {
-                return img != null;
-            }
-        }
-
-        public ImageSource ArtWork
-        {
-            get { return img; }
-        }
-
-        #region albums
-        public List<TrackListViewModel> Albums { get { return albums; } }
-        private List<TrackListViewModel> albums = new List<TrackListViewModel>();
-        private void initAlbums()
-        {
-            if (currentAlbum == null)
+            if (gen == null)
                 return;
 
-            var _albumName = currentAlbum.Name;
-            //if (pl == null || _albumName != pl.Name)
-            //{
-            pl = new PlayList(_albumName);
-            plv = new PlayListViewModel(pl);
-            //  plv.setSecondary(); 
-            foreach (var t in currentAlbum.Tracks)
-            {
-                pl.add(t);
-            }
-            plv.init();
-            foreach (TrackListViewModel t in plv.Tracks)
-            {
-                if (t.PieceId == humanSelected.PieceId)
-                    t.IsSelected = true;
-                else
-                    t.IsSelected = false;
-            }
-            if (humanSelected == null)
+            gen.invalidateAlbums();
+            if (changing)
                 return;
-
-            albums = new List<TrackListViewModel>();
-
-
-            foreach (var p in humanSelected.PieceGen.Master)
+            go();
+        }
+        [STAThread]
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            try
             {
-                var pp = TrackListViewModel.getOrCreate(p); // pl.FindTrack(p.PieceId);
-                if (pp != null)
-                    albums.Add(pp);
-            }
-            albums.Sort(new AlbumComparer());
+                var xmlConf = CConf.loadConf();
+                setDispatcherPriority();
 
-            //foreach (TrackListViewModel t in albums)
-            //{
-            //    t.IsSelected = t.PieceId == humanSelected.PieceId;
-            //}
-            //  return albums;
-            //TrackListViewModel trackList = TrackListViewModel.getOrCreate(t); // PlayListViewModel.findTrack(App.bib.Musique, t.PieceId);
-            //if (trackList == null)
-            //    continue;
-            //// trackList.Index = index;
-            //if (t.PieceId == humanSelected.PieceId)
-            //    trackList.IsSelected = true;
-            //else
-            //    trackList.IsSelected = false;
-            //tracks.Add(trackList);
-            // }
+                base.OnStartup(e);
+                Thread.CurrentThread.Name = "GUI";
 
+                //   app = new LegacyApp(); 
+                Logger.init(Environment.CurrentDirectory.Replace("\\", "_"));
+                log = Logger.getLogger("Program");
+                logDispatch = Logger.getLogger("Dispatch");
+                misc.init(log);
 
-            //var albums = new List<TrackListViewModel>();
-            //if (humanSelected == null)
-            //    return albums;
-            //var pl_ = PlayListViewModel.SelectedPlayList;
-            //if (pl_ == null)
-            //    return albums;
-            //foreach (var p in humanSelected.PieceGen.Master)
-            //{
-            //    var pp = TrackListViewModel.getOrCreate(p); // pl.FindTrack(p.PieceId);
-            //    if (pp != null)
-            //        albums.Add(pp);
-            //}
-            //albums.Sort(new AlbumComparer());
 
-            //foreach (TrackListViewModel t in albums)
-            //{
-            //    t.IsSelected = t.PieceId == humanSelected.PieceId;
-            //}
-            //return albums;
 
+                //  IPlayerEngine player = PlayerBuilder.create("vlcplugin");
 
-        }
 
 
+                Piece.Compact = CConf.Compact;
+                CPieceClassement.DateMin = CConf.ConfGen.MinClassDate;
+                export = CConf.Export;
+                import = CConf.Import;
 
-        public TrackListViewModel SelectedTrackInAlbumsView
-        {
-            get
-            {
-                return humanSelected;
-
-            }
-            set
-            {
-                if (value == null)
-                    return;
-                if (humanSelected != null)
-                    humanSelected.IsSelected = false;
-                humanSelected = value;
-                if (humanSelected != null)
-                    humanSelected.IsSelected = true;
-                //if (humanSelected != null)
-                //    humanSelected.IsSelected = true;
-                // TrackListViewModel.setHumanSelected(App.bib.Musique, value); // HumanSelected = value;
-                var client = new SimpleClient("SelectedTrackInAlbumsView", log);
-                init(humanSelected, client);
-                OnPropertyChanged("");
-
-            }
-        }
-
-
-        private class AlbumComparer : IComparer<TrackListViewModel>
-        {
-            //private int theOne; 
-            //public AlbumComparer(TrackListViewModel humanselected)
-            //{
-            //    theOne = humanselected.PieceId; 
-            //}
-
-            public int Compare(TrackListViewModel x, TrackListViewModel y)
-            {
-
-                //if (x.PieceId == theOne)
-                //    return -1;
-                //if (y.PieceId == theOne)
-                //    return 1;
-                return x.RankAlbumReverse.CompareTo(y.RankAlbumReverse);
-            }
-        }
-        #endregion
-        #endregion
-
-
-        public List<TrackListViewModel> SelectedTracks
-        {
-            get { return Album; }
-        }
-    }
-}
-
-]]></content>
-  </file>
-  <file path="\PieceDb.Consolid\CPieceComparer.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using pdb.gen.conf;
-using pdb.obj;
-using pdb.util;
-using pdb.gen.albums;
-using System.IO;
-namespace pdb.gen
-{
-    public class PieceDeepClassementComparer : IComparer<Piece>
-    {
-        public int Compare(Piece x, Piece y)
-        {
-            return -x.DeepClassement.CompareTo(y.DeepClassement);
-        }
-    }
-
-    public class CPieceComparerByGoodness : IComparer<Piece>
-    {
-        /// <summary>
-        /// compareur de listes
-        /// </summary>
-        private static CPlayListComparer c_comparer = new CPlayListComparer();
-        public static bool modeBatch = true;
-        public int Compare(Piece x, Piece y)
-        {
-            return -x.Classement.CompareTo(y.Classement);
-            //return -x.RapportClassement(false).CompareTo(y.RapportClassement(false));
-            ////var cmp =  x.RapportClassement.CompareTo(y.RapportClassement);
-            ////if (cmp != 0)
-            ////    return -cmp;
-            ////cmp = x.Duration.CompareTo(y.Duration);
-            ////if (cmp != 0)
-            ////    return -cmp;
-            ////return x.PieceId.CompareTo(y.PieceId); 
-            ////if (!modeBatch)
-            ////{
-            ////    if (x.ClassPlayList == null)
-            ////    {
-            ////        if (y.ClassPlayList == null)
-            ////        {
-            ////            return -(x.RatingCmp.CompareTo(y.RatingCmp));
-            ////        }
-            ////        else
-            ////        {
-            ////            return 1;
-            ////        }
-            ////    }
-            ////    if (y.ClassPlayList == null)
-            ////    {
-            ////        return -1;
-            ////    }
-            ////}
-
-            //// gérer le cas ou les deux listes sont imbriquées
-            //// 3.4 > 33.5 et 3.2 < 33.0
-
-            ////if (x.isClassListNumeric && y.isClassListNumeric)
-            ////{
-            //String strX = x.ClassNameAndRating(false);
-            //String strY = y.ClassNameAndRating(false);
-            //var cmpnameRat = compareClassNameAndRating(strX, strY);
-            //if (cmpnameRat != 0) return cmpnameRat;
-            ////}
-            ////if (!modeBatch)
-            ////{
-
-            ////    CPlayList plX = x.ClassPlayList;
-            ////    CPlayList plY = y.ClassPlayList;
-
-            ////    //if( plX.isSubList(plY) || plY.isSubList(plX))
-            ////    //{
-            ////    //    string xName = plX.Name;
-            ////    //    string yName = plY.Name; 
-
-            ////    //}
-
-
-            ////    int l_plCmp = c_comparer.Compare(plX, plY);
-            ////    if (l_plCmp == 0)
-            ////    {
-            ////        return -(x.RatingCmp.CompareTo(y.RatingCmp));
-            ////    }
-            ////    else
-            ////    {
-            ////        return l_plCmp;
-            ////    }
-            ////}
-            ////else
-            //    return -(x.RatingCmp.CompareTo(y.RatingCmp));
-
-
-        }
-
-        public static int compareClassNameAndRating(string strX, string strY)
-        {
-            int max = strX.Length > strY.Length ? strX.Length : strY.Length;
-            for (int i = 0; i < max; i++)
-            {
-                int iX = strX.getInt(i); // CUtil.getInt(strX, i);
-                int iY = strY.getInt(i);//CUtil.getInt(strY, i);
-                if (iX != iY)
-                    return -iX.CompareTo(iY);
-            }
-            return 0;
-        }
-
-    }
-
-    public class CPieceComparerByGoodness2 : IComparer<Piece>
-    {
-        public int Compare(Piece x, Piece y)
-        {
-            return x.Rank.Quality.CompareTo(y.Rank.Quality);
-        }
-    }
-
-    public class CPieceComparerByQualityAndLength : IComparer<Piece>
-    {
-
-        private static IComparer<Piece> c_comparer = new CPieceComparerByGoodness2();
-        public virtual int Compare(Piece x, Piece y)
-        {
-            int l_cmp = c_comparer.Compare(x, y);
-            if (l_cmp == 0)
-                return -x.Duration.CompareTo(y.Duration);
-            return l_cmp;
-        }
-    }
-
-    //public class CPieceComparerByQualityAndLength2 : IComparer<Piece>
-    //{
-    //    int IComparer<Piece>.Compare(Piece x, Piece y)
-    //    {
-    //        return x.Rank.Twice.CompareTo(y.Rank.Twice);
-    //    }
-    //}
-
-    //public class CPieceComparerByQualityAndLengthInv : IComparer<Piece>
-    //{
-
-    //    private static IComparer<Piece> c_comparer = new CPieceComparerByGoodness2();
-    //    public virtual int Compare(Piece x, Piece y)
-    //    {
-    //        int l_cmp = c_comparer.Compare(x, y);
-    //        if (l_cmp == 0)
-    //            return x.Rank.Lenght.CompareTo(y.Rank.Lenght);
-    //        return l_cmp;
-    //    }
-    //}
-
-    //public class CPieceComparerByQualityAndLengthInv2 : IComparer<Piece>
-    //{
-    //    int IComparer<Piece>.Compare(Piece x, Piece y)
-    //    {
-    //        return x.Rank.TwiceInv.CompareTo(y.Rank.TwiceInv);
-    //    }
-    //}
-
-    /// <summary>
-    /// tri pour la copie : En premier : les plus bas et les activés
-    /// </summary>
-    public class CPieceComparerByQualityLengthAndEnable : CPieceComparerByQualityAndLength
-    {
-        public override int Compare(Piece x, Piece y)
-        {
-            if (x.Enabled == y.Enabled)
-            {
-                return -base.Compare(x, y);
-            }
-            if (x.Enabled)
-                return -1;
-            return 1;
-        }
-    }
-
-
-    public class CPieceComparerByLenght : IComparer<Piece>
-    {
-
-        public int Compare(Piece x, Piece y)
-        {
-            return x.Duration.CompareTo(y.Duration);
-        }
-    }
-
-    //public class CPieceComparerByLenght2 : IComparer<Piece>
-    //{
-
-    //    public int Compare(Piece x, Piece y)
-    //    {
-    //        return x.Rank.Lenght.CompareTo(y.Rank.Lenght);
-    //    }
-    //}
-
-    public class CPieceInListComparer : IComparer<Piece>
-    {
-
-        //Public Function Compare(ByVal x As CPiece, ByVal y As CPiece) As Integer Implements System.Collections.Generic.IComparer(Of CPiece).Compare
-        //    Dim val1 As Double = x.Rapport * Math.Pow(x.Duration, CDb.SortTimeProp)
-        //    Dim val2 As Double = y.Rapport * Math.Pow(y.Duration, CDb.SortTimeProp)
-
-        //    Dim l_cmp As Integer = val1.CompareTo(val2)
-        //    If l_cmp <> 0 Then
-        //        Return l_cmp
-        //    Else
-        //        Return x.Duration.CompareTo(y.Duration)
-        //    End If
-        //End Function
-        /// <summary>
-        /// Comparaison de deux fichiers en fonction du cumul des deux paramètre qualité et longueur
-        /// 
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <returns></returns>
-        /// <remarks>En gros on ajoute le log des classements qualité et longueur, pondérés par le coefficient sortimeProp
-        /// 0 --> que la longueur prise en compte
-        /// 1 --> que la qualité</remarks>
-        public int Compare(Piece x, Piece y)
-        {
-            var val1 = CTuning.Calc(x.Rank, CConf.Sort);
-            var val2 = CTuning.Calc(y.Rank, CConf.Sort);
-
-            int l_cmp = val1.CompareTo(val2);
-            if (l_cmp != 0)
-            {
-                return l_cmp;
-            }
-            else
-            {
-                return x.Duration.CompareTo(y.Duration);
-            }
-
-        }
-
-
-    }
-
-    public class PieceMaxClassementComparer : IComparer<Piece>
-    {
-        public int Compare(Piece x, Piece y)
-        {
-            return -x.MaxClassement.CompareTo(y.MaxClassement);
-        }
-    }
-
-    public class PieceRestComparer : IComparer<Piece>
-    {
-        static IComparer<Piece> qual = new CPieceComparerByQualityAndLength();
-        public int Compare(Piece x, Piece y)
-        {
-            //if ((x.Album == "A Lovaggkiraly" && x.Name == "Piste 04" && y.Album == "Only Built 4 Cuban Linx" && y.Name == "Shark Niggas (Biters)")
-            //    || (y.Album == "A Lovaggkiraly" && y.Name == "Piste 04" && x.Album == "Only Built 4 Cuban Linx" && x.Name == "Shark Niggas (Biters)"))
-            //{
-            //    int toto = 0; 
-            //}
-
-            int cmp = x.Rank.TimeRest.CompareTo(y.Rank.TimeRest);
-            if (cmp != 0)
-                return cmp;
-
-            return qual.Compare(x, y);
-            //cmp = x.QRank.CompareTo(y.QRank);
-            //if (cmp != 0)
-            //    return cmp; 
-
-            //return - x.LRank.CompareTo(y.LRank);
-
-        }
-    }
-
-    public class PieceRestComparer2 : IComparer<Piece>
-    {
-        public int Compare(Piece x, Piece y)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-
-
-    //public class PieceDeltaComparer : IComparer<Piece>
-    //{
-
-    //    public int Compare(Piece x, Piece y)
-    //    {
-    //        int cmp = x.Rank.Delta.CompareTo(y.Rank.Delta);
-    //        if (cmp != 0)
-    //            return cmp;
-    //        return x.QLRank.CompareTo(y.QLRank);
-
-    //    }
-    //}
-
-    //public class PieceSortComparer : IComparer<Piece>
-    //{
-    //    private static IComparer<Piece> qual = new CPieceComparerByQualityAndLength(); 
-    //    public int Compare(Piece x, Piece y)
-    //    {
-    //        int cmp = x.Rank.SortValue.CompareTo(y.Rank.SortValue);
-    //        if (cmp != 0)
-    //            return cmp;
-    //        return -qual.Compare(x,y); 
-
-    //    }
-    //}
-
-
-    //public class PieceClassementDisplayComparer : IComparer<Piece>
-    //{
-    //    private static PieceTrackNumberComparer tn = new PieceTrackNumberComparer();
-    //    public int Compare(Piece x, Piece y)
-    //    {
-    //        var xv = x.RapportClassement;
-    //        var yv = y.RapportClassement;
-    //        int cmp = 0;
-    //        if (xv == 0m || yv == 0m)
-    //            cmp = x.RapportClassement.CompareTo(y.RapportClassement);
-    //        if (cmp != 0) return -cmp;
-    //        cmp = x.VirtualClassement.CompareTo(y.VirtualClassement);
-    //        if (cmp != 0) return -cmp;
-    //        return tn.Compare(x, y);
-    //        //  return -x.RapportClassement.CompareTo(y.RapportClassement);
-    //    }
-    //}
-
-    public class PieceVirtualClassementComparer : IComparer<Piece>
-    {
-        private static PieceTrackNumberComparer tn = new PieceTrackNumberComparer();
-        public int Compare(Piece x, Piece y)
-        {
-
-            int cmp = x.Classement.CompareTo(y.Classement);
-
-
-            if (cmp != 0) return -cmp;
-            //cmp = x.RapportClassement.CompareTo(y.RapportClassement);
-            //if (cmp != 0) return -cmp;
-            return tn.Compare(x, y);
-            //  return -x.RapportClassement.CompareTo(y.RapportClassement);
-        }
-    }
-
-    public class PieceClassementComparer : IComparer<IPieceAlbum>
-    {
-        private bool oldAsZero;
-        private pieceExtendedMode mode = pieceExtendedMode.main;
-        public PieceClassementComparer(bool oldAsZero)
-            : this(oldAsZero, pieceExtendedMode.main)
-        {
-
-        }
-
-        public PieceClassementComparer(bool oldAsZero, pieceExtendedMode mode)
-        {
-            this.oldAsZero = oldAsZero;
-            this.mode = mode;
-        }
-        private static PieceTrackNumberComparerE tn = new PieceTrackNumberComparerE();
-        public int Compare(IPieceAlbum x, IPieceAlbum y)
-        {
-
-            if (oldAsZero)
-            {
-                bool xRecent = x.LastClassementRecent;
-                bool yRecent = y.LastClassementRecent;
-                if (xRecent != yRecent)
-                {
-                    if (xRecent)
-                        return -1;
-                    return 1;
-                }
-            }
-            int cmp = 0;
-
-#if GEN2
-            if (mode == pieceExtendedMode.main)
-                cmp = x.Classement.CompareTo(y.Classement);
-            else if (mode == pieceExtendedMode.min)
-                cmp = x.Classement2.CompareTo(y.Classement2);
-            else
-                cmp = x.ClassementCumul.CompareTo(y.ClassementCumul);
-#else
-
-            cmp = x.Classement.CompareTo(y.Classement);
-#endif
-
-            if (cmp != 0) return -cmp;
-
-
-            var xpd = x.Piece.DeepClassement;
-            var ypd = y.Piece.DeepClassement;
-            //1.CompareTo(3) = -1 1<3 => 1-3
-            if (xpd.isPositive())
-            {
-                if (ypd.isPositive())
-                {
-                    cmp = xpd.CompareTo(ypd);
-                    if (cmp != 0) return cmp;
-                }
+                gen = new Consolid();
+                gen.FilterNext = CConf.ConfGen.FilterNext;
+                var mementoAlbum = Memento.Instance.confAlbum;
+                if (mementoAlbum != null && mementoAlbum.Composants.Count > 0)
+                    gen.SortAlbumMode = mementoAlbum;
                 else
-                    /// dans l'ordre 0002(x) puis 0(y)
-                    return -1;
+                    gen.SortAlbumMode = CConf.ConfGen.AlbumSort;
+                Memento.Instance.confAlbum = gen.SortAlbumMode;
+                CConf.ConfGen.AlbumSort = gen.SortAlbumMode;
 
+                Piece.SeuilProvisoire = gen.SortAlbumMode.lastModif;
+                Piece.SeuilCompact = gen.SortAlbumMode.compact;
+
+                BackGroundTaskMgr.Conf = CConf.ConfOrdo;
+                BackGroundTaskMgr.Start();
+                DataConf dbConf = new DataConf(xmlConf);
+                CFile.DefaultFolder = dbConf.defaultFolder;
+                ZipUtil.Exe = dbConf.sZip;
+                Db = new CDb(dbConf);
+
+                //  loader = new HomeLoader(Db);
+                //  app.init(loader);
+                Db.SovIni();
+                Db.loadData();
+
+                if (dbConf.compressID || dbConf.synchroID)
+                {
+                    Environment.Exit(0);
+                }
+
+                //ChronoData.refreshDate(DateTime.MinValue);
+                //ChronoData.DateAuto = false;
+                //Db.eraseClassementForEnabled();
+                //Db.WriteDB1(); 
+                //return;
+                // app.loadData(Db, CConf.Scan);
+
+                // Db.LegacyConsolid(app.LegacyList, DateTime.Now);
+
+
+
+
+                goInit();
+
+                //  Memento.Instance.save();
+                thLoop = new Thread(loop);
+                thLoop.Start();
+
+                MemUtil.Start(CConf.GcCollect);
+                //  go();
             }
-            else
+            catch (Exception ex)
             {
-                if (ypd.isPositive())
-                    /// dans l'ordre 0002(y) puis 0(x)
-                    return 1;
+                if (log != null)
+                    log.log(ex.ToString());
             }
 
-            return tn.Compare(x, y);
+
 
         }
-    }
 
-    public class PieceStackCmp : IComparer<Piece>
-    {
-        private static PieceTrackNumberComparer tn = new PieceTrackNumberComparer();
-        public int Compare(Piece x, Piece y)
+
+
+        private static void loop()
         {
-            int cmp = x.RankAlbumSt.CompareTo(y.RankAlbumSt);
-            if (cmp != 0) return -cmp;
-            return tn.Compare(x, y);
+            Thread.CurrentThread.Name = "App";
+            while (!__end)
+            {
+                Thread.Sleep(30);
+                if (!__go)
+                    continue;
+                lock (_lock)
+                {
+                    if (!__go)
+                        continue;
+                    __go = false;
+                }
+                _go();
+
+            }
+
+        }
+        private static bool _updateStats;
+        private static TrackListViewModel _currentTrack;
+        public static void go()
+        {
+            go(false);
+        }
+        public static void go(bool updateStats)
+        {
+            lock (_lock)
+            {
+                _updateStats |= updateStats;
+                __go = true;
+                if (bib != null)
+                    bib.Aborted = true;
+            }
         }
 
-    }
-    ///// <summary>
-    ///// Donne l'ordre de copie si on s'intéresse aux morceaux les moins notés
-    ///// </summary>
-    //public class PieceClassementComparerInv : IComparer<Piece>
-    //{
-    //    public int Compare(Piece x, Piece y)
-    //    {
-    //        //if (x.Enabled != y.Enabled)
-    //        //{
-    //        //    return x.Enabled ? -1 : 1;
-    //        //}
-
-    //        if (x.IsNext != y.IsNext)
-    //        {
-    //            if (x.IsNext)
-    //                return -1;
-    //            return 1; 
-    //        }
-    //        var xv = x.RapportClassement;
-    //        var yv = y.RapportClassement;
-
-    //        int cmp = 0;
-    //        if (xv > 0 && yv > 0)
-    //        {
-    //            cmp = xv.CompareTo(yv);
-    //            if (cmp != 0) return cmp;
-    //            cmp = x.VirtualClassement.CompareTo(y.VirtualClassement);
-    //            if (cmp != 0) return cmp;
-    //        }
-
-    //        cmp = x.TrackNumber.CompareTo(y.TrackNumber);
-    //        if (cmp != 0)
-    //            return cmp;
-    //        return x.Location.CompareTo(y.Location);
-    //        //  return -x.RapportClassement.CompareTo(y.RapportClassement);
-    //    }
-    //}
-
-    ///// <summary>
-    ///// Donne l'ordre de copie si on s'intéresse aux morceaux les moins notés et si on veut optimiser autour du Next
-    ///// </summary>
-    //public class PieceClassementComparerExport : IComparer<Piece>
-    //{
-    //    public PieceClassementComparerExport(HashList<Piece> source)
-    //    {
-    //        this.source = source; 
-    //    }
-    //    private readonly HashList<Piece> source;
-    //    public int Compare(Piece x, Piece y)
-    //    {
-    //        return source.IndexOf(x).CompareTo(source.IndexOf(y)); 
-    //    }
-    //}
-
-    public class PieceDurationValueComparer : IComparer<Piece>
-    {
-        public int Compare(Piece x, Piece y)
+        public static void go(TrackListViewModel current)
         {
-            return -x.Duration.CompareTo(y.Duration);
+            lock (_lock)
+            {
+                _currentTrack = current;
+                go(true);
+            }
         }
-    }
 
-    //public class PieceSortComparerList : IComparer<Piece>
-    //{
-
-    //    public int Compare(Piece x, Piece y)
-    //    {
-    //        return x.Rank.Sort.CompareTo(y.Rank.Sort);
-    //        //int cmp = x.Rank.SortValue.CompareTo(y.Rank.SortValue);
-    //        //if (cmp != 0)
-    //        //    return cmp;
-    //        //return x.QLRank.CompareTo(y.QLRank);
-
-    //    }
-    //}
-
-    public class PieceTrackNumberComparer : IComparer<Piece>
-    {
-        public int Compare(Piece x, Piece y)
+        private static void resetOneCl()
         {
-            var cmp = x.TrackNumber.CompareTo(y.TrackNumber);
-            if (cmp != 0)
-                return cmp;
-            var xpath = x.getLocation();
-            var ypath = y.getLocation();
-            if (x.TrackNumber <= 0)
+            lock (_lock)
             {
                 try
                 {
-                    var xf = Path.GetFileNameWithoutExtension(xpath);
-                    var yf = Path.GetFileNameWithoutExtension(xpath);
-                    cmp = xf.CompareTo(yf);
-                    if (cmp != 0)
-                        return cmp;
+                    var conf = CConf.ZeroWorkConf;
+                    if (conf.enabled)
+                    {
+
+                        // CPieceClassement.DateMin = DateTime.MinValue;
+                        //   Classement zero = Classement.create("0.0"); decimal zer0d = zero.ClassementValueDecimal;
+                        var oldKepp = new List<Piece>();
+
+                        var _albums = gen.Albums;
+                        foreach (var album in _albums.List)
+                        {
+                            var l = album.Tracks;
+                            foreach (Piece t in l)
+                            {
+                                if (t.Keep)
+                                {
+                                    t.setKeep(0); //t.Keep = false;
+                                    oldKepp.Add(t);
+                                    //t.resetMedianneCompact();
+                                    //t.invalidateCache(true); 
+                                }
+                            }
+                        }
+                        foreach (var album in _albums.List)
+                        {
+                            var l = album.Tracks;
+                            Classement pluspetitNonNull = null;
+                            Classement minusRecent = null;
+                            Piece min = null;
+                            Piece firstZero = null;
+                            int nbnotes = 0;
+                            int nbRecent = 0;
+                            if (album.Name == "Maxime Le Forestier")
+                            {
+
+                            }
+                            //foreach (Piece t in l)
+                            //{
+                            //    var cl = t.DeepClassement; // p.Classement.DbValue;
+                            //    // decimal clValue = obj.Classement.create(cl.ToString()).ClassementValueDecimal; //  Piece.classementHash.getCache(cl.ToString()).ClassementValueDecimal; // t.ClassementValueDecimal(false);
+                            //    if (cl.isPositive())// > zer0d)
+                            //    {
+                            //        nbnotes++;
+                            //        if (t.LastClassementRecent || !t.Enabled)
+                            //        {
+                            //            if (!conf.alwaysKeep)
+                            //            {
+                            //                min = null;
+                            //                break;
+                            //            }
+
+                            //            nbRecent++;
+                            //            continue;
+                            //        }
+                            //        if (pluspetitNonNull == null || cl < pluspetitNonNull)
+                            //        {
+                            //            pluspetitNonNull = cl;
+                            //            min = t;
+                            //        }
+                            //    }
+                            //    else
+                            //    {
+                            //        if (conf.keep2Enabled)
+                            //        {
+                            //            if (t.Enabled && !t.LastClassementRecent)
+                            //            {
+                            //                if (firstZero == null)
+                            //                {
+                            //                    if (min == null || conf.alwaysKeep2)
+                            //                    {
+                            //                        firstZero = t;
+                            //                    }
+                            //                }
+                            //            }
+                            //        }
+                            //    }
+                            //}
+
+                            bool alwaysKeepUsed = false;
+                            foreach (Piece t in l)
+                            {
+                                var cl = t.DeepClassement; // p.Classement.DbValue;
+                                                           // decimal clValue = obj.Classement.create(cl.ToString()).ClassementValueDecimal; //  Piece.classementHash.getCache(cl.ToString()).ClassementValueDecimal; // t.ClassementValueDecimal(false);
+
+                                bool isNote = cl.isPositive();
+                                bool isRecent = t.LastClassementRecent || !t.Enabled;
+                                if (isRecent)
+                                    nbRecent++;
+                                if (isNote)
+                                    nbnotes++;
+                                if (isNote)
+                                {
+                                    if (isRecent)
+                                    {
+                                        if (!conf.alwaysKeep)
+                                        {
+                                            min = null;
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            alwaysKeepUsed = true;
+                                            if (conf.keepMinus>=1 && cl < minusRecent)
+                                                minusRecent = cl;
+                                            continue;
+                                        }
+                                    }
+                                    if (pluspetitNonNull == null || cl < pluspetitNonNull)
+                                    {
+                                        pluspetitNonNull = cl;
+                                        min = t;
+                                    }
+                                }
+                                else
+                                {
+                                    if (conf.keep2Enabled)
+                                    {
+                                        if (!isRecent)
+                                        {
+                                            if (firstZero == null)
+                                            {
+                                                if (min == null || conf.alwaysKeep2)
+                                                {
+                                                    firstZero = t;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            decimal coeff1 = -1;
+                            decimal coeff2 = -1;
+
+                            if (min != null)
+                            {
+                                if (coeff1 < 0)
+                                    coeff1 = ((decimal)nbRecent + 1) / (l.Count + 1);
+                                if (coeff2 < 0)
+                                    coeff2 = (decimal)nbnotes / l.Count;
+                                var coeff = coeff1 * coeff2;
+                                if (!alwaysKeepUsed)
+                                    coeff /= conf.coeffZero;
+
+                                if (minusRecent != null)
+                                {
+                                    var maxValue = minusRecent.RapportClassement;
+                                    //var keepValue = pluspetitNonNull.RapportClassement * coeff;
+                                    //if (keepValue > maxValue)
+                                    //{
+
+                                    //}
+                                    var coeffMax = maxValue /( pluspetitNonNull.RapportClassement * conf.keepMinus);
+                                    if (coeff > coeffMax)
+                                    { 
+                                        coeff = coeffMax;
+                                        if (conf.keepMinus ==1m)
+                                            coeff = 0; 
+                                    }
+
+                                }
+                                min.setKeep(coeff);
+                            }
+                            if (firstZero != null)
+                            {
+                                if (nbnotes == 0)
+                                    nbnotes++;
+                                try
+                                {
+                                    if (coeff2 < 0)
+                                        coeff2 = (decimal)nbnotes / l.Count;
+
+                                    firstZero.setKeep(-coeff2);
+                                }
+                                catch (Exception ex)
+                                {
+                                    misc.log(ex);
+                                }
+                            }
+
+
+
+                        }
+
+                        foreach (Piece t in oldKepp)
+                        {
+
+                            if (!t.Keep)
+                            {
+                                t.resetMedianneCompact();
+                                t.invalidateCache(true);
+                            }
+                        }
+
+
+                    }
                 }
-                catch
+                finally
                 {
+                    //  CPieceClassement.DateMin = CConf.ConfGen.MinClassDate;
                 }
             }
-            return xpath.CompareTo(ypath);
-            //  return x.TrackNumber.CompareTo(y.TrackNumber);
         }
-    }
 
-    internal class PieceTrackNumberComparerE : IComparer<IPieceAlbum>
-    {
-        public int Compare(IPieceAlbum x, IPieceAlbum y)
+
+
+        private static void goInit()
         {
-            var xx = x.Piece;
-            var yy = y.Piece;
-            var cmp = xx.TrackNumber.CompareTo(yy.TrackNumber);
-            if (cmp != 0)
-                return cmp;
+            var client = new SimpleClient("goInit\t", logPerf);
+            var root = gen.Root;
 
-            cmp = xx.MasterTrackNumber.CompareTo(yy.MasterTrackNumber);
-            if (cmp != 0)
-                return cmp;
-            return xx.Location.CompareTo(yy.Location);
+            ChronoData.DateAuto = false;
+            DateTime now = DateTime.Now;
+            gen.Now = now;
+            gen.Step = -1;
 
-            //var xpath = xx.getLocation();
-            //var ypath = yy.getLocation();
-            //if (xx.TrackNumber <= 0)
+
+
+            gen.ConsolidInit(Db.List.getList());
+            client.log(" gen.ConsolidInit(Db.List.getList());");
+            if (CConf.ZeroWorkConf.enabled)
+            {
+
+                resetOneCl();
+                client.log("resetOneCl");
+                //CPieceClassement.DateMin = DateTime.MinValue;
+                ////Classement min = Classement.create("00003.0"); decimal mind = min.ClassementValueDecimal;
+                //Classement zero = Classement.create("0.0"); decimal zer0d = zero.ClassementValueDecimal;
+
+                ////foreach (Piece p in gen.sortByClass())
+                ////{
+                ////    decimal clValue = p.ClassementValueDecimal(false) ;
+                ////    if (clValue > zer0d)
+                ////    {
+                ////        if (clValue >= zer0d)
+                ////        {
+                ////            var dPiece = Db.getPiece(p.PieceId);
+                ////            var strNewCl = "0000" + dPiece.getClassement().ToString();
+                ////            var newCl = Classement.create(strNewCl);
+                ////            p.Enabled = true;
+
+                ////            p.setClassement(newCl.ClassList, newCl.Rating);
+                ////            dPiece.Classement.eraseClassement2(newCl);
+                ////        }
+                ////        else
+                ////            p.Enabled = false;
+                ////    }
+                ////}
+
+                //var _albums = gen.Albums;
+                //foreach (var album in _albums.List)
+                //{
+                //    var l = album.Tracks;
+                //    decimal pluspetitNonNull = int.MaxValue;
+                //    Piece min = null;
+                //    foreach (Piece t in l)
+                //    {
+                //        decimal clValue = t.ClassementValueDecimal(false);
+                //        if (clValue > zer0d)
+                //        {
+                //            if (clValue < pluspetitNonNull)
+                //            {
+                //                pluspetitNonNull = clValue;
+                //                min = t;
+                //            }
+                //        }
+
+                //    }
+
+                //    if (min != null)
+                //    {
+                //        (min.Track as CPiece).Classement.keepValue();
+                //    }
+                //}
+                ////    foreach (Piece t in l)
+                ////    {
+                ////        if (t.Parent == null)
+                ////        {
+                ////            decimal clValue = t.ClassementValueDecimal(false);
+                ////            if (t.isClassListNumeric && clValue > zer0d)
+                ////            {
+                ////                if (clValue > pluspetitNonNull)
+                ////                {
+                ////                    var dPiece = Db.getPiece(t.PieceId);
+                ////                    t.Enabled = true;
+                ////                    t.setClassement("0", 0);
+                ////                    dPiece.Classement.eraseClassement2();
+                ////                }
+                ////            }
+                ////        }
+                ////    }
+                ////}
+
+                ////gen.MakeConsolid(Db.List.getList(), true);
+                CPieceClassement.DateMin = CConf.ConfGen.MinClassDate;
+            }
+
+            gen.MakeConsolid(null, true, true, client);
+            //  if (CConf.ConfGen.LimitList <= 0)
+            gen.buildMusique();
+            // gen.buildClassTree();
+            gen.buildLists(Db.List.Listes);
+
+            bib = new BibViewModel(root);
+            client.log("creation bib");
+            ChronoData.DateAuto = true;
+            //  var classement = root.getOrCreate("classement");
+
+
+
+            ListWriterMgr.Async = false;
+            listWriter = new ListWriter(bib);
+            //   gen.createRot(CConf.ListBase, listWriter); 
+            //bib = new BibViewModel(Db.Root); 
+            //gen.createRot(CConf.ListBase, bib);
+            //   if (bgClass.IsEnd) BackGroundTaskMgr.Start();
+
+
+            //  gen.timeRanking();
+            // gen.eraseGrouping();
+            // gen.writeComment();
+            Piece.SeuilProvisoire = gen.SortAlbumMode.lastModif;
+            gen.createRot(CConf.ListBase, client, listWriter);
+            PlayListViewModel.Log = true;
+            //   gen.builStats();
+            //gen.CommentGo = true;
+            //gen.GroupinGO = true;
+            //  PlayerViewModel.Instance.SortAlbumMode = gen.SortAlbumMode;
+            PlayerViewModel.Instance.WithVirtualAlbum = gen.AlbumVirtual;
+            PlayerViewModel.ConfAlbumSort = gen.SortAlbumMode;
+            Memento.Instance.confAlbum = gen.SortAlbumMode;
+            Piece.SeuilProvisoire = gen.SortAlbumMode.lastModif;
+
+
+            //foreach (CPiece p in Db.List)
             //{
-            //    try
+            //    if (p.DurationInSec == 0 && p.Exists)
             //    {
-            //        var xf = Path.GetFileNameWithoutExtension(xpath);
-            //        var yf = Path.GetFileNameWithoutExtension(xpath);
-            //        cmp = xf.CompareTo(yf);
-            //        if (cmp != 0)
-            //            return cmp;
-            //    }
-            //    catch
-            //    {
+            //        try
+            //        {
+            //            PlayerViewModel.Instance.Player.getDuration(p);
+            //            log.log("{0} duration {1} s", p, p.DurationInSec);
+            //        }
+            //        catch (Exception ex)
+            //        {
+            //            log.log(ex.ToString());
+            //        }
+
             //    }
             //}
-            //return xpath.CompareTo(ypath);
 
 
-            //  return x.TrackNumber.CompareTo(y.TrackNumber);
+            // detailClassementViewModel.IhmInDispo = ihmInDispo.stat;
+            // new Thread(() =>
+            gen.builStats(null);
+            client.log("Fin goInit");
         }
-    }
 
-    class LastModifClassementComparer : IComparer<Piece>
-    {
-        PieceTrackNumberComparer trackCmp = new PieceTrackNumberComparer();
-        public int Compare(Piece x, Piece y)
+        private static bool mustBuildCompleteAlbums(TrackListViewModel currentTrack)
         {
-
-
-            var dtx = x.UpdateClassement;
-            var dty = y.UpdateClassement;
-            int cmp = 0;
-            if (dtx == null)
+            var tracks = new List<TrackListViewModel>();
+            foreach (TrackListViewModel t in PlayerViewModel.Instance.PresentationTracks)
             {
-                if (dty == null)
-                {
-                }
-                else
-                    cmp = -1;
+                tracks.Add(t);
             }
-            else if (dty == null)
-                cmp = 1;
-            else
-                cmp = dtx.Value.CompareTo(dty.Value);
+            tracks.Sort((x, y) => x.RankAlbumReverse.CompareTo(y.RankAlbumReverse));
+            int count = tracks.Count;
+            int rank0 = currentTrack.RankAlbumReverse;
 
+            int i = 0;
+            // recherche trou avant ex rank0=3 pas de 1 ni de 2
+            for (; i < count; i++)
+            {
+                var t = tracks[i];
+                if (t.RankAlbumReverse >= rank0)
+                    break;
 
-            if (cmp != 0)
-                return cmp;
-            return trackCmp.Compare(x, y);
+                if (t.RankAlbumReverse > i + 1)
+                    return true;
+            }
+
+            //if (i + 1 < count && tracks[i + 1].RankAlbumReverse > rank0 + 1)
+            //{
+            //    return true;
+            //}
+
+            return false;
         }
-    }
 
-    class ClassementValueDecimal0Comparer : IComparer<Piece>
-    {
-        static PieceTrackNumberComparer trackCmp = new PieceTrackNumberComparer();
-        public int Compare(Piece x, Piece y)
+        private static void buildAffectedAlbumsWhenCurrentTrackChange(TrackListViewModel currentTrack, IDictionary<string, Album> dict, HashSet<Album> depot, bool navQuick)
         {
-            var cmp = x.Classement.CompareTo(y.Classement);
-            if (cmp != 0)
-                return cmp;
-            return trackCmp.Compare(x, y);
+            if (currentTrack == null)
+                return;
+            TrackListViewModel item = currentTrack;
+            var cl = item.PieceGen.getClassement(true);
+            var _dict = dict;  // new Dictionary<string,Album>(); 
+
+            //foreach (Album album in dict.Values)
+            //{
+            //    var current = album.PlusPetitEnabled; 
+            //    if (current == null || cl<=current.getClassement(true))
+            //        _dict.Add(album.Key, album); 
+            //}
+
+            var tracks = new List<TrackListViewModel>();
+            foreach (TrackListViewModel t in PlayerViewModel.Instance.PresentationTracks)
+            {
+                tracks.Add(t);
+            }
+            tracks.Sort((x, y) => x.Index.CompareTo(y.Index));
+            int count = tracks.Count;
+
+            //int index = -1;
+            //for (int i = 0; i < count; i++)
+            //{
+            //    var t = tracks[i];
+            //    if (t.PieceId == currentTrack.PieceId)
+            //    {
+            //        index = i;
+            //        break;
+            //    }
+            //}
+
+            //if (index < 0)
+            //{
+            //    foreach (Album a in dict.Values)
+            //        depot.Add(a);
+            //    return;
+            //}
+
+            var hs = new HashSet<int>();
+            if (navQuick)
+                hs.Add(item.MasterId);
+            int index = -1;
+            try
+            {
+                while (true)
+                {
+                    index++;
+                    if (index >= count)
+                        return;
+
+                    var t = tracks[index];
+                    if (!hs.Add(t.MasterId))
+                        continue;
+                    if (navQuick && t.album == item.album)
+                        continue;
+                    //if (t.album == item.album)
+                    //    continue;
+
+                    if (_dict.ContainsKey(t.album.Key))
+                    {
+                        depot.Add(t.album);
+                        if (depot.Count >= _dict.Count)
+                            return;
+                    }
+                    else
+                        break;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                log.log(ex.ToString());
+            }
+            finally
+            {
+
+            }
+        }
+
+        private void automateNextTrack()
+        {
+            var client = new SimpleClient("automateNextTrack\t");
+            this.dispatch(
+                () =>
+                {
+                    PlayerViewModel.Instance.goToFirst();
+                    App.go();
+                }, client);
+            //if (!CheckAccess())
+            //    Dispatcher.BeginInvoke(new Action(this.automateNextTrack), App.DISPATCHER_PRIORITY);
+            //else
+            //{
+            //    PlayerViewModel.Instance.forwardAuto();
+            //    App.go();
+            //}
+        }
+
+        static int nbGo = 0;
+        static bool classementChange;
+        private static SimpleClient client;
+        public static bool Indispo { get; set; }
+        private static void _go()
+        {
+            gen.Albums.endParallelSort();
+            bool classementChange = App.classementChange;
+            var _currentTrack = App._currentTrack;
+            nbGo++;
+            bool urgence = false;
+            if (client != null)
+            {
+                client.log("FIN new step");
+                client.cancel();
+            }
+
+            client = new SimpleClient("<--- chrono " + nbGo + "\t", logPerf);
+            var clientArgs = new ClientEventArgs(client);
+
+            try
+            {
+
+                bool reInit = !gen.AlbumBuild;
+                var confSort = PlayerViewModel.ConfAlbumSort;
+                if (confSort != null)
+                {
+                    Piece.SeuilProvisoire = confSort.lastModif;
+                    CConf.ConfGen.AlbumSort = confSort;
+                }
+                //   gen.compact(); 
+                if (detailClassementViewModel != null)
+                    detailClassementViewModel.IhmInDispo = ihmInDispo.rot;
+                //gen.CommentGo = false;
+                //gen.GroupinGO = false;
+                bib.Aborted = true;
+
+                step++;
+                gen.Step = step;
+
+                ChronoData.DateAuto = false;
+                DateTime now = DateTime.Now;
+                gen.Now = now;
+                ChronoData.DateAuto = false;
+
+                urgence = gen.Urgence && TrackListViewModel.CurrentPlaying == _currentTrack;
+                if (!urgence)
+                {
+                    Db.saveAsync();
+                    Memento.Instance.save();
+                }
+                client.log(string.Format("debut classementChange={0} gen.ClassementChanged={1} gen.Urgence={2} _currentTrack={3}", classementChange, gen.ClassementChanged, gen.Urgence, _currentTrack));
+                if (PlayerViewModel.Instance.CreateRot)
+                {
+                    if (urgence)
+                        PlayerViewModel.Instance.modeFirst();
+                    if (gen.ClassementChanged)
+                    {
+                        classementChange = true;
+                        App.classementChange = true;
+                    }
+
+                    if (!urgence && classementChange)
+                    {
+                        resetOneCl();
+                        client.log("resetOneCl");
+                        App.classementChange = false;
+                    }
+
+                    if (_currentTrack != null)
+                    {
+                        int nbAlbums = 0;
+                        // bool sortDone = false;
+                        if (urgence)
+                        {
+                            var affectedAlbums = gen.Albums.GetAndInvalidateAlbums(_currentTrack.PieceGen);
+                            bool mustComplete = mustBuildCompleteAlbums(_currentTrack);
+
+                            if (!mustComplete)
+                            {
+
+                                //}
+
+                                var depot = new HashSet<Album>();
+                                buildAffectedAlbumsWhenCurrentTrackChange(_currentTrack, affectedAlbums, depot, CConf.ConfGen.NavQuick);
+                                if (depot.Count == 0)
+                                {
+                                    if (_currentTrack == TrackListViewModel.CurrentPlaying)
+                                    {
+                                        log.log("pas de makeSort. on passe au suivant on verra après");
+                                        _currentTrack = null;
+                                        gen.Urgence = false;
+
+                                        App.Instance.automateNextTrack();
+                                        return;
+
+                                    }
+                                    else
+                                    {
+                                        log.log("trop naze c'est trop long");
+                                        gen.Urgence = false;
+
+                                    }
+
+
+                                }
+                                //}
+                                //}
+                                else
+                                {
+                                    log.log("depot:");
+                                    nbAlbums = gen.Albums.makeSort(depot, log);
+                                    //sortDone = true;
+                                }
+
+                            }
+                            else
+                            {
+                                log.log("y a des trous dans la raquette on force le makesort");
+                                gen.Urgence = false;
+                            }
+                            //if (!sortDone && gen.Urgence)
+                            //{
+                            //    log.log("affected albums");
+                            //    nbAlbums = gen.Albums.makeSort(_currentTrack.PieceGen, log);
+                            //}
+                            client.log(string.Format("makeSort partial {0} elt", nbAlbums));
+                            _currentTrack.refresh();
+                            while (Indispo)
+                                Thread.Sleep(100);
+                            if (nbAlbums > 0)
+                            {
+                                if (refreshAlbum != null)
+                                    refreshAlbum("", clientArgs);
+                                client.log("refreshAlbum");
+                            }
+                        }
+                    }
+
+                    _currentTrack = null;
+
+
+                    // if (__end || __go) return;
+
+
+                    //  gen.SortAlbumMode = PlayerViewModel.Instance.SortAlbumMode;
+                    //    gen.AlbumVirtual = PlayerViewModel.Instance.WithVirtualAlbum; 
+
+                    while (Indispo)
+                        Thread.Sleep(100);
+                    gen.MakeConsolid(null, _updateStats, classementChange, client); //   bib.Musique.Tracks);
+                    if (reInit)
+                        gen.buildMusiqueAgain();
+                    //  if (__end || __go) return;
+                    // AlbumCtl.Instance.init();
+                    //   if (__end || __go) return;
+                    //gen.timeRanking();
+                    //  if (__end || __go) return;
+                    ChronoData.DateAuto = true;
+
+                    //bool navAuto = PlayerViewModel.Instance.NavAuto; 
+                    //if (navAuto)
+                    //{
+                    //    if (refresh != null)
+                    //        refresh(PHASE1, EventArgs.Empty);
+                    //}
+
+
+
+                    //      if (__end || __go) return;
+                    bib.Aborted = false;
+                    ListWriterMgr.Async = false;
+                    //listWriter = new ListWriter(root);
+                    try
+                    {
+                        CConf.loadConf();
+                        setDispatcherPriority();
+                    }
+                    catch (Exception ex)
+                    {
+                        log.log(ex.ToString());
+                    }
+                    // gen.SortByAlbum = PlayerViewModel.Instance.SortByAlbum;
+                    while (Indispo)
+                        Thread.Sleep(100);
+                    gen.createRot(CConf.ListBase, client, App.bib);
+                    if (reInit)
+                        bib.syncMusique();
+                    //if (refresh != null)
+                    //    refresh(PHASE1, EventArgs.Empty);
+
+
+                    //log.log("visibles"); 
+                    //foreach (TrackListViewModel visible in Player.VisibleItems)
+                    //{
+                    //    if (__end || __go) return;
+                    //    visible.PieceGen.writeCommentGrouping();
+                    //    visible.refresh(); 
+                    //}
+                    //if (refresh != null)
+                    //    refresh(PHASE2, EventArgs.Empty);
+
+                    //if (__end || __go) return;
+                    //gen.writeComment();
+                    //if (__end || __go) return;
+                    //gen.writeGrouping();
+
+                    while (Indispo)
+                        Thread.Sleep(100);
+                    if (refresh != null)
+                        refresh(PHASE2, clientArgs);
+                    client.log("refresh après createRot");
+
+
+                    //if (__end || __go) return;
+
+                    //gen.CommentGo = true;
+                    //gen.GroupinGO = true;
+
+
+
+                    //if (refresh != null)
+                    //    refresh(PHASE2, EventArgs.Empty);
+                    // _refresh = true;
+                    lock (_lock)
+                    {
+                        if (_updateStats && !urgence)
+                        {
+                            if (detailClassementViewModel != null)
+                                detailClassementViewModel.IhmInDispo = ihmInDispo.stat;
+                            //new Thread(() =>
+                            gen.builStats(() => { if (detailClassementViewModel != null) detailClassementViewModel.IhmInDispo = ihmInDispo.none; });
+
+                        }
+                        else
+                        {
+                            if (detailClassementViewModel != null)
+                                detailClassementViewModel.IhmInDispo = ihmInDispo.none;
+                        }
+                    }
+                    //bib = new BibViewModel(Db.Root); 
+                    //gen.createRot(CConf.ListBase, bib);
+                    //   if (bgClass.IsEnd) BackGroundTaskMgr.Start();
+                    //gen.CommentGo = true;
+                    //gen.GroupinGO = true;
+
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                log.log(ex.ToString());
+            }
+
+            finally
+            {
+                //   gen.eraseGrouping(); 
+                //if (refresh != null && PlayerViewModel.Instance.CreateRot)
+                //    refresh(PHASE2, EventArgs.Empty);
+
+                // detailClassementViewModel.IhmInDispo = ihmInDispo.none;
+                lock (_lock)
+                {
+                    _currentTrack = null;
+#if EXPORT
+                    ExportCmd.CalculExport();
+#endif
+                    if (_updateStats && !urgence)
+                    {
+                        _updateStats = false;
+                    }
+                }
+                client.log("FIN _go()");
+                if (urgence && !DetailClassementViewModel.Instance.Auto)
+                    go(false);
+
+                if (classementChange && !urgence)
+                    gen.Albums.parallelSort();
+
+                if (!urgence && TrackListViewModel.HumanSelectedIsBusy)
+                {
+                    if (refreshArtWork != null)
+                        refreshArtWork.BeginInvoke("toto", clientArgs, null, null);
+                }
+
+
+            }
+
+
+        }
+
+        public static event EventHandler<ClientEventArgs> refresh;
+        public static event EventHandler<ClientEventArgs> refreshAlbum;
+        public static event EventHandler<ClientEventArgs> refreshArtWork;
+
+        public static void shutdown()
+        {
+            MemUtil.End();
+            __end = true;
+            if (App.bib != null)
+                App.bib.Aborted = true;
+            Db.WriteDB1();
+            if (App.bib != null)
+                App.bib.Aborted = true;
+            Environment.Exit(0);
+        }
+
+        public static List<TrackListViewModel> getAlbum(TrackListViewModel track)
+        {
+            if (gen == null)
+                return null;
+
+            var ll = new List<TrackListViewModel>();
+
+            var l = gen.getTracksAlbum(track.PieceGen);
+            if (l == null)
+                return null;
+            foreach (Piece p in l)
+            {
+
+                TrackListViewModel trackList = TrackListViewModel.getOrCreate(p); // PlayListViewModel.findTrack(bib.Musique, p.PieceId);
+                if (trackList == null)
+                    continue;
+                ll.Add(trackList);
+            }
+
+            return ll;
+
+        }
+
+        public void InfoIHm(string message, string caption)
+        {
+            MessageBox.Show(message, caption, MessageBoxButton.OK);
+        }
+
+        public bool Confirm(string question, string caption)
+        {
+            return MessageBox.Show(question, caption, MessageBoxButton.YesNo) == MessageBoxResult.Yes;
+        }
+
+        public bool? TriChoix(string question, string caption)
+        {
+            var result = MessageBox.Show(question, caption, MessageBoxButton.YesNoCancel);
+            switch (result)
+            {
+                case MessageBoxResult.Cancel:
+                return null;
+                case MessageBoxResult.No:
+                return false;
+                case MessageBoxResult.None:
+                return null;
+                case MessageBoxResult.OK:
+                return true;
+                case MessageBoxResult.Yes: return true;
+                default: return null;
+
+            }
+        }
+        public Export getConfExport(string question)
+        {
+            var dialog = new ConfExport(question, export);
+            dialog.ShowDialog();
+            return export;
+        }
+
+        public Import getConfImport(string question)
+        {
+            var dialog = new ConfImport(question, import);
+            dialog.ShowDialog();
+            return import;
+        }
+
+        public string folderDialog()
+        {
+            var dialog = new FolderBrowserDialogW(Db.DefaultFolder); // new System.Windows.Forms.FolderBrowserDialog();
+            dialog.ShowDialog();
+            //dialog.SelectedPath = Db.DefaultFolder;
+            //System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+            //string dir = null;
+            //if (result == System.Windows.Forms.DialogResult.OK)
+            //{
+            //    dir = dialog.SelectedPath;
+            //}
+
+            //return dir;
+            return dialog.Dir;
+        }
+
+        public int getNb(string question)
+        {
+            var w = new getNb(question, 2);
+            w.ShowDialog();
+            return w.Nb;
+        }
+
+
+        public bool changeName(string title, IName data)
+        {
+            var stringDialog = new StringDialog(title, data);
+            stringDialog.ShowDialog();
+            return stringDialog.Ok;
+        }
+
+        public PlayListViewModel selectPlayList(string title)
+        {
+            var dialog = new BrowsePlayList(title);
+            dialog.ShowDialog();
+            if (dialog.Ok)
+            {
+                return dialog.Selected;
+            }
+
+            return null;
+        }
+
+        public static void buildList()
+        {
+            Db.List.buildLists(bib.Listes.PlayList);
         }
     }
-
-
 }
 ]]></content>
   </file>
@@ -2814,7 +2792,7 @@ namespace pdb.gen.albums
                         Next = firstKeep2; refact = true;
                     }
                 }
-                else if (firstKeep != null && firstKeep == min && Next != firstKeep2)
+                else if (firstKeep != null && firstKeep == min && Next != firstKeep)
                 {
                     {
                         Next = firstKeep; refact = true;
@@ -4002,6 +3980,43 @@ namespace pdb.gen.albums
 
 
 
+    }
+}
+]]></content>
+  </file>
+  <file path="\PieceDb.Consolid\Tuning\ZeroWorkConf.cs">
+    <content><![CDATA[using pdb.util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Xml;
+
+namespace pdb.gen.Tuning
+{
+    public class ZeroWorkConf : TuningBase
+    {
+        public bool enabled;
+        public bool alwaysKeep;
+        public bool keep2Enabled;
+        public bool alwaysKeep2;
+        public decimal coeffZero = 1m;
+        public decimal keepMinus = 0m;
+        public ZeroWorkConf()
+            : base()
+        { }
+
+        public ZeroWorkConf(XmlElement node) : base(node)
+        {
+            if (node == null)
+                return;
+            buildb("enabled", v => enabled = v);
+            buildb("alwaysKeep", v => alwaysKeep = v);
+            buildb("keep2Enabled", v => keep2Enabled = v);
+            buildb("alwaysKeep2", v => alwaysKeep2 = v);
+            builddec("keepMinus", v => keepMinus = v);
+            builddec("coeffZero", v => coeffZero = v);
+        }
     }
 }
 ]]></content>
