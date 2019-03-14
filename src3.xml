@@ -1,4 +1,5428 @@
 <db path="C:\bernard\db4">
+  <file path="\pdb.podcast\TrackInfoItunes.cs">
+    <content><![CDATA[using System;
+using System.Globalization;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Xml;
+using iTunesLib;
+using pdb.ordo;
+using pdb.podcast.Build;
+using pdb.util;
+using System.Collections.Generic;
+using pdb.podcast.Tuning;
+using pdb.util.list;
+using pdb.obj;
+using pdb.it;
+using pdb.podcast.Albums;
+
+namespace pdb.podcast
+{
+    public enum selectMode
+    {
+        none = 0,
+        // standAlone = 1,
+        simple = 2,
+        serial = 3,
+        histo = 4
+    }
+
+    public class TrackInfoItunes : pdb.it.TrackInfoItunes, IPub, ISelectable
+    {
+        public const string PUB_DATE_FORMAT_COMMENT = "yyyy/MM/dd HH:mm";
+        public const string PUB_DATE_FORMAT_DB = "dd/MM/yyyy HH:mm";
+        private static Loader loader;
+        private static AlbumMgr albumMgr = AlbumMgr.Instance;
+        private DateTime dtDisabled = DateTime.MaxValue;
+        public DateTime Disabled { get { return dtDisabled; } }
+
+
+        public override bool Equals(object obj)
+        {
+            var o = obj as TrackInfoItunes;
+            if (o == null)
+                return false;
+            return DbId.Equals(o.DbId);
+        }
+
+        public new static Loader Loader { set { loader = value; } }
+        private TrackAlbum _album;
+        public TrackAlbum TrackAlbum
+        {
+            get
+            {
+                return _album;
+            }
+            set
+            {
+                _album = value;
+            }
+        }
+
+        public ConfAlbum ConfAlbum
+        {
+            get
+            {
+                if (_album != null)
+                    return _album.ConfAlbum;
+                return ConfAlbums.Main;
+            }
+        }
+
+        public override string AlbumKey { get { var alb = TrackAlbum; if (alb == null) return base.AlbumKey; return alb.AlbumKey; } }
+        public override string Album
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(album) && _album != null)
+                    return _album.Album;
+                return album;
+            }
+            set
+            {
+                base.Album = value;
+            }
+        }
+
+        public int AlbumRating { get { return TrackAlbum.AlbumRating; } }
+        //  private bool ratingComputed; public bool RatingComputed { get { return ratingComputed; } }
+
+        //public override void setAlbum(string album)
+        //{
+        //    TrackInfoItunes.AlbumMgr.setAlbum(this, album);
+        //}
+
+        public DateTime getDate()
+        {
+            return TrackAlbum.ConfAlbum.checkPub ? Pub : Pub2;
+        }
+
+        private void import(IITFileOrCDTrack native)
+        {
+            misc.log("import {0}", this);
+            native.Name = name;
+
+            native.AlbumRating = AlbumRating;
+            if (rating != AlbumRating)
+                native.Rating = rating;
+            native.PlayedDate = this.PlayedDate.ToUniversalTime();
+            native.Enabled = this.Enabled;
+            native.PlayedCount = this.playCount;
+            var _comment = buildComment();
+            if (!string.IsNullOrEmpty(_comment))
+                native.Grouping = _comment;
+            var _composer = buildComposer();
+            if (!string.IsNullOrEmpty(_composer))
+                native.Composer = _composer;
+
+        }
+
+        public string buildComment()
+        {
+            string comment = pub.ToString(PUB_DATE_FORMAT_COMMENT);
+            if (pub2 > pub)
+                comment = string.Format("{0}|{1}| {2}",
+                    pub2.ToString(PUB_DATE_FORMAT_COMMENT),
+                    pub.ToString(PUB_DATE_FORMAT_COMMENT),
+                    (pub2 - pub).TotalDays.ToString("#00.#"));
+            return comment;
+        }
+
+        public string buildComposer()
+        {
+            string comment = pub.ToString(PUB_DATE_FORMAT_COMMENT);
+            //if (pub2 > pub)
+            //    comment = string.Format("{0}|{1}", Pub2.ToString(PUB_DATE_FORMAT_COMMENT), Pub.ToString(PUB_DATE_FORMAT_COMMENT));
+            return comment;
+        }
+
+        public void BuildComment()
+        {
+            var comment = buildComment();
+            if (!string.IsNullOrEmpty(comment) && comment != Grouping)
+            {
+                //if (!string.IsNullOrEmpty(Grouping))
+                //    File.AppendAllText("..\\groupingIni.txt", string.Format("{0};{1};{2}\r\n",DbId,Location,Grouping));
+                Grouping = comment;
+            }
+
+        }
+
+        public void BuildComposer()
+        {
+            var composer = buildComposer();
+            //  Composer = composer;
+            if (!string.IsNullOrEmpty(composer) && composer != Composer)
+                Composer = composer;
+        }
+
+        public void import()
+        {
+            if (!isPresent())
+                return;
+
+            try
+            {
+                var native = TrackTrack;
+                if (native == null)
+                    native = Track;
+                if (native == null)
+                {
+                    bgImport.add(new BgTaskImport(this));
+                }
+                else
+                    import(native);
+
+            }
+            catch (Exception ex)
+            {
+                misc.log(ex.ToString());
+            }
+        }
+
+        public void merge()
+        {
+            if (!isPresent())
+                return;
+            bgImport.add(new BgTaskImport(this));
+        }
+
+        //public void import(TrackInfoItunes db)
+        //{
+        //    this._album = db._album;
+        //    // this.albumRating = db.albumRating;
+        //    this.rating = db.rating;
+        //    //this.rare = db.rare;
+        //    //this.info = db.info;
+        //    this.playCount = db.playCount;
+        //    this.PlayedDate = db.PlayedDate;
+        //    this.enabled = db.enabled;
+        //    present = true;
+        //    db.present = true;
+
+        //    import();
+        //}
+
+        private DateTime offset;
+        public DateTime Offset
+        {
+            set
+            {
+                if (offset == DateTime.MinValue)
+                    offset = value;
+            }
+            get { return offset; }
+        }
+
+        //public override bool Enabled
+        //{
+        //    get
+        //    {
+        //        if (_dbId == 1181)
+        //        {
+        //        }
+
+        //        if (dtDisabled == DateTime.MaxValue)
+        //            return true;
+
+        //        if (_album != null
+        //            && _album.ConfAlbum != null
+        //            && _album.ConfAlbum.disabledForgot < DateTime.MaxValue)
+        //        {
+        //            if (dtDisabled < _album.ConfAlbum.disabledForgot)
+        //                return true;
+        //            else
+        //                return false;
+        //        }
+        //        return base.Enabled;
+        //    }
+        //    //set
+        //    //{
+        //    //    if (enabled != value)
+        //    //    {
+        //    //        base.Enabled = value;
+        //    //        if (!enabled)
+        //    //        {
+        //    //            dtDisabled = DateTime.Now;
+        //    //        }
+        //    //    }
+        //    //}
+        //}
+
+        public bool BaseEnabled { get { return base.Enabled; } }
+
+
+        public override IITFileOrCDTrack Track
+        {
+            get
+            {
+                if (track != null)
+                    return track;
+                if (!present)
+                {
+                    if (!isPresent())
+                        return new NoTrack(this);
+                    // loader.resurrection(this);
+                }
+                return base.Track;
+            }
+        }
+
+        public override IITFileOrCDTrack TrackTrack
+        {
+            get
+            {
+                if (tracktrack != null)
+                    return tracktrack;
+                if (!present)
+                {
+                    if (!isPresent())
+                        return new NoTrack(this);
+                    //   loader.resurrection(this);
+                }
+                return base.TrackTrack;
+            }
+        }
+
+        private static volatile object _lock = new object();
+        private static int volumeMin = int.MinValue;
+        public static int VolumeMin { set { volumeMin = value; } }
+        protected static string defaultFolder;
+        //private static bool _updateNative;
+        //public static bool UpdateNative { get { return _updateNative; } set { _updateNative = value; } }
+        public static string DefaultFolder
+        {
+            set
+            {
+                if (defaultFolder == null)
+                {
+                    defaultFolder = value;
+                    if (!defaultFolder.EndsWith("\\"))
+                        defaultFolder += ("\\");
+                    defaultFolder += "Podcasts\\";
+                }
+            }
+            get { return defaultFolder; }
+        }
+
+        private int _dbId;
+
+        public int DbId { get { return _dbId; } set { if (_dbId <= 0) _dbId = value; } }
+
+        //private static int NB = 0;
+        //private int iddebug;
+
+        public TrackInfoItunes()
+        {
+            _isPodCast = true;
+            //NB++;
+            //iddebug = NB;
+        }
+        public override int GetHashCode()
+        {
+            return DbId.GetHashCode();
+        }
+        //  public bool Deleted { get; set; }
+
+        private static BackGroundTaskMgr bgMove;  //new BackGroundTaskMgr("Move"); 
+
+        private SequentialDictString<LimitItem> listSelected = new SequentialDictString<LimitItem>();
+        //public List<LimitItem> Providers { get { return listSelected; } }
+
+        //  private SequentialDictString<LimitItem> listLoad0 = new SequentialDictString<LimitItem>();
+        // private SequentialDictString<LimitItem> listStandAlone = new SequentialDictString<LimitItem>();
+        // public List<LimitItem> Providers0 { get { return listLoad0; } }
+
+        //private List<LimitItem> listLoadRecursif = new List<LimitItem>();
+        //public List<LimitItem> ProvidersRecursif { get { return listLoadRecursif; } }
+
+        //private List<LimitItem> listLoadGuest = new List<LimitItem>();
+        //public List<LimitItem> ProvidersGuest { get { return listLoadGuest; } }
+
+
+
+        /// <summary>
+        /// Seule limite contenant le track
+        /// </summary>
+        //private LimitItem exclu;
+        //public LimitItem Exclu { get { return exclu; } set { exclu = value; } }
+
+        public void addPhase1(LimitItem item)
+        {
+            //var key = item.ID;
+            //if (!listLoad0.ContainsKey(key))
+            //    listLoad0.Add(key, item);
+        }
+        //public bool containsload(LimitItem item)
+        //{
+        //    var key = item.ID;
+        //    return listLoad0.ContainsKey(key);
+        //}
+
+        //public bool containsStandAlone(LimitItem item)
+        //{
+        //    var key = item.ID;
+        //    return listStandAlone.ContainsKey(key);
+        //}
+
+        //public bool containsSelect(LimitItem item)
+        //{
+        //    var key = item.ID;
+        //    return listSelected.ContainsKey(key);
+        //}
+        //public bool isPreselected { get { return listLoad0.Count > 0; } }
+        //public ICollection<LimitItem> Providers1 { get { return listStandAlone.Values; } }
+        public ICollection<LimitItem> Providers { get { return listSelected.Values; } }
+        public LimitItem Provider
+        {
+            get
+            {
+
+                if (listSelected.Count == 0)
+                    return null;
+                return listSelected.List[0];
+            }
+        }
+        public string GetProvider()
+        {
+            var provider = Provider;
+            if (provider == null)
+                return "";
+            return provider.ToString();
+        }
+
+        public void addRecursif(LimitItem item)
+        {
+            //if (!listLoadRecursif.Contains(item))
+            //    listLoadRecursif.Add(item);
+        }
+
+        public void addGuest(LimitItem item)
+        {
+            //if (!listLoadGuest.Contains(item))
+            //    listLoadGuest.Add(item);
+        }
+
+        public static TrackInfoItunes createCopy(TrackInfoItunes org)
+        {
+            var copy = org.MemberwiseClone() as TrackInfoItunes;
+            copy.clearLists();
+            return copy;
+        }
+
+        public void synch(TrackInfoItunes o)
+        {
+            _in = o._in;
+            _out = o._out;
+            pub = o.pub;
+            Pub2 = o.pub2;
+            if (!string.IsNullOrEmpty(Description))
+                Description = o.Description;
+            if (!string.IsNullOrEmpty(LongDescription))
+                LongDescription = o.LongDescription;
+
+        }
+
+        const string REFONTE = "v1";
+        public override void build(IITFileOrCDTrack track)
+        {
+            base.build(track);
+
+            if (Strange)
+                return;
+
+            if (!track.Enabled)
+            {
+                if (dtDisabled == DateTime.MaxValue || dtDisabled == DateTime.MinValue)
+                    dtDisabled = DateTime.Now;
+            }
+
+            TrackAlbum.AlbumRating = track.AlbumRating;
+            // this.ratingComputed = track.ratingKind == ITRatingKind.ITRatingKindComputed;
+
+#if MOVE
+            var loc = track.Location;
+            FileInfo file = new FileInfo(loc);
+            if (loc.StartsWith("Y:"))
+                return;
+            string dest = "Y" + loc.Substring(1);
+
+
+            try
+            {
+                misc.log("deplacer " + loc);
+                string newDest = file.moveTree(dest, false);
+                misc.log("-------> " + newDest);
+                track.Location = newDest;
+                //try
+                //{
+                //    File.Delete(loc);
+                //}
+
+                //catch (Exception del)
+                //{
+
+                //    misc.log(del.ToString());
+                //}
+
+            }
+            catch (Exception ex)
+            {
+                misc.log(ex.ToString());
+            }
+#else
+
+            if (!track.Podcast)
+                return;
+            //if (!isPodcast)
+            //    return;
+
+            duree = new util.timeSpan(Duration);
+
+            CheckPlay(this);
+
+            //if (track.PlayedCount > 0)
+            //{
+            //    played = markAsPlayed(Rating, PlayedDate);
+            //}
+
+            var loc = track.Location;
+            //if (loc.ToUpper().Contains("FABRIQUE"))
+            //{
+            //    int toto = 0; 
+            //}
+            bool target = true;
+            var cuDtFileFormat = new DateTimeFormatInfo();
+            cuDtFileFormat.FullDateTimePattern = "yyyy.MM.dd_HH.mm";
+            string[] tab = loc.Split('_');
+            var count = tab.GetLength(0);
+            if (count >= 2)
+            {
+                var part = tab[0] + "_" + tab[1];
+                DateTime dtFile;
+                bool fileIsDate = DateTime.TryParse(part, cuDtFileFormat, DateTimeStyles.None, out dtFile);
+                target = !fileIsDate;
+            }
+
+
+            //bool target = loc.ToUpper().Contains(@"D:\ZIQUE\PODCASTS\LA FABRIQUE DE L") && loc.ToUpper().Contains("HISTOIRE");
+
+            try
+            {
+
+                Pub = track.ReleaseDate;
+
+                var cuDtFormat = new DateTimeFormatInfo();
+                cuDtFormat.FullDateTimePattern = "yyyy/MM/dd";
+
+                var cuDtFormat2 = new DateTimeFormatInfo();
+                cuDtFormat2.FullDateTimePattern = "yyyy/MM/dd HH:mm";
+
+                if (pub > MIN)
+                {
+                    string commentByReleaseDate = pub.ToString(cuDtFormat2.FullDateTimePattern);
+                    if (Grouping != commentByReleaseDate)
+                    {
+                        misc.log("chgt Comment à partir de releaseDate {0} de {1} vers {2} {3}", pub, Comment, commentByReleaseDate, this);
+                        Grouping = commentByReleaseDate;
+                    }
+
+                    return;
+                }
+
+                // ici pas de release Date
+
+                string comment = track.Grouping;
+
+                try
+                {
+                    string partDate = comment.Split(' ')[0];
+                    DateTime dtComment = DateTime.MinValue;
+
+                    bool dtCommentBuild = false;
+
+                    dtCommentBuild = DateTime.TryParse(partDate, cuDtFormat, DateTimeStyles.None, out dtComment);
+
+                    bool dtCommentBuild2 = false;
+                    if (dtCommentBuild)
+                        dtCommentBuild2 = DateTime.TryParse(comment, cuDtFormat2, DateTimeStyles.None, out dtComment);
+
+
+                    //if (dtComment.DayOfYear > 1)
+                    //    return;
+
+                    Regex reg = new Regex(@"(\d{2}.\d{2}.\d{4})");
+                    string description = track.Description;
+
+                    if (string.IsNullOrEmpty(description))
+                        description = "";
+
+                    DateTime dtDesc = DateTime.MinValue;
+                    if (reg.IsMatch(description))
+                    {
+                        string strDescriptionDate = reg.Match(description).Groups[1].Value;
+
+                        dtDesc = Convert.ToDateTime(strDescriptionDate);
+                    }
+
+                    if (dtDesc > DateTime.MinValue)
+                    {
+                        string newComment = dtDesc.ToString(cuDtFormat2.FullDateTimePattern);
+                        if (newComment != track.Grouping)
+                        {
+                            if (dtCommentBuild2 && dtComment.Minute != 0)
+                                return;
+                            misc.log("chgt Comment à partir de description {0} de {1} vers {2} {3}", description, comment, newComment, this);
+                            track.Grouping = newComment;
+                        }
+                    }
+                    else if (dtCommentBuild2)
+                    {
+
+                    }
+
+
+
+
+
+
+                }
+                catch (Exception ex)
+                {
+                    misc.logError("impossible de gérer " + this, ex);
+                }
+            }
+            finally
+            {
+
+                //if (target)
+                //{
+
+                //    FileInfo file = new FileInfo(loc);
+                //    DirectoryInfo dirTrack = file.Directory;
+                //    DirectoryInfo dirPodcast = dirTrack.Parent;
+                //    if (!dirPodcast.Name.Equals(REFONTE))
+                //    {
+                //        DirectoryInfo dirV1 = new DirectoryInfo(dirPodcast.FullName + Path.DirectorySeparatorChar + REFONTE);
+                //        if (!dirV1.Exists)
+                //            dirV1.Create();
+
+                //        string dest = dirV1.FullName + Path.DirectorySeparatorChar + dirTrack.Name + Path.DirectorySeparatorChar + file.Name;  // loc.Replace(@"D:\", @"E:\");
+
+                //        string dirDest = Path.GetDirectoryName(dest);
+                //        string fileName = Path.GetFileName(dest);
+                //        fileName = pub.ToString("yyyy.MM.dd_HH.mm") + "_" + fileName;
+
+                //        dest = dirDest + Path.DirectorySeparatorChar + fileName;
+                //        try
+                //        {
+                //            misc.log("deplacer " + loc);
+                //            string newDest = file.copyTree(dest, null);
+                //            misc.log("-------> " + newDest);
+                //            track.Location = newDest;
+                //            try
+                //            {
+                //                File.Delete(loc);
+                //            }
+
+                //            catch (Exception del)
+                //            {
+
+                //                misc.log(del.ToString());
+                //            }
+
+                //        }
+                //        catch (Exception ex)
+                //        {
+                //            misc.log(ex.ToString());
+                //        }
+                //    }
+                //}
+
+            }
+#endif
+
+        }
+
+
+        //private static IDictionary<int, DateTime> maxPlayed = new Dictionary<int, DateTime>();
+        //public static IDictionary<int, DateTime> MaxPlayed { set { maxPlayed = value; } }
+
+        private static DateTime playedLevel = DateTime.MinValue;
+        public static DateTime PlayedLevel { set { playedLevel = value; } }
+        //public static bool markAsPlayed(int rating, DateTime date)
+        //{
+        //    if (maxPlayed.ContainsKey(rating))
+        //        return date > maxPlayed[rating];
+        //    return true;
+        //}
+
+        public bool calcEnabled()
+        {
+            if (dtDisabled == DateTime.MaxValue)
+                return true;
+            var conf = ConfAlbum;
+            if (dtDisabled > conf.forgotMax)
+                return false;
+
+            if (isConcernedBySelection)
+                return dtDisabled < conf.forgotShort;
+            else
+                return dtDisabled < conf.forgot;
+        }
+
+        public static void CheckPlay(TrackInfoItunes track)
+        {
+            var played = isPlayed(track);
+
+            track.played = played;
+            track.enabled = track.calcEnabled();
+        }
+
+
+        private static bool isPlayed(TrackInfoItunes track)
+        {
+            var playDate = track.PlayedDate;
+            if (track.playCount <= 0)
+            {
+                if (playDate == DateTime.MinValue)
+                    return false;
+                if (playedLevel == DateTime.MinValue || playDate >= playedLevel)
+                    return false;
+                // pour les vieux on prend quand même en compte la date de dernière lecture
+                return true;
+            }
+
+
+            var conf = track.ConfAlbum;
+            var playedDate = track.PlayedDate;
+            if (playedDate > conf.forgotMax)
+                return true;
+
+            if (track.isConcernedBySelection)
+            {
+                if (playedDate < conf.forgotShort)
+                    return false;
+            }
+            else
+            {
+                if (playedDate < conf.forgot)
+                    return false;
+            }
+            return true;
+
+        }
+
+
+        public string ShortName { get { return getShortName(location); } }
+        public static string getShortName(string location) { return misc.getShortPath(location, Exporter.PODCASTS, Exporter.ZIQUE, "Y:"); }
+
+        private string hibernateLocation;
+        public string HibernateLocation { get { return hibernateLocation; } set { hibernateLocation = value; } }
+
+
+        public bool isPresent()
+        {
+            if (!string.IsNullOrEmpty(hibernateLocation))
+                return FileRegister.ExistNow(hibernateLocation);
+            return FileRegister.ExistNow(location);
+
+            //var path = location;
+            //if (_extern)
+            //{
+            //    var shortName = ShortName;
+            //    path = TrackInfoItunes.DefaultFolder + shortName;
+            //}
+            //if (FileRegister.Exist(location))
+            //{
+            //    location = path;
+            //    return true;
+            //}
+            //return false;
+        }
+
+        private double note = int.MaxValue;
+        public double Note { get { return note; } set { note = value; } }
+
+        public void build(XmlReader reader)
+        {
+
+            location = reader.GetAttribute("f");
+            if (!string.IsNullOrEmpty(location))
+            {
+                if (Path.IsPathRooted(location))
+                {
+                }
+                else
+                    location = TrackInfoItunes.DefaultFolder + location;
+
+                FileRegister.Push(location);
+            }
+            url = reader.GetAttribute("url");
+            hibernateLocation = reader.GetAttribute("hl");
+
+            string album = reader.GetAttribute("alb");
+
+            if (!string.IsNullOrEmpty(album))
+                this.album = album;
+
+            name = reader.GetAttribute("name");
+
+            var str = reader.GetAttribute("pub");
+            if (!string.IsNullOrEmpty(str))
+                Pub = Convert.ToDateTime(str);
+
+            str = reader.GetAttribute("pub2");
+            if (!string.IsNullOrEmpty(str))
+                Pub2 = Convert.ToDateTime(str);
+            else
+                Pub2 = Pub;
+
+            str = reader.GetAttribute("date");
+            if (!string.IsNullOrEmpty(str))
+            {
+                // playCount = 1;
+                PlayedDate = Convert.ToDateTime(str);
+            }
+
+            str = reader.GetAttribute("nbr");
+            if (!string.IsNullOrEmpty(str))
+            {
+                playCount = Convert.ToInt16(str);
+            }
+
+            str = reader.GetAttribute("albumRating");
+            if (!string.IsNullOrEmpty(str))
+                TrackAlbum.AlbumRating = Convert.ToInt32(str);
+
+            str = reader.GetAttribute("rating");
+            if (!string.IsNullOrEmpty(str))
+                rating = Convert.ToInt32(str);
+
+            if (TrackAlbum.AlbumRating > 0 && rating == 0)
+                rating = TrackAlbum.AlbumRating;
+
+            str = reader.GetAttribute("id");
+            _dbId = Convert.ToInt32(str);
+            if (this._dbId == 1181)
+            {
+            }
+
+            //if ("y" == reader.GetAttribute("rare"))
+            //    TrackAlbum.Rare = true;
+            //if ("y" == reader.GetAttribute("info"))
+            //    TrackAlbum.Info = true;
+            if ("y" == reader.GetAttribute("disabled"))
+            {
+                dtDisabled = DateTime.MinValue;
+            }
+            else
+            {
+                str = reader.GetAttribute("dd");
+                if (string.IsNullOrEmpty(str))
+                {
+                    dtDisabled = DateTime.MaxValue;
+                }
+                else
+                {
+                    if ("y" == str)
+                        dtDisabled = DateTime.MinValue;
+                    else
+                        dtDisabled = Convert.ToDateTime(str);
+                }
+            }
+            str = reader.GetAttribute("s");
+            if (!string.IsNullOrEmpty(str))
+                _size = Convert.ToInt64(str);
+            else
+                _size = -1;
+
+            str = reader.GetAttribute("d");
+            if (!string.IsNullOrEmpty(str))
+                Duree = timeSpan.FromSecondes(Convert.ToInt32(str));
+
+
+
+            str = reader.GetAttribute("add");
+            if (!string.IsNullOrEmpty(str))
+                added = Convert.ToDateTime(str);
+            str = reader.GetAttribute("add1");
+            if (!string.IsNullOrEmpty(str))
+                AddedFirst = Convert.ToDateTime(str);
+
+            if (addedFirst == DateTime.MinValue)
+                addedFirst = added;
+
+            Description = reader.GetAttribute("desc");
+            LongDescription = reader.GetAttribute("ldesc");
+            Comment = reader.GetAttribute("comment");
+
+
+            str = reader.GetAttribute("note");
+            if (!string.IsNullOrEmpty(str))
+                note = Convert.ToDouble(str);
+
+            CheckPlay(this);
+
+        }
+
+        /// <summary>
+        /// Merge du track db (this) avec celui récupéré par itunes
+        /// </summary>
+        /// <param name="native"></param>
+        public void merge(TrackInfoItunes native)
+        {
+            if (native == this)
+                return;
+            if (string.IsNullOrEmpty(location))
+                location = native.Location;
+
+            string album = native.Album;
+
+            name = native.Name;
+
+            PlayedDate = native.PlayedDate;
+
+            playCount = native.PlayCount;
+
+            rating = native.Rating;
+
+
+            // enabled = native.enabled;
+
+            Duration = native.Duration;
+
+            if (native.Added > DateTime.MinValue)
+                added = native.Added;
+
+            if (addedFirst == DateTime.MinValue)
+                addedFirst = added;
+
+            if (!string.IsNullOrEmpty(native.Description))
+                Description = native.Description;
+            if (!string.IsNullOrEmpty(native.LongDescription))
+                LongDescription = native.LongDescription;
+            if (string.IsNullOrEmpty(Comment))
+                Comment = native.Comment;
+            // détection des déselections manuelles
+            if (Enabled && !native.Enabled)
+            //if (enabled && !native.enabled)
+            {
+                //  enabled = native.enabled;
+                var o = native.dtDisabled;
+                if ((dtDisabled == DateTime.MaxValue) || (o > dtDisabled && o < DateTime.MaxValue))
+                    dtDisabled = o;
+            }
+
+
+            CheckPlay(this);
+
+        }
+
+        public void readStat(XmlReader reader)
+        {
+            var str = reader.GetAttribute("in");
+            if (!string.IsNullOrEmpty(str))
+                _in = Convert.ToDateTime(str);
+
+            str = reader.GetAttribute("out");
+            if (!string.IsNullOrEmpty(str))
+                _out = Convert.ToDateTime(str);
+        }
+
+        public bool SelectedByDb { get { return Selected; } }// || _in > _out; } }
+
+        public void readStatGlobal(XmlReader reader)
+        {
+            DateTime oin = DateTime.MinValue;
+            DateTime oout = DateTime.MinValue;
+            var str = reader.GetAttribute("in");
+            if (!string.IsNullOrEmpty(str))
+                oin = Convert.ToDateTime(str);
+
+            str = reader.GetAttribute("out");
+            if (!string.IsNullOrEmpty(str))
+                oout = Convert.ToDateTime(str);
+
+            if (oin > oout)
+            {
+                //sélectionné
+                _gout = DateTime.MaxValue;
+                return;
+            }
+
+            if (oout > _gout)
+                _gout = oout;
+        }
+
+        //public void consolidStat()
+        //{
+        //    if (_in > DateTime.MinValue)
+        //    {
+        //        if (_in < _gin || _gin == DateTime.MinValue)
+        //            _gin = _in; 
+        //    }
+
+        //    if (_out > _gout)
+        //        _gout = _out; 
+        //}
+
+
+
+        public override void build(XmlNode xTrack)
+        {
+            TrackInfoItunes copy = null;
+            if (loader.Import || loader.Slave)
+            {
+                copy = createCopy(this);
+            }
+
+            base.build(xTrack);
+
+            if (!isPodcast)
+                return;
+            if (Strange)
+                return;
+            if (this._dbId == 1181)
+            {
+            }
+
+            if (!base.Enabled)
+            {
+                if (dtDisabled == DateTime.MaxValue || dtDisabled == DateTime.MinValue)
+                    dtDisabled = DateTime.Now;
+            }
+
+            var album = TrackAlbum;
+            if (album == null)
+            {
+                album = albumMgr.Get(this.Album);
+            }
+
+
+            //  bool ratingComputed = false;
+            bool albumRatingComputed = false;
+            //if (Name.Contains("Aubenas"))
+            //{
+            //    int toto = 0;
+            //}
+            //if (!isPodcast)
+            //    return;
+            //if (Strange)
+            //    return;
+            string key = "";
+
+            foreach (XmlNode node in xTrack.ChildNodes)
+            {
+                string value = node.InnerText;
+                if (node.Name == "key")
+                {
+                    key = value;
+                    //if (key == "Rating Computed")
+                    //    ratingComputed = true;
+                    if (key == "Album Rating Computed")
+                        albumRatingComputed = true;
+                    continue;
+                }
+
+                if (string.IsNullOrEmpty(value))
+                    continue;
+                switch (key)
+                {
+                    case "Date Added": added = Convert.ToDateTime(value); AddedFirst = added; break; // DateTime.SpecifyKind(Convert.ToDateTime(value), DateTimeKind.Utc); break;
+                    case "Release Date": pub = Convert.ToDateTime(value).truncateToMinute(); break; //DateTime.SpecifyKind(Convert.ToDateTime(value), DateTimeKind.Utc); break;
+                    case "Album Rating": if (album != null) album.AlbumRating = Convert.ToInt32(value); break;
+                }
+
+            }
+            // gestion des rating
+            if (albumRatingComputed & album != null)
+                album.AlbumRating = 0;
+
+            duree = new util.timeSpan(Duration);
+
+
+            bool change = false;
+            if (copy != null)
+            {
+                if (copy._album != null)
+                    _album = copy._album;
+                if (!string.IsNullOrEmpty(copy.name) && copy.name != name)
+                {
+                    log.log("import cause name '{0}' '{1}' {2}", name, copy.name, this);
+                    name = copy.name;
+                    change = true;
+                }
+
+                if (PlayedDate != copy.PlayedDate)
+                {
+                    log.log("import cause playDate '{0}' '{1}' {2}", PlayedDate, copy.PlayedDate, this);
+                    PlayedDate = copy.PlayedDate;
+                    change = true;
+                }
+                if (playCount != copy.playCount)
+                {
+                    log.log("import cause playCount '{0}' '{1}' {2}", playCount, copy.playCount, this);
+                    change = true;
+                    playCount = copy.playCount;
+                }
+                // albumRating = copy.albumRating;
+                //if (base.Enabled != copy.BaseEnabled)
+                //{
+                //    log.log("import cause enabled '{0}' '{1}' {2}", enabled, copy.enabled, this);
+                //    enabled = copy.enabled;
+                //    change = true;
+                //}
+
+                if (rating != copy.rating)
+                {
+                    log.log("import cause rating '{0}' '{1}' {2}", rating, copy.rating, this);
+                    rating = copy.rating;
+                    change = true;
+                }
+                if (pub2 != copy.pub2)
+                {
+                    log.log("import cause pub2 '{0}' '{1}' {2}", pub2, copy.pub2, this);
+                    pub2 = copy.pub2;
+                    change = true;
+                }
+
+
+                var comment = buildComment();
+                if (!string.IsNullOrEmpty(comment) && comment != Grouping)
+                {
+                    log.log("import cause comment '{0}' '{1}' {2}", Grouping, comment, this);
+                    change = true;
+                }
+
+
+                //var composer = buildComposer();
+                //if (!string.IsNullOrEmpty(composer) && composer != Composer)
+                //{
+                //    log.log("import cause composer '{0}' '{1}' {2}", Composer, composer, this);
+                //    change = true;
+                //}
+
+                //var _comment = buildComment();
+                //if (_comment != Comment)
+                //    change = true;
+
+                Duration = copy.Duration;
+                duree = copy.duree;
+
+
+            }
+            setPub();
+
+            CheckPlay(this);
+
+            if (change)
+            {
+                import();
+            }
+        }
+
+
+
+        //private PubLoader pubLoader;
+        //internal PubLoader PubLoader { get { if (pubLoader == null) pubLoader = new PubLoader(this); return pubLoader; } }
+        internal PubLoader PubLoader { get { return new PubLoader(this); } }
+
+        public void setPub()
+        {
+            PubLoader.setPub();
+        }
+
+        public static DateTime MIN = new DateTime(1970, 1, 1);
+        #region move verspubLoader
+
+        //
+        //private static Regex regex1 = new Regex(@".*(\d\d\.\d\d\.\d\d\d\d).*");
+        //private static Regex regex2 = new Regex(@".*(\d\d\d\d)(\d\d)(\d\d).*");
+        //private static Regex regex3 = new Regex(@".*(\d\d)\.(\d\d)\.(\d\d)_(\d\d)\.(\d\d)_.*");
+
+        //private string getFileNameCmp(string comment)
+        //{
+        //    string fileName = Path.GetFileNameWithoutExtension(location);
+
+        //    if (fileName.Contains(" "))
+        //    {
+        //        var tab = fileName.Split(' ');
+        //        fileName = tab[tab.GetLength(0) - 1];
+        //    }
+
+        //    if (fileName.Contains("_"))
+        //    {
+        //        var tab = fileName.Split('_');
+        //        fileName = tab[tab.GetLength(0) - 1];
+        //    }
+
+        //    if (fileName.Length > 3)
+        //        return comment;
+
+        //    int nb = 0;
+        //    bool isNum = Int32.TryParse(fileName, out nb);
+
+        //    if (!isNum)
+        //        return comment;
+
+        //    while (fileName.Length < 3)
+        //    {
+        //        fileName = "0" + fileName;
+        //    }
+        //    return comment + "_" + fileName;
+        //}
+        //private void checkDate1(string info)
+        //{
+        //    if (pub > MIN)
+        //        return;
+        //    if (pub < MIN)
+        //        pub = MIN;
+
+        //    if (regex1.IsMatch(info))
+        //    {
+        //        try
+        //        {
+        //            Match m = regex1.Match(info);
+        //            string strDate = m.Groups[1].Value;
+        //            DateTime dt = Convert.ToDateTime(strDate);
+        //            pub = dt;
+        //        }
+        //        catch { }
+        //    }
+        //}
+
+        //private void checkDate2(string info)
+        //{
+        //    if (pub > MIN)
+        //        return;
+        //    if (pub < MIN)
+        //        pub = MIN;
+
+        //    if (regex2.IsMatch(info))
+        //    {
+        //        try
+        //        {
+        //            Match m = regex2.Match(info);
+        //            int year = Convert.ToInt16(m.Groups[1].Value);
+        //            int month = Convert.ToInt16(m.Groups[2].Value);
+        //            int day = Convert.ToInt16(m.Groups[3].Value);
+        //            DateTime dt = new DateTime(year, month, day);
+        //            pub = dt;
+        //        }
+        //        catch { }
+        //    }
+        //}
+
+        //private void checkDate3(string info)
+        //{
+        //    if (pub > MIN)
+        //        return;
+        //    if (pub < MIN)
+        //        pub = MIN;
+
+        //    if (regex3.IsMatch(info))
+        //    {
+        //        try
+        //        {
+        //            Match m = regex2.Match(info);
+        //            int year = Convert.ToInt16(m.Groups[1].Value);
+        //            int month = Convert.ToInt16(m.Groups[2].Value);
+        //            int day = Convert.ToInt16(m.Groups[3].Value);
+        //            int hh = Convert.ToInt16(m.Groups[4].Value);
+        //            int mm = Convert.ToInt16(m.Groups[5].Value);
+
+        //            DateTime dt = new DateTime(year, month, day, hh, mm, 0);
+        //            pub = dt;
+        //        }
+        //        catch { }
+        //    }
+        //}
+
+        #endregion
+
+        //public TrackInfoItunes(IITFileOrCDTrack track)
+        //{
+        //    this.track = track;
+        //    this.artist = track.Artist;
+        //    this.album = track.Album;
+        //    this.name = track.Name;
+        //    this.trackNumber = track.TrackNumber;
+        //    this.rating = track.Rating;
+        //    this.year = track.Year;
+        //    this.comment = track.Comment;
+        //    this.enabled = track.Enabled;
+        //    this._isPodCast = track.Podcast;
+        //    this.playedDate = track.PlayedDate;
+        //    this.location = track.Location;
+        //    this.duration = TimeSpan.FromSeconds(track.Duration);
+        //    this.played = track.PlayedCount > 0;
+        //    this.pub = track.ReleaseDate;
+
+        //    checkDate1(name);
+        //    checkDate2(name);
+
+        //    if (!string.IsNullOrEmpty(location))
+        //    {
+        //        string fileName = Path.GetFileName(location);
+        //        checkDate1(fileName);
+        //        checkDate2(fileName);
+        //    }
+
+        //    if (pub <= MIN)
+        //    {
+        //        if (year > 1970)
+        //        {
+        //            DateTime dtYear = new DateTime(year, 1, 1);
+        //            pub = dtYear;
+        //        }
+        //    }
+
+
+        //    this.added = track.DateAdded;
+        //    if (added < MIN) added = MIN;
+
+        //    // DateTime dt_ = pub;
+        //    if (pub <= MIN)
+        //        pub = added;
+        //    string comment = pub.ToString("yyyy/MM/dd HH:mm"); // dt_.Year + "-" + dt_.Month + "-" + dt_.Day;
+        //    if (track.Comment != comment)
+        //        track.Comment = comment;
+
+        //}
+
+
+
+
+        //public int TrackId { get { return track.trackID; } }
+        //public int ID { get { return track.TrackDatabaseID; } }
+
+        //public IITFileOrCDTrack Track { get { return track; } }
+
+
+        #region ITrackNative Membres
+
+
+
+
+        /// <summary>
+        /// Date de publication
+        /// </summary>
+        private DateTime pub;
+        private DateTime pub2;
+        public DateTime Pub
+        {
+            get
+            {
+                return pub;
+            }
+            set
+            {
+                pub = value;
+                if (pub2 < pub)
+                    pub2 = pub;
+            }
+        }
+
+        public DateTime Pub2
+        {
+            get { return pub2; }
+            set
+            {
+                if (value > pub)
+                    pub2 = value;
+                else
+                    pub2 = pub;
+
+            }
+        }
+
+
+        /// <summary>
+        /// date d'ajout
+        /// </summary>
+        private DateTime added;
+        new public DateTime Added { get { return added; } }
+
+        /// <summary>
+        /// Date de premier ajout; 
+        /// </summary>
+        private DateTime addedFirst;
+        public DateTime AddedFirst
+        {
+            get { return addedFirst; }
+
+            set
+            {
+                if (addedFirst == DateTime.MinValue)
+                    addedFirst = value;
+            }
+        }
+
+        private DateTime _in;
+        public DateTime In { get { return _in; } }
+
+        private DateTime _out;
+        public DateTime Out { get { return _out; } }
+
+        //private DateTime _gin;
+        //public DateTime Gin { get { return _gin; } }
+
+        /// <summary>
+        /// Dernier out global (MaxValue si encore sélectionné)
+        /// </summary>
+        private DateTime _gout;
+        public DateTime Gout { get { return _gout; } set { _gout = value; } }
+
+        public void checkInOut()
+        {
+            DateTime now = DateTime.Now;
+            if (Selected)
+            {
+                if (_in == DateTime.MinValue || _out > _in)
+                    _in = now;
+            }
+            else
+            {
+                if (_in > DateTime.MinValue)
+                {
+                    if (_out == DateTime.MinValue || _in > _out)
+                        _out = now;
+                }
+            }
+        }
+
+
+        public albumSpec Specif { get { return TrackAlbum.Specif; } }
+
+        /// <summary>
+        /// Podcast de type info
+        /// </summary>
+        // private bool info;
+
+        public bool Info
+        {
+            get { return TrackAlbum.Info; }
+        }
+
+        /// <summary>
+        /// Podcast rare (moins de trois fois par semaine)
+        /// </summary>
+        //  private bool rare;
+        public bool Rare
+        {
+            get { return TrackAlbum.Rare; }
+        }
+        public bool RareEffect
+        {
+            get { return TrackAlbum.RareEffect; }
+        }
+
+        public bool Actu
+        {
+            get { return TrackAlbum.Actu; }
+        }
+
+        public bool Courant
+        {
+            get { return TrackAlbum.Courant; }
+        }
+
+        public bool Open { get { return TrackAlbum.Open; } }
+        public bool Recent { get { return TrackAlbum.Recent; } }
+        public bool UnAn { get { return TrackAlbum.UnAn; } }
+
+        private bool played;
+        public override bool Played { get { return played; } }
+        public bool BasePlayed { get { return base.Played; } }
+
+        //private bool globalSelected;
+        //public bool GlobalSelected { get { return globalSelected; } set { globalSelected = value; } }
+
+        //private string feed;
+        //public string Feed { get { return feed; } set { feed = value; } }
+
+        private selectMode selected;
+        // private bool inJournal = false;
+
+        //public bool FreeInJournal { get { return Selected && !inJournal; } }
+        //public void markInJournal() { inJournal = true; }
+        //    public bool StandAlone { get { return selected > selectMode.none; } }
+        public bool Selected { get { return selected >= selectMode.simple; } }
+        public bool Histo { get { return selected == selectMode.histo; } }
+        public bool Serial { get { return selected == selectMode.serial; } }
+        // public selectMode Select { get { return selected; } }
+
+
+        public void clearLists()
+        {
+            selected = selectMode.none;
+            //  exclu = null;
+            //  inJournal = false;
+            listSelected.Clear();// = new SequentialDictString<LimitItem>();
+            //listLoad0 = new SequentialDictString<LimitItem>();
+            //listStandAlone = new SequentialDictString<LimitItem>();
+            //indexRoot = -1;
+            offset = default(DateTime);
+            //listLoadGuest.Clear();
+            //listLoadRecursif.Clear();
+
+        }
+        private string pubInfoShort() { return pub.ToString("dd.MM.yy"); }
+        public static string pubInfoShort(DateTime pub) { return pub.ToString("dd.MM.yy"); }
+        private string getDayOfWeek()
+        {
+            var strDayOfWeek = "";
+            switch (pub.DayOfWeek)
+            {
+                case DayOfWeek.Friday:
+                strDayOfWeek = "v";
+                break;
+                case DayOfWeek.Monday:
+                strDayOfWeek = "l";
+                break;
+                case DayOfWeek.Saturday:
+                strDayOfWeek = "s";
+                break;
+                case DayOfWeek.Sunday:
+                strDayOfWeek = "d";
+                break;
+                case DayOfWeek.Thursday:
+                strDayOfWeek = "j";
+                break;
+                case DayOfWeek.Tuesday:
+                strDayOfWeek = "ma";
+                break;
+                case DayOfWeek.Wednesday:
+                strDayOfWeek = "me";
+                break;
+                default:
+                break;
+            }
+
+            return strDayOfWeek;
+        }
+
+        // private static Regex regInfoShort = new Regex(@".+(\d\d\.\d\d\.\d\d)");
+        public void updateNative()
+        {
+            PubLoader.setPub();
+
+
+            int volume = Volume;
+            if (Album.Contains("RFI"))
+            {
+                if (volume != -20)
+                    Volume = -20;
+            }
+            else
+            {
+                if (volume < volumeMin)
+                    Volume = volumeMin;
+            }
+
+
+            if (pub > MIN)
+            {
+
+                var target = NameWithDate;
+                if (!target.Equals(Name))
+                    Name = target;
+                BuildComment();
+                BuildComposer();
+                return;
+
+                //string infoShort = pubInfoShort();
+                //string infoPubName = pub.ToString("dd.MM.yyyy");
+                //string infoPubName2 = pub.ToString("dd/MM/yyyy");
+                //string infoPubName3 = pub.ToString("dd/MM/yy");
+                //string infoYear = Year.ToString();
+                //if (pub.DayOfYear == 1)
+                //{
+                //    infoPubName = pub.Year.ToString();
+                //    infoPubName2 = infoPubName;
+                //    infoPubName3 = infoPubName;
+                //    infoShort = infoPubName;
+                //}
+
+                //string name = Name;
+                //string str = name;
+
+                //while (str.Contains("  "))
+                //    str = str.Replace("  ", " ");
+
+                //while (str.Contains(infoShort))
+                //    str = str.Replace(infoShort, "");
+                //while (str.Contains(infoPubName))
+                //    str = str.Replace(infoPubName, "");
+                //while (str.Contains(infoPubName2))
+                //    str = str.Replace(infoPubName2, "");
+                //while (str.Contains(infoPubName3))
+                //    str = str.Replace(infoPubName3, "");
+
+                //str = str.Trim();
+
+                ////if (regInfoShort.IsMatch(str))
+                ////{
+                ////    var strdate = regInfoShort.Match(str).Groups[1].Value;
+                ////    str = str.Replace(strdate, "");
+                ////}
+
+
+
+                ////Michel Rocard (1/5) l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l l 17.06.13 l
+                //var strDayOfWeek = getDayOfWeek();
+                //var s1 = strDayOfWeek + " ";
+                //strDayOfWeek = " " + strDayOfWeek;
+
+                //while (str.EndsWith(strDayOfWeek))
+                //    str = str.Remove(str.Length - strDayOfWeek.Length - 1);
+                ////while (str.EndsWith(s1))
+                ////    str = str.Remove(str.Length - s1.Length);
+
+                ////if (str.Contains(infoPubName))
+                ////    str = str.Replace(infoPubName, infoShort);
+                ////else if (name.Contains(infoPubName2))
+                ////    str = str.Replace(infoPubName2, infoShort);
+
+                ////else
+                ////{
+                ////    if (!str.Contains(infoShort))
+                ////    {
+                ////        str = str + " " + infoShort;
+                ////    }
+                ////    else
+                ////    {
+                ////        if (Year > 1980 && str.Contains(infoYear))
+                ////            str = str.Replace(infoYear, "").Trim();
+                ////    }
+                ////}
+                //var strBUG = "30.12.99";
+                //if (str.Contains(strBUG))
+                //    str = str.Replace(strBUG, "");
+
+                //while (str.Contains("  "))
+                //    str = str.Replace("  ", " ");
+
+                //str = str.Trim();
+
+                //str += " ";
+                //str += infoShort;
+
+
+                //str += strDayOfWeek;
+
+                //if (!str.Equals(name))
+                //    Name = str;
+
+                //BuildComment();
+                //BuildComposer();
+            }
+        }
+        // private LimitItem provider; 
+        public void select(selectMode value, LimitItem limit)
+        {
+
+            var key = limit.ID;
+
+            if (!listSelected.ContainsKey(key))
+                listSelected.Add(key, limit);
+
+
+
+            if (selected == value)
+                return;
+
+            selected = value;
+            //if (isPresent() && !present)
+            //{
+            //    // loader.resurrection(this);
+            //}
+
+
+
+
+        }
+
+
+        #endregion
+
+        public override string ToString()
+        {
+            int level = Rating / 20;
+            string strPub = pub > MIN ? pub.ToShortDateString() : "";
+            // string strYear = Year > 0 ? Year.ToString() : "";
+            var strAlbum = "";
+            if (_album != null)
+                strAlbum = Album;
+            var strNote = "";
+            if (note < int.MaxValue)
+                strNote = note.ToString("0.##");
+            return string.Format("{0} {1} {2} {3} {4} {5}", level, strNote, strAlbum, name, strPub, duree);
+            // return level.ToString() + " " + strAlbum + " " + Name + " " + strYear + " " + strPub;
+        }
+
+        public void copy(string ziqueDest, string log)
+        {
+            if (string.IsNullOrEmpty(location))
+                return;
+
+            FileInfo file = new FileInfo(location);
+            DirectoryInfo dir = file.Directory;
+            if (file.Exists)
+            {
+                string strPub1 = pub.ToString("dd.MM.yyyy");
+                string strPub2 = pub.ToString("yy.MM.dd");
+
+                string fileName = Path.GetFileName(location);
+
+                if (pub > MIN && !fileName.StartsWith(strPub1) && !fileName.StartsWith(strPub2))
+                    fileName = strPub2 + "_" + fileName;
+
+                string strDir = dir.Name;
+                if (!string.IsNullOrEmpty(Album))
+                    strDir = Album;
+
+
+
+                string dest = ziqueDest + Path.DirectorySeparatorChar + strDir + Path.DirectorySeparatorChar + fileName;
+                misc.log(" {0} {1} à copier vers {2}", log, location, dest);
+                try
+                {
+                    string newDest = file.copyTree(dest, false);
+
+                }
+                catch (Exception ex)
+                {
+                    misc.log(ex.ToString());
+                }
+            }
+
+        }
+
+        public void move(string ziqueOrg, string ziqueDest, DateTime limit)
+        {
+            if (pub >= limit)
+                return;
+
+            if (string.IsNullOrEmpty(location))
+                return;
+            FileInfo file = new FileInfo(location);
+            DirectoryInfo dir = file.Directory;
+            if (file.Exists)
+            {
+                if (location.StartsWith(ziqueOrg + @"Podcasts"))
+                {
+                    misc.log(" � d�placer" + location);
+                    string dest = location.Replace(ziqueOrg, ziqueDest);
+
+                    string dirDest = Path.GetDirectoryName(dest);
+                    string fileName = Path.GetFileName(dest);
+                    fileName = pub.ToString("yy.MM.dd_HH.mm") + "_" + fileName;
+
+                    dest = dirDest + Path.DirectorySeparatorChar + fileName;
+                    try
+                    {
+                        string newDest = file.copyTree(dest, false);
+                        if (bgMove == null)
+                        {
+                            lock (_lock)
+                            {
+                                if (bgMove == null)
+                                    bgMove = BackGroundTaskMgr.getMgrlarge("Move");
+                            }
+                        }
+                        //  file.CopyTo(dest, true);
+                        bgMove.add(new BgTaskCopy(this, location, newDest));
+                    }
+                    catch (Exception ex)
+                    {
+                        misc.log(ex.ToString());
+                    }
+                }
+            }
+
+
+        }
+
+        private class BgTaskCopy : pdb.ordo.BgTaskBase
+        {
+            TrackInfoItunes info;
+            string value;
+            public BgTaskCopy(TrackInfoItunes info, string desc, string value)
+                : base(desc)
+            {
+                this.info = info;
+                this.value = value;
+            }
+
+            public override void exec()
+            {
+                try
+                {
+                    var _track = info.Track;
+                    if (_track == null)
+                    {
+                        success = false;
+                        return;
+                    }
+
+                    _track.Location = value;
+
+                    misc.log("copie effectu�e " + value);
+                    try
+                    {
+                        File.Delete(Desc);
+                    }
+                    catch (Exception ex)
+                    {
+                        misc.log("impossible de supprimer " + Desc + " " + ex.ToString());
+                    }
+                    success = true;
+                }
+                catch (Exception e)
+                { misc.log("NIET " + e.Message); }
+
+                if (!success && info.Track != null)
+                {
+                    //misc.log("invalidation track " + info);
+                    ////  info.track = null;
+                }
+
+            }
+        }
+
+
+
+        DateTime IPub.Pub
+        {
+            get
+            {
+                return pub;
+            }
+            set
+            {
+                this.Pub = value;
+            }
+        }
+        //DateTime IPub.Pub2
+        //{
+        //    get
+        //    {
+        //        return pub2;
+        //    }
+        //    set
+        //    {
+        //        pub2 = value;
+        //    }
+        //}
+
+        string IPub.Comment
+        {
+            get
+            {
+                return Comment;
+            }
+            //set
+            //{
+            //    if (string.IsNullOrEmpty(this.Grouping))
+            //        setGrouping(this.Comment, true);
+            //    Comment = value;
+            //}
+        }
+
+        string IPub.Name
+        {
+            get { return Name; }
+        }
+
+        string IPub.Location
+        {
+            get { return location; }
+        }
+
+        int IPub.Year
+        {
+            get { return Year; }
+        }
+
+        DateTime IPub.Added
+        {
+            get
+            {
+                return added;
+            }
+            set
+            {
+                added = value;
+            }
+        }
+        DateTime IPub.Offset { get { return offset; } }
+        private pdb.util.timeSpan duree;
+        public pdb.util.timeSpan Duree
+        {
+            get
+            {
+
+                if (duree.Value == 0)
+                {
+                    duree = new timeSpan(base.Duration);
+                }
+                return duree;
+            }
+            private set
+            {
+                duree = value;
+                if (base.Duration.TotalSeconds == 0)
+                {
+                    base.Duration = TimeSpan.FromSeconds(duree.Value);
+                }
+            }
+        }
+
+        static Regex regDeltaPub = new Regex(@"¤[\d,]+$");
+        static Regex regDeltaPub2 = new Regex(@"[\d,]+°$");
+
+        public static string getLogicalExternName(string t, DateTime pub)
+        {
+            if (string.IsNullOrEmpty(t))
+                return "";
+            t = t.Trim();
+            var strBUG = "30.12.99";
+            if (t.Contains(strBUG))
+                t = t.Replace(strBUG, "").Trim();
+            //var tab = t.Split((char)1); 
+            //t = tab[0]; 
+            while (true)
+            {
+                var t0 = t;
+                if (regDeltaPub.IsMatch(t))
+                {
+                    t = regDeltaPub.Replace(t, "").Trim();
+                }
+                else if (regDeltaPub2.IsMatch(t))
+                {
+                    t = regDeltaPub2.Replace(t, "").Trim();
+                }
+
+                var strPub = pub.ToString("dd.MM.yyyy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+                strPub = pub.ToString("dd/MM/yyyy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+                strPub = pub.ToString("dd/MM/yy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+                strPub = pubInfoShort(pub);
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+                if (t.EndsWith("-"))
+                    t = t.Remove(t.Length - 1).Trim();
+
+                strPub = pub.ToString("yy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+
+                strPub = pub.ToString("yyyy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+
+                if (t.EndsWith("20"))
+                    t = t.Remove(t.Length - "20".Length).Trim();
+
+                if (t == t0)
+                    break;
+            }
+
+            while (t.Contains("  "))
+                t = t.Replace("  ", " ");
+
+
+
+            return t;
+        }
+
+        public string getLogicalName(string t)
+        {
+            t = t.Trim();
+            var strBUG = "30.12.99";
+            if (t.Contains(strBUG))
+                t = t.Replace(strBUG, "").Trim();
+            //var tab = t.Split((char)1); 
+            //t = tab[0]; 
+            while (true)
+            {
+                var t0 = t;
+                if (regDeltaPub.IsMatch(t))
+                {
+                    t = regDeltaPub.Replace(t, "").Trim();
+                }
+                else if (regDeltaPub2.IsMatch(t))
+                {
+                    t = regDeltaPub2.Replace(t, "").Trim();
+                }
+                if (pub2 > pub)
+                {
+                    var strD = (pub2 - pub).TotalDays.ToString("0.#");
+                    if (t.EndsWith(strD))
+                        t = t.Remove(t.Length - strD.Length).Trim();
+
+                }
+
+                var sw = getDayOfWeek();
+                if (t.EndsWith(sw))
+                    t = t.Remove(t.Length - sw.Length).Trim();
+                var strPub = pub.ToString("dd.MM.yyyy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+                strPub = pub.ToString("dd/MM/yyyy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+                strPub = pub.ToString("dd/MM/yy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+                strPub = pubInfoShort();
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+                if (t.EndsWith("-"))
+                    t = t.Remove(t.Length - 1).Trim();
+
+                strPub = pub.ToString("yy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+
+                strPub = pub.ToString("yyyy");
+                if (t.EndsWith(strPub))
+                    t = t.Remove(t.Length - strPub.Length).Trim();
+
+                if (t.EndsWith("20"))
+                    t = t.Remove(t.Length - "20".Length).Trim();
+
+                if (t == t0)
+                    break;
+            }
+
+            while (t.Contains("  "))
+                t = t.Replace("  ", " ");
+
+
+
+            return t;
+        }
+
+        /// <summary>
+        /// Renvoie le décalage (avec espace avant) le cas échéant ou rien
+        /// </summary>
+        /// <returns></returns>
+        private string getDateOffset()
+        {
+            if (pub2 > pub)
+                return string.Format(" {0}°", (pub2 - pub).TotalDays.ToString("0.#"));
+            return "";
+        }
+
+        public string NameWithDate
+        {
+            get { return string.Format("{0} {1} {2}{3}", LogicalName, pubInfoShort(), getDayOfWeek(), getDateOffset()); }
+        }
+
+        public string LogicalName
+        {
+            get
+            {
+                return getLogicalName(name);
+            }
+        }
+
+        //public override string Name
+        //{
+        //    get
+        //    {
+        //        return name;
+        //    }
+        //    set
+        //    {
+        //        if (value == null)
+        //        {
+        //            log.log("set Name null !!! {0}", this);
+        //            return;
+        //        }
+
+        //        var thisLog = LogicalName;
+        //        var newLog = getLogicalName(value);
+
+        //        if (!thisLog.Equals(newLog, StringComparison.InvariantCultureIgnoreCase))
+        //        {
+        //            log.log("Modification du nom logique !!! {0}->{1} {2}", thisLog, newLog, this);
+        //            return;
+        //        }
+        //        base.Name = value;
+        //    }
+        //}
+
+
+
+        public override TimeSpan Duration
+        {
+            get
+            {
+                var dur = base.Duration;
+                if (dur.TotalSeconds == 0)
+                {
+                    base.Duration = TimeSpan.FromSeconds(duree.Value);
+                }
+                return base.Duration;
+            }
+
+            set
+            {
+                base.Duration = value;
+                if (duree.Value == 0)
+                {
+                    duree = new timeSpan(base.Duration);
+                }
+            }
+        }
+
+        private long _size = -1;
+        public long Size
+        {
+            get
+            {
+                if (_size < 0)
+                {
+                    var f = FileRegister.Get(Location);
+                    var exist = f.Exists;
+                    if (exist == null)
+                        return -1;
+                    else if (true == exist)
+                        _size = f.Length;
+                    else
+                        _size = 0;
+                }
+                return _size;
+            }
+        }
+
+        //private int indexRoot = -1;
+        //public int IndexRoot { get { return indexRoot; } set { indexRoot = value; } }
+
+
+
+        public static void setDate0(DateTime date) { Date0 = date; }
+        private static DateTime Date0;
+        private timeSpan ts;
+        public timeSpan Ts
+        {
+            get
+            {
+                if (ts == default(timeSpan))
+                {
+                    if (Date0 == DateTime.MinValue)
+                        throw new ApplicationException("Date0 pas initialisée");
+                    ts = new timeSpan(Pub2 - Date0);
+                }
+                return ts;
+            }
+        }
+
+        public void hibernate(FileValue fv, string dirH)
+        {
+            bgHibernate.add(new BgTaskHibernate(this, fv, dirH));
+        }
+
+        /// <summary>
+        /// pour minimiser les listes de selection on checke la durée. en effet à l'utilisation on mélange de toute façon avec les longs
+        /// </summary>
+        public bool isConcernedBySelection
+        {
+            get
+            {
+                //if (!enabled)
+                //    return false;
+                //if (played)
+                //    return false;
+                var globalDuree = TrackAlbum.ConfAlbum.maxGlobal;
+                if (globalDuree > 0)
+                {
+                    if (Duree.TotalMinute > globalDuree)
+                        return false;
+                }
+                return true;
+            }
+        }
+
+        public bool isLong
+        {
+            get
+            {
+                var globalDuree = TrackAlbum.ConfAlbum.maxGlobal;
+                if (globalDuree > 0)
+                {
+                    if (Duree.TotalMinute > globalDuree)
+                        return true;
+                }
+                return false;
+            }
+        }
+
+        protected class BgTaskHibernate : BgTaskDeleteTrackTrack
+        {
+            private TrackInfoItunes track;
+            private FileValue fv;
+            string dirH;
+            public BgTaskHibernate(TrackInfoItunes track, FileValue fv, string dirH)
+                : base(track, string.Format("Hibernate {0}", track))
+            {
+                this.track = track;
+                this.fv = fv;
+                this.dirH = dirH;
+            }
+
+            public override void exec()
+            {
+                base.exec();
+                if (!success)
+                    return;
+
+                if (!string.IsNullOrEmpty(dirH))
+                {
+                    var dest = misc.copyTree(fv, dirH + track.ShortName, false);
+                    track.HibernateLocation = dest;
+
+                    try
+                    {
+                        File.Delete(track.Location);
+                        fv.delete();
+                    }
+                    catch (Exception ex)
+                    {
+                        misc.log(ex);
+                    }
+                }
+            }
+        }
+
+
+        private class BgTaskImport : pdb.ordo.BgTaskBase
+        {
+            TrackInfoItunes info;
+            public BgTaskImport(TrackInfoItunes info)
+                : base(string.Format("import {0}", info.Location))
+            {
+                this.info = info;
+            }
+
+            public override void exec()
+            {
+                try
+                {
+                    var _track = info.Track;
+                    if (_track == null)
+                    {
+                        success = false;
+                        // Thread.Sleep(1000 * Try); 
+                        return;
+                    }
+
+                    info.import(_track);
+                    success = true;
+                }
+                catch (Exception e)
+                { log.log("NIET " + e.Message); }
+
+                if (!success && info.track != null)
+                {
+                    info.invalidationTrack();
+                    //Thread.Sleep(1000 * Try); 
+                }
+
+            }
+        }
+
+
+
+    }
+}
+
+
+
+]]></content>
+  </file>
+  <file path="\pdb.podcast\Albums\TrackAlbum.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using pdb.podcast.Tuning;
+
+namespace pdb.podcast.Albums
+{
+    [Flags]
+    public enum albumSpec : byte
+    {
+        rare = 1,
+        recent = 2,
+        unAn = 4,
+        open = 8,
+        courant = 16,
+        actu = 32,
+        info = 64
+    }
+
+    public enum downloadMode : byte
+    {
+        none = 0,
+        no = 1,
+        last = 2,
+        onePerDay = 3,
+        onePerMin = 4,
+        multiple = 5
+    }
+
+
+    public class TrackAlbum : ISelectable //pdb.it.Albums.TrackAlbumBase, 
+    {
+        private static DateTime dateOPen;
+        private static DateTime dateUnAn;
+        private albumSpec specif;
+        private downloadMode _downloadMode;
+        private string key;
+        private string album;
+        private HashSet<TrackInfoItunes> list = new HashSet<TrackInfoItunes>();
+        private bool? _rareEffect;
+
+        public string AlbumKey { get { return key; } }
+        public downloadMode DownLoadMode { get { return _downloadMode; } set { _downloadMode = value; } }
+
+        private static TrackAlbum _NULL = new TrackAlbum("Pas d'album", "Pas d'album");
+        public static TrackAlbum NULL { get { return _NULL; } }
+
+        static TrackAlbum()
+        {
+            dateOPen = DateTime.Now.AddDays(-Conf.DeltaOPen);
+            dateUnAn = Conf.Date0.AddYears(1);
+        }
+        public TrackAlbum(string album, string key)
+        {
+            this.key = key;
+            this.album = album;
+            //conf = Conf.Albums;
+
+            //foreach (ConfAlbum _album in Conf.Albums.Items)
+            //{
+            //    foreach (string alb in _album.name)
+            //    {
+            //        if (alb == this.Album)
+            //        {
+            //            conf = _album;
+            //            return;
+            //        }
+            //    }
+            //}
+
+        }
+        public string Album { get { return album; } }
+        public int AlbumRating { get; set; }
+        public double Note { get; set; }
+
+        public albumSpec Specif { get { return specif; } }
+        public bool Info
+        {
+            get { return specif.HasFlag(albumSpec.info); }
+        }
+        public void setInfo() { specif |= albumSpec.info; }
+
+        public bool Rare
+        {
+            get { return specif.HasFlag(albumSpec.rare); }
+        }
+        public void setRare() { specif |= albumSpec.rare; }
+
+
+        public bool Actu
+        {
+            get { return specif.HasFlag(albumSpec.actu); }
+        }
+        public void setActu() { specif |= albumSpec.actu; }
+
+        public bool Courant { get { return specif.HasFlag(albumSpec.courant); } }
+        public void setCourant() { specif |= albumSpec.courant; }
+
+        public bool Open { get { return specif.HasFlag(albumSpec.open); } }
+        private void setOpen()
+        {
+            if (!specif.HasFlag(albumSpec.open))
+                specif |= albumSpec.open;
+        }
+
+        public bool Recent { get { return specif.HasFlag(albumSpec.recent); } }
+        private void setRecent()
+        {
+            if (!specif.HasFlag(albumSpec.recent))
+                specif |= albumSpec.recent;
+        }
+
+        public bool UnAn { get { return specif.HasFlag(albumSpec.unAn); } }
+        private void setUnAn()
+        {
+            if (!specif.HasFlag(albumSpec.unAn))
+                specif |= albumSpec.unAn;
+        }
+
+        private List<string> urls = new List<string>();
+        public List<string> Urls { get { return urls; } }
+
+
+        private pdb.podcast.Tuning.ConfAlbum conf;
+
+        public ConfAlbum ConfAlbum
+        {
+            get
+            {
+                if (conf != null)
+                    return conf;
+                return ConfAlbums.Main; 
+            }
+            set { conf = value; }
+        }
+        //private bool checkPub;
+        //public bool CheckPub { get { return checkPub; } }
+
+        //private bool checkDoublon;
+        //public bool CheckDoublon { get { return checkDoublon; } }
+        /// <summary>
+        /// Nombre de tracks dans l'étape fraicheur (recent unAn, open)
+        /// </summary>
+        private int nbInStep;
+        const int NB_STEP = 3;
+
+        public void AddOrReplace(TrackInfoItunes track)
+        {
+            if (!list.Contains(track))
+                Add(track, true);
+            else
+            {
+                list.Remove(track);
+                list.Add(track);
+            }
+        }
+
+        public void Add(TrackInfoItunes track, bool calcSpec)
+        {
+
+            if (list.Contains(track))
+            {
+                list.Remove(track);
+            }
+            //if (!list.Contains(track))
+            //  {
+            list.Add(track);
+            if (!calcSpec)
+                return;
+            if (track.Pub >= Conf.Date0)
+            {
+                if (!Recent)
+                {
+                    nbInStep++;
+                    if (nbInStep >= NB_STEP)
+                    {
+                        nbInStep = 0;
+                        setRecent();
+                    }
+                    return;
+                }
+                if (track.Pub >= dateUnAn)
+                {
+                    if (!UnAn)
+                    {
+                        nbInStep++;
+                        if (nbInStep >= NB_STEP)
+                        {
+                            nbInStep = 0;
+                            setUnAn();
+                        }
+                        return;
+                    }
+                }
+
+                if (track.Pub >= dateOPen)
+                {
+
+                    if (!Open)
+                    {
+                        nbInStep++;
+                        if (nbInStep >= NB_STEP)
+                        {
+                            setOpen();
+                        }
+                    }
+                }
+
+            }
+            //  }
+
+        }
+        public void Remove(TrackInfoItunes track)
+        {
+            list.Remove(track);
+        }
+        //private bool sorted;
+        public List<TrackInfoItunes> List
+        {
+            get
+            {
+                //if (!sorted)
+                //{
+                //    sorted = true;
+                //    list.Sort(new PodCastComparer());
+                //}
+                return new List<TrackInfoItunes>(list);
+            }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} ({1})", Album, AlbumKey);
+        }
+
+
+        public int Rating
+        {
+            get { return AlbumRating; }
+        }
+
+
+
+
+
+
+        public util.timeSpan Duree
+        {
+            get { return util.timeSpan.MaxValue; }
+        }
+
+        public LimitItem Exclu
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public bool Histo
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public DateTime Pub
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public DateTime Pub2
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+            set
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public bool Serial
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public long Size
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        public const int NB_MIN_POUR_FREQUENT = 52;
+        public bool RareEffect
+        {
+            get
+            {
+                if (Rare)
+                    return true;
+                if (_rareEffect == null)
+                {
+                    //combien il m'en reste à lire ? 
+                    int nb = 0;
+                    var maxGlobal = conf.maxGlobal;
+                    foreach (TrackInfoItunes t in list)
+                    {
+                        if (t.Played)
+                            continue;
+                        if (!t.Enabled)
+                            continue;
+                        if (t.Pub > Conf.Date0 || (maxGlobal > 0 && t.Duree.TotalMinute <= maxGlobal))
+                        {
+                            nb++;
+                            if (nb >= NB_MIN_POUR_FREQUENT)
+                            {
+                                _rareEffect = false;
+                                return false;
+                            }
+                        }
+                    }
+                    _rareEffect = true;
+                }
+                return _rareEffect.Value;
+            }
+
+        }
+    }
+}
+]]></content>
+  </file>
+  <file path="\pdb.podcast\Sort\Album.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using pdb.podcast.Albums;
+using pdb.podcast.Tuning;
+using pdb.podcast.Tuning.Sort;
+using pdb.util;
+using pdb.iit;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
+namespace pdb.podcast.Sort
+{
+    class Album
+    {
+        const string DATE_FORMAT = "dd/MM/yy HH:mm";
+        const string DAY_FORMAT = "dd/MM HH:mm";
+        const char SEP = '|';
+        private TrackAlbum album;
+        private SortItem conf;
+        private List<TrackSort> list = new List<TrackSort>();
+        //  private static HashSet<int> lastReads = new HashSet<int>();
+        //   private int indexLastRead = -1;
+        timeSpan limit;
+        // private static int nbrepeches = 0;
+        private static int nbModif = 0;
+        private static int nbModifPertinent = 0;
+        private static int nbRepecheForce = 0;
+        private static DateTime dateRepeche = DateTime.MaxValue; public static DateTime DateRepeche { get { return dateRepeche; } }
+        private static List<TrackSort> repeches = new List<TrackSort>();
+        public static int NbRepeches { get { return repeches.Count; } }
+        public static int NbModif { get { return nbModif; } }
+        public static int NbModifPertinent { get { return nbModifPertinent; } }
+
+        private bool done;
+
+        //  bool checkSelected, apply;
+        DateTime date0; //, newDate0;
+        DateTime date1;
+        public static void Init()
+        {
+            //lastReads.Clear(); 
+            //nbrepeches = 0;
+            repeches.Clear();
+            nbModif = 0; nbModifPertinent = 0;
+            nbRepecheForce = 0;
+            dateRepeche = DateTime.MaxValue;
+        }
+
+        public static void Bilan()
+        {
+            if (dateRepeche < DateTime.MaxValue)
+                log.log("*************Date minimum:" + dateRepeche);
+            repeches.Sort((x, y) => x.Pub2.CompareTo(y.Pub2));
+            foreach (TrackSort t in repeches)
+                log.log(string.Format("date={0} {1}", t.Pub2, t));
+        }
+        // public static HashSet<int> LastRead { get { return lastReads; } }
+        public static Logger log;
+        public static Logger logDebug;
+
+        public Album(SortItem conf, TrackAlbum album)
+        {
+            this.conf = conf;
+            this.album = album;
+            limit = timeSpan.FromMinutes(conf.dureeMin);
+
+        }
+
+        public override string ToString()
+        {
+            return album.ToString();
+        }
+
+        public void check(TrackInfoItunes track)
+        {
+            if (track.Duree >= limit)
+                list.Add(new TrackSort(track));
+        }
+
+        public bool getPlayed(TrackSort track, bool real)
+        { 
+            if (conf.playVirtual)
+                return track.track.Played; 
+
+            if (track.pub20 <= date0)
+                return track.track.Played; 
+            return track.track.BasePlayed; 
+            //var _real = real && !conf.playVirtual;
+            //return track.getPlayed(_real);
+        }
+
+
+
+        public void init()
+        {
+            //done = false;
+        }
+
+        //public void buildAll()
+        //{
+        //    if (conf.enabled == sortMode.no)
+        //        return;
+        //    int count = list.Count;
+        //    if (count == 0)
+        //        return;
+
+        //    checkSelected = false;
+        //    apply = false;
+
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        var track = list[i];
+        //        var dt = track.Pub2.AddSeconds(1);
+        //        date0 = dt;
+        //        newDate0 = dt;
+        //        build();
+        //        if (dt >= Conf.Date0)
+        //            break;
+        //    }
+
+        //    apply = true;
+        //    date0 = Conf.Date0;
+        //    newDate0 = Conf.NewDate0;
+        //    // writeComment(track, track.Pub2, false, true, Conf.Date0, Conf.NewDate0);
+
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        var track = list[i];
+        //        writeComment(track, track.Pub2);
+        //    }
+        //}
+
+        private void build0()
+        {
+            int count = list.Count;
+            if (count == 0)
+                return;
+
+
+
+            TrackSort.Date0 = date0;
+            int indexLastRead = -1;
+            TrackSort lastRead = null;
+            int indexNextSelected = -1;
+            DateTime lastPlayed = DateTime.MinValue;
+            TrackSort next = null;
+            //  TrackSort reallyLastRead = null;
+            DateTime currentPub = DateTime.MinValue;
+            DateTime currentPub2 = DateTime.MinValue;
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                //if (conf.extPente > 0)
+                //{
+                //    if (!track.Played && track.Pub == track.Pub2)
+                //        track.Pub2 = Conf.Date0; 
+                //}
+
+                if (track.Pub > currentPub && track.Pub2 <= currentPub2)
+                {
+                    if (track.Pub2 < track.Pub)
+                        track.Pub2 = track.Pub;
+                    if (track.Pub > currentPub && track.Pub2 <= currentPub2)
+                    {
+                        var aux = currentPub2.AddMinutes(1);
+                        log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                        track.Pub2 = aux;
+                    }
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+            }
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                if (getPlayed(track, false)) // && track.PlayedDate > lastPlayed)
+                {
+                    //// ok mais quid du cas au fil de l'histoire : date dans le futur
+                    //if (track.Pub2 <= date0 || conf.extPente > 0)
+                    //{
+                    if (next == null)
+                    {
+                        indexLastRead = i;
+                        lastPlayed = track.PlayedDate;
+                        lastRead = track;
+                    }
+                    else
+                        break;
+                    //}
+                }
+
+                else
+                {
+                    if (next == null)
+                    {
+                        if (track.Selected || track.Pub2 >= date0)
+                        {
+                            next = track;
+                            indexNextSelected = i;
+                        }
+                    }
+                    else
+                        break;
+                }
+            }
+
+
+            if (indexLastRead < 0)
+                return;
+            if (next == null)
+                return;
+            var rare = album.Rare;
+            var intervalleMin0 = conf.getIntervalleMin0(rare);
+            var intervalle = conf.getIntervalle(rare, lastRead.DureeEnHeure, intervalleMin0);
+            var intervalleMin = conf.getIntervalleMin(rare, lastRead.DureeEnHeure);
+
+            double deltaLastRead0 = (lastRead.Pub2 - lastRead.Pub).TotalDays;
+            DateTime pub2 = lastRead.Pub2;
+
+            double delta0Corr = deltaLastRead0;
+
+            double cumulMin = conf.getCumulMin(rare);
+            double cumulMax = conf.getCumulMax(rare);
+
+            if (pub2 > lastRead.Pub && conf.extPente == 0)
+            {
+                if (conf.elastique < 1)
+                {
+                    delta0Corr = deltaLastRead0 * conf.elastique;
+                    pub2 = lastRead.Pub.AddDays(delta0Corr).truncateToMinute();
+                }
+
+
+                //if (cumulMin > 0 && cumulMax > 0 && delta0Corr > cumulMin)
+                //{
+                //    delta0Corr = borneCumul(delta0Corr, cumulMin, cumulMax);
+                //    pub2 = lastRead.Pub.AddDays(delta0Corr);
+                //}
+            }
+
+
+
+
+            var deltaLecture = (DateTime.Now - lastPlayed).TotalDays;
+
+            int nbReads = 0;
+            int nbTotals = 0;
+
+            int nbRead = 0;
+            int nbTotal = 0;
+
+            int _nbRead = 0;
+            int _nbTotal = 0;
+            double delta = intervalle; // conf.getIntervalle(album.Rare);
+            double delta0 = delta;
+            var _histo = conf.getHisto(rare);
+            if (_histo > 0)
+            {
+                double histo = _histo;
+
+                DateTime histo0 = next.Pub;
+                if (conf.histoMode == histoMode.fix)
+                    histo0 = date0;
+                DateTime limit = histo0.AddDays(-histo);
+
+                for (int i = indexNextSelected - 1; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotals >= conf.totalMin)
+                        break;
+
+                    if (getPlayed(t, true))
+                        nbReads++;
+
+
+                    nbTotals++;
+
+                }
+
+
+
+                limit = lastRead.Pub.AddDays(-histo);
+                for (int i = indexLastRead; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotal >= conf.totalMin)
+                        break;
+
+                    if (getPlayed(t, true))
+                        nbRead++;
+
+
+                    nbTotal++;
+
+                }
+
+
+                if (conf.histoMode == histoMode.read)
+                {
+                    _nbRead = nbRead;
+                    _nbTotal = nbTotal;
+                }
+                else
+                {
+                    _nbRead = nbReads;
+                    _nbTotal = nbTotals;
+                }
+
+
+                if (_nbRead > 0 && _nbTotal > 0)
+                {
+                    if (_nbTotal < conf.totalMin)
+                        _nbTotal = conf.totalMin;
+                    //  album.Rare ? conf.intervalleR : conf.intervalle;
+                    // var ecouteMax = conf.getEcouteMax(album.Rare); // album.Rare ? conf.ecouteMaxR : conf.ecouteMax;
+
+                    double rapport = (double)_nbRead / (double)_nbTotal;
+
+                    var coeff = 1 / rapport;
+
+                    if (conf.dureeCoeff)
+                    {
+                        coeff = conf.getCoeff(rare, coeff, lastRead.DureeEnHeure);
+                    }
+
+                    //0.1 => 10
+                    //0.9 => 1.11
+                    //coeff -= 1; // 9  0.11
+                    //var dminmax = intervalle - intervalleMin;
+
+                    delta = borne(coeff, intervalle, intervalleMin, intervalleMin0); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+
+
+
+                }
+
+                //misc.log("{3} {4}/{5} [{0}] {1} {2} ", name, lastRead.Name, lastRead.Pub, delta.ToString("#.##"), nbRead, nbTotal, name);
+
+
+            }
+
+
+
+            if (conf.extPente > 0)
+            {
+                var d0 = (DateTime.Now - pub2).TotalDays;
+                var dl = conf.extDelta;
+                if (dl == 0)
+                {
+                    dl = d0;
+                }
+
+                delta0 = d0 / conf.extPente;
+                delta = delta0;
+                //01/01/2014 ->01/01/2017
+                //04/01/2017 -> 04/01/2014
+                var dateLimitEcoule = DateTime.Now.AddDays(-dl);
+
+                var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
+                log.log("{0} {1}", delta.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
+
+                if (deltaLimiteEcoule > delta)
+                {
+                    double _coeff = deltaLimiteEcoule / delta;
+                    delta = borne(_coeff, intervalle, intervalleMin, intervalleMin0);
+                }
+
+                if (delta < 1)
+                    delta = 1;
+
+
+
+
+                //if (delta > intervalle)
+                //    delta = intervalle;
+            }
+
+            if (conf.limitRead && deltaLecture > intervalle)
+            {
+                //13 /10 ->7
+                var _old = delta;
+
+                delta += intervalle - deltaLecture;
+                log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
+            }
+
+
+
+
+
+            if (delta < intervalleMin)
+                delta = intervalleMin;
+
+            if (delta > intervalle)
+                delta = intervalle;
+
+
+
+            DateTime limitFuture = pub2.AddDays(delta).truncateToMinute();
+
+            DateTime limitFutureRab = pub2.AddDays(conf.coeffRab * delta).truncateToMinute();
+            //var cumul = (limitFuture - next.Pub).TotalDays;
+            //var dtaux = next.Pub.AddDays(conf.coeffRab * cumul).truncateToMinute();
+            //if (dtaux > limitFutureRab)
+            //    limitFutureRab = dtaux; 
+            DateTime nextDate = limitFuture;
+
+            int nb = 0;
+            int nblissage = 0;
+            double deltaAtterrissage = intervalleMin;
+
+            if (conf.noCollision)
+                deltaAtterrissage = delta;
+            if (conf.extPente > 0)
+                deltaAtterrissage = delta0;
+
+
+            if (conf.deltaConst || conf.extPente > 0)
+            {
+            }
+
+            else
+            {
+                var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
+                var _deltaRab = limitFuture.AddDays(conf.deltaRab);
+
+                DateTime dt = lastRead.Pub.AddDays(intervalleMin0);
+
+                for (int i = indexLastRead + 2; i < count; i++)
+                {
+                    var t = list[i];
+                    if (conf.useVirtuel)
+                    {
+                        // on utilise des tracks virtuels pour pallier aux absences (week end, track manquant...)
+                        dt = dt.AddDays(intervalleMin0);
+                    }
+                    else
+                        dt = t.Pub;
+
+
+                    nb++;
+                    if (dt > limitFuture)
+                    {
+                        nextDate = dt;
+                        nblissage++;
+                        if (dt <= _deltaMin)
+                            continue;
+                        if (dt <= _deltaRab)
+                            continue;
+                        if (nb <= conf.deltaNbMin)
+                            continue;
+                        if (nblissage <= conf.deltaNbRab)
+                            continue;
+                        if (dt <= limitFutureRab)
+                            continue;
+
+                        break;
+
+
+                        //if (dt > _deltaMin && dt > _deltaRab && nb > conf.deltaNbMin && nblissage > conf.deltaNbRab && dt > limitFutureRab)
+                        //    break;
+                    }
+
+                }
+
+                if (nextDate > limitFuture && nb > 0 && conf.noCollision)
+                {
+                    deltaAtterrissage = (nextDate - limitFuture).TotalDays / (double)nb;
+                    if (deltaAtterrissage > intervalleMin)
+                        deltaAtterrissage = intervalleMin;
+                }
+            }
+
+            var tsatt = timeSpan.FromDays(deltaAtterrissage);
+            if (tsatt.TotalMinute < 1)
+                tsatt = timeSpan.FromMinutes(1);
+
+            string deltas = string.Format("{0} {1} {2} {3}->{4}", intervalle.ToString("0.##"), deltaLastRead0.ToString("0.##"), delta0Corr.ToString("0.##"), delta.ToString("0.##"), tsatt.TotalDay.ToString("0.##"));
+
+            log.log("{0} {1}/{2} ({3}/{4}) [{5}] {6} {7} ({8}) lecture={9} ", deltas, nbRead, nbTotal, nbReads, nbTotals, album.Album, lastRead.track.Name, lastRead.Pub, pub2, deltaLecture.ToString("#.##"));
+
+
+            //  nb = 0;
+            // bool enRetard = limitFuture < date0;
+            TrackSort last = next;
+            DateTime lastPub2 = limitFuture;
+            int indexDepart = indexLastRead + 1;
+
+
+
+            bool erased = false;
+
+            if (conf.vacances)
+                deltaAtterrissage = delta;
+
+            for (int i = indexDepart; i < count; i++)
+            {
+                var t = list[i];
+                if (erased && conf.erasedDone)
+                {
+                    eraseSort(t, "", t.Pub);
+                    continue;
+                }
+
+                DateTime dt = lastPub2;
+
+                if (i == indexDepart && !conf.useVirtuel2)
+                {
+                    dt = limitFuture;
+                }
+                else
+                {
+
+                    //if (conf.deltaCheckSelected)
+                    //{
+                    //    if (!t.Selected)
+                    //        continue;
+                    //    if (!t.Enabled)
+                    //        continue;
+                    //}
+                    var d = (t.Pub - last.Pub).TotalDays / intervalleMin0;
+
+
+                    if (conf.useVirtuel2)
+                        dt = lastPub2.AddDays(d * deltaAtterrissage).truncateToMinute();  //  (int)(tsatt.TotalMinute * nb)).truncateToMinute();
+                    else
+                        dt = lastPub2.AddDays(deltaAtterrissage).truncateToMinute();
+                    if (conf.deltaConstLate >= 0 && t.track.Selected && dt < date1)
+                    {
+                        var dt2 = dt;
+                        if (conf.useVirtuel2)
+                            dt2 = lastPub2.AddDays(d * delta).truncateToMinute();
+                        else
+                            dt2 = lastPub2.AddDays(delta).truncateToMinute();
+                        //if (dt2 <= date0)
+                        dt = dt2;
+                        //else
+                        //    dt = date0.AddMinutes(1);
+                    }
+
+
+                }
+
+
+
+                var _delta = (dt - lastRead.Pub2).TotalDays;
+                if (t.Pub >= dt || conf.enabled == sortMode.reset || erased && conf.erasedDone)
+                {
+                    erased = true;
+                    eraseSort(t, "", t.Pub);
+                }
+                else
+                {
+                    if (cumulMin > 0 && cumulMax > 0 && conf.extPente == 0)
+                    {
+                        var __delta = (dt - t.Pub).TotalDays;
+                        if (__delta > cumulMin)
+                        {
+                            __delta = borneCumul(__delta, cumulMin, cumulMax);
+                            dt = t.Pub.AddDays(__delta).truncateToMinute();
+                        }
+                    }
+
+
+                    //if (dt > DateTime.Now)
+                    //{
+                    //}
+
+                    //if ((dt - t.Pub).TotalDays > 100)
+                    //{
+                    //}
+
+                    writeComment(t, dt, "", t.Pub);
+                    //nb++;
+                }
+
+
+                last = t;
+                lastPub2 = dt;
+
+
+            }
+
+
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
+                {
+                    var aux = currentPub2.AddMinutes(1);
+                    log.log("correction2 pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux;
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+            }
+
+        }
+
+        private static double getweek(double days)
+        {
+            return 7 * System.Math.Floor(days / 7.0);
+        }
+        private static void buildWeek(List<double> list)
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i] = getweek(list[i]);
+            }
+        }
+
+        private void build()
+        {
+
+            int count = list.Count;
+            if (count == 0)
+                return;
+
+
+            if (this.album.Album == "LA GRANDE TABLE 1ère partie")
+            {
+            }
+
+            else if (this.album.Album == "La tête au carré")
+            {
+            }
+            else if (this.album.Album == "France Inter - Rue des entrepreneurs")
+            {
+            }
+
+
+            // bool rare = album.Rare;
+
+            TrackSort.Date0 = date0;
+
+            //  TrackSort reallyLastRead = null;
+            DateTime currentPub = DateTime.MinValue;
+            DateTime currentPub2 = DateTime.MinValue;
+
+            // 1. ordre
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+
+
+                if (track.Pub > currentPub && track.Pub2 <= currentPub2)
+                {
+                    if (track.Pub2 < track.Pub)
+                        track.Pub2 = track.Pub;
+
+                    if (track.Pub > currentPub && track.Pub2 <= currentPub2)
+                    {
+                        var aux = currentPub2.AddMinutes(1);
+                        log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                        track.Pub2 = aux;
+                    }
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+            }
+
+
+
+            int index0 = 0;
+            int indexCourant = 0;
+
+            TrackSort next = null;
+            int indexLastRead = -1;
+            // int indexPrelastRead = -1;
+            TrackSort lastRead = null;
+            // TrackSort prelastRead = null;
+
+            int indexLastSelected = -1;
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                if (track.track.Selected)
+                    indexLastSelected = i;
+                if (getPlayed(track, false))
+                {
+                    if (next == null)
+                    {
+                        //indexPrelastRead = indexLastRead;
+                        //prelastRead = lastRead; 
+                        indexLastRead = i;
+                        lastRead = track;
+                        indexCourant = i;
+
+                    }
+                    //else
+                    //    break;
+
+                }
+
+                else if (lastRead != null)
+                {
+                    if (next == null)
+                    {
+                        if (track.Selected || track.Pub2 >= date0)
+                        {
+                            next = track;
+                        }
+                    }
+                    //else
+                    //    break;
+                }
+            }
+
+            //if (indexLastRead < 0)
+            //    return;
+
+
+
+            if (indexCourant < 0)
+                return;
+
+            if (conf.vacances || !conf.recheck)
+                index0 = indexCourant;
+            else
+            {
+                index0 = 0;
+                indexLastRead = -1;
+                lastRead = null;
+                //indexPrelastRead = -1;
+                //prelastRead = null; 
+
+            }
+            bool firstSel = false;
+
+
+            // DateTime lastPlayed = DateTime.MinValue;
+
+            if (lastRead == null)
+            {
+                for (int i = index0; i < count; i++)
+                {
+                    var track = list[i];
+
+                    if (getPlayed(track, false)) // && track.PlayedDate > lastPlayed)
+                    {
+                        indexLastRead = i;
+                        //prelastRead = track;
+                        //indexPrelastRead = i;
+                        // lastPlayed = track.PlayedDate;
+
+                        lastRead = track;
+
+                        index0 = i;
+                        break;
+                    }
+
+
+                }
+            }
+
+            if (lastRead == null)
+            {
+                for (int i = indexCourant; i < count; i++)
+                {
+                    var t = list[i];
+                    if (t.Pub2 > t.Pub)
+                        eraseSort(t, "", t.Pub);
+                }
+                return;
+            }
+
+            if (lastRead.Pub == DateTime.MinValue)
+                return;
+
+            TrackSort last = lastRead;
+            DateTime lastPub2 = lastRead.Pub2;
+            //DateTime lastPubTh = lastRead.Pub2;
+            DateTime pubMoy = lastRead.Pub2;
+            DateTime pubMoyForCalcul = pubMoy;
+
+            while (true)
+            {
+                if (index0 >= count - 1)
+                    break;
+
+
+
+                var current = list[index0];
+                bool played = getPlayed(current, false);
+
+
+                if (played)
+                {
+                    lastRead = current;
+                    indexLastRead = index0;
+                }
+
+                //  int indexNextSelected = -1;
+
+                //  TrackSort next = null;
+
+                // 2. Détermination lastRead et next
+                if (this.album.Album == "A voix nue" && current != null && current.Name == "Michel Legrand (3/5) 05.03.14 me")
+                { }
+
+                if (current.Name == "Le patient douloureux")
+                {
+                }
+
+                if (current.Name.StartsWith("La nature en bord de chemin"))
+                {
+                }
+
+                if (current.Name.StartsWith("L'art-chimie"))
+                {
+                }
+
+
+
+                bool rare = album.Rare;
+                bool noHorizon = conf.noHorizon;
+
+                var lfutur = conf.getFutur(rare);
+                buildWeek(lfutur);
+                var futurh = conf.futurh;
+                futurh = getweek(futurh);
+                var futurhl = conf.getFuturHList(rare);
+                buildWeek(futurhl);
+                var futura = getweek(conf.futura);
+
+                double intervalleFactMin = 1;
+                double _intervalleFactMoy = 1;
+                double intervalleX = 0;
+
+                // DateTime lastExists = lastRead.Pub;
+
+                var now = DateTime.Now;
+                DateTime finFutur = now;
+                DateTime finFuturH = now;
+                DateTime debutFutur = current.Pub; //.AddDays(-futura);
+                int indexDebut = index0;
+
+                DateTime pub2 = lastRead.Pub2;
+                double duree = current.DureeEnHeure;
+                var intervalleMin0Head = conf.getIntervalleMin0(rare);
+                var intervalleHead = conf.getIntervalle(rare, duree, intervalleMin0Head);
+                var intervalleMinHead = conf.getIntervalleMin(rare, duree);
+                var _atterissageMin = conf.getAtterrissageMin(rare);
+
+                //double deltaMax = intervalle; // conf.getIntervalle(album.Rare);
+                double delta0 = intervalleHead;
+                var deltaLecture = (DateTime.Now - lastRead.PlayedDate).TotalDays;
+                double cumulMin = conf.getCumulMin(rare);
+                double cumulMax = conf.getCumulMax(rare);
+                double rapport = 1;
+                double rapportBorneHead = 1;
+                double _intervalleCorrec = intervalleHead;
+                double _intervalleCorrecVar = intervalleHead;
+                double _deltaHorizon = intervalleHead;
+                double _deltaHorizon0 = intervalleHead;
+                double deltaMax = -1;
+                double _densite = 1;
+                double nbReadHead = 0;
+                double nbTotalHead = 0;
+                double coeff = 1;
+                bool useToleranceHead = false;
+                bool _borneParHorizon = false;
+                double futurChoisi = 0;
+                double deltaLastRead0 = (lastRead.Pub2 - lastRead.Pub).TotalDays;
+                double _delta0Corr = deltaLastRead0;
+
+
+                int nbRead = 0;
+                int nbTotal = 0;
+                var histo = conf.getHisto(rare);
+                var nbHisto = conf.getNbHisto(rare);
+                int _nbTotal = 0;
+
+                DateTime limit = lastRead.Pub; //
+                try { limit = limit.AddDays(-histo); }
+                catch (Exception ex)
+                {
+                    misc.log("Impossible de caler l'historique {0} {1}", this, lastRead, ex);
+                    throw;
+                }
+                {
+                    DateTime l = DateTime.MinValue;
+                    for (int i = indexLastRead; i >= 0; i--)
+                    {
+                        var t = list[i];
+                        var dt = t.Pub;
+                        if (dt.Date == l && t.track.Duree.TotalMinute < conf.collisionDuree)
+                            continue;
+                        l = dt.Date;
+                        if ((dt < limit || nbTotal >= nbHisto) && nbTotal >= conf.totalMin)
+                            break;
+
+                        if (getPlayed(t, true))
+                            nbRead++;
+
+
+                        nbTotal++;
+
+                    }
+                }
+
+                _nbTotal = nbTotal;
+
+                if (_nbTotal < conf.totalMin)
+                    _nbTotal = conf.totalMin;
+
+                rapport = (double)nbRead / (double)_nbTotal;
+                coeff = 1 / rapport;
+
+                if (this.album.Album == "La tête au carré" && index0 > indexCourant - 2)
+                {
+                }
+
+                if ((this.album.Album == "Rendez-vous avec X") && (index0 > indexCourant - 2 && index0 < indexCourant + 10))
+                {
+                }
+
+                foreach (double futur in lfutur)
+                {
+                    noHorizon = conf.noHorizon;
+                    var intervalle = conf.getIntervalle(rare, duree, intervalleMin0Head);
+                    double delta = intervalle;
+                    int nbFutur = 0;
+                    int nbFuturh = 0;
+                    int nbRestant = 0;
+                    var deltaTotal = futur;
+                    var deltaTotalH = futurh;
+                    var atterissageMin = conf.getAtterrissageMin(rare);
+
+                    double intervalleFactMoy = 1;
+                    if (futur > 0)
+                    {
+                        finFutur = current.Pub.AddDays(futur);
+                        finFuturH = current.Pub.AddDays(futurh);
+                        if (finFutur > now)
+                        {
+                            var d = getweek((now - debutFutur).TotalDays);
+                            finFutur = debutFutur.AddDays(d);
+
+                            //indexDebut = 0;
+                            //debutFutur = finFutur.AddDays(-futur);
+                        }
+
+                        if (finFuturH > now)
+                        {
+                            var d = getweek((now - debutFutur).TotalDays);
+                            finFuturH = debutFutur.AddDays(d);
+
+                        }
+
+                        //if (futura > 0)
+                        //{
+                        //    if (debutFutur < list[0].Pub)
+                        //    {
+                        //        debutFutur = list[0].Pub;
+                        //        indexDebut = 0;
+                        //    }
+                        //    else
+                        //    {
+                        //        for (int i = index0; i >= 0; i--)
+                        //        {
+                        //            var t = list[i].Pub;
+                        //            if (t >= debutFutur)
+                        //                indexDebut = i;
+                        //            else
+                        //                break;
+                        //        }
+                        //    }
+                        //}
+                        // chopper l'intervalle majoritaire pour éviter le poids des erreurs. 
+                        Dict<int, int> spectreDelta = new Dict<int, int>();
+                        DateTime lastExists = lastRead.Pub;
+                        DateTime l = DateTime.MinValue;
+                        for (int i = indexDebut; i < count; i++)
+                        {
+                            var t = list[i].Pub;
+                            if (t < debutFutur)
+                                continue;
+                            if (t.Date == l.Date && list[i].track.Duree.TotalMinute < conf.collisionDuree)
+                                continue;
+                            l = t;
+                            nbRestant++;
+
+                            if (t < finFuturH)
+                                nbFuturh++;
+
+
+                            if (t < finFutur)
+                            {
+                                nbFutur++;
+
+
+                                var dp = (int)(System.Math.Round((t - lastExists).TotalDays, 0, MidpointRounding.AwayFromZero));
+                                lastExists = t;
+                                if (dp > 0)
+                                    spectreDelta[dp]++;
+                            }
+                            else if (nbRestant >= TrackAlbum.NB_MIN_POUR_FREQUENT)
+                            {
+                                break;
+                            }
+                        }
+
+                        if (nbFutur == 0)
+                            nbFutur = 1;
+                        if (nbFuturh == 0)
+                            nbFuturh = 1;
+                        deltaTotal = (finFutur - debutFutur).TotalDays;
+                        deltaTotalH = (finFuturH - debutFutur).TotalDays;
+                        if (deltaTotal > 0)
+                        {
+                            intervalleFactMoy = deltaTotal / (double)nbFutur;
+                            //var median = deltaTotalH / (double)nbFuturh;
+                            //if (median > intervalleFactMoy)
+                            //    intervalleFactMoy = median;
+
+                        }
+
+                        if (futura > 0)
+                        {
+                            var min = current.Pub.AddDays(-futura);
+                            var nb2 = nbFutur;
+                            DateTime pubDebut = current.Pub;
+                            for (int i = indexDebut - 1; i >= 0; i--)
+                            {
+                                var t = list[i].Pub;
+                                if (t < min)
+                                    break;
+                                nb2++;
+                                pubDebut = t;
+                            }
+                            var deltaTotal2 = (finFutur - pubDebut).TotalDays;
+                            var intervalleFactMoy2 = deltaTotal2 / (double)nb2;
+
+                            if (intervalleFactMoy2 < intervalleFactMoy)
+                            {
+                                intervalleFactMoy = intervalleFactMoy2;
+                                deltaTotal = deltaTotal2;
+                                debutFutur = pubDebut;
+                                nbFutur = nb2;
+                            }
+                            else
+                            {
+                            }
+                        }
+                        var limitMoy = conf.limitMoy;
+                        if (limitMoy > 0 && intervalleFactMoy > limitMoy)
+                            intervalleFactMoy = limitMoy;
+
+                        intervalleX = (intervalleFactMoy - 1) / 6;
+
+                        var choices = spectreDelta.Keys.ToList();
+                        choices.Sort((x, y) => x.CompareTo(y));
+
+                        int max = 0;
+                        int dpMaj = 1;
+                        for (int i = 0; i < choices.Count; i++)
+                        {
+                            int k = choices[i];
+                            var r = spectreDelta[k];
+                            if (r > max)
+                            {
+                                max = r;
+                                dpMaj = k;
+                            }
+                        }
+
+                        intervalleFactMin = dpMaj;
+
+                        if (nbRestant < TrackAlbum.NB_MIN_POUR_FREQUENT)
+                        {
+                            if (!album.Open)
+                            {
+                                // this.album.RareEffect = true;
+                                if (!rare)
+                                    rare = true;
+                                if (!noHorizon)
+                                    noHorizon = true;
+                            }
+                        }
+                    }
+
+
+
+
+
+
+                    var intervalleMin0 = conf.getIntervalleMin0(rare);
+                    // var intervalleMin0Var = conf.getIntervalleMin0Var(intervalleX, intervalleFactMin);
+
+
+                    var intervalleVar = conf.getIntervalleVar(rare, intervalleX, duree, intervalleMin0);
+
+                    var intervalleCorrec = intervalle;
+                    var intervalleCorrecVar = intervalleVar;
+                    var intervalleMin = conf.getIntervalleMin(rare, duree);
+                    var intervalleMinVar = conf.getIntervalleMinVar(rare, intervalleX, duree);
+
+
+
+                    var atterissageMinVar = conf.getatterrissageMinVar(intervalleX, atterissageMin);
+
+
+
+
+
+                    double delta0Corr = deltaLastRead0;
+
+
+
+                    if (pub2 > lastRead.Pub && conf.extPente == 0)
+                    {
+                        if (conf.elastique < 1)
+                        {
+                            delta0Corr = deltaLastRead0 * conf.elastique;
+                            pub2 = lastRead.Pub.AddDays(delta0Corr).truncateToMinute();
+                        }
+
+
+                        //if (cumulMin > 0 && cumulMax > 0 && delta0Corr > cumulMin)
+                        //{
+                        //    delta0Corr = borneCumul(delta0Corr, cumulMin, cumulMax);
+                        //    pub2 = lastRead.Pub.AddDays(delta0Corr);
+                        //}
+                    }
+
+
+                    // var _played = played ? current : lastRead;
+
+
+
+                    //int nbReads = 0;
+                    //int nbTotals = 0;
+
+
+                    //int _nbRead = 0;
+
+
+
+                    double densite = 1;
+
+                    double rapportBorne = 1;
+                    bool borneParHorizon = false;
+
+                    double coeffVar = 1;
+
+
+                    double deltaVar = intervalleVar;
+
+                    double deltaHorizon0 = delta;
+                    double deltaHorizon0Var = deltaVar;
+                    double deltaHorizon00Var = deltaVar;
+                    double deltaHorizon = delta;
+                    double deltaHorizonVar = deltaVar;
+
+                    bool useTolerance = false;
+
+                    //if (histo > 0 || nbHisto > 0)
+                    //{
+
+
+
+                    if (nbRead > 0 && _nbTotal > 0)
+                    {
+
+
+
+                        // var futur = conf.getFutur(rare);
+
+                        if (futur > 0)
+                        {
+
+                            var __intervalleMin0 = intervalleMin0;
+                            if (__intervalleMin0 == 1)
+                                __intervalleMin0 = 7.0 / 5.0;
+                            double theoric = (finFutur - current.Pub).TotalDays / __intervalleMin0;
+                            densite = nbFutur / theoric;
+
+                            if (densite > 1)
+                                densite = 1;
+
+                            if (densite < conf.densiteMin && !noHorizon)
+                                noHorizon = true;
+                            if (densite < conf.densiteMin && !rare)
+                            {
+                                rare = true;
+
+
+
+                                intervalleMin0 = conf.getIntervalleMin0(rare);
+                                // intervalleMin0Var = conf.getIntervalleMin0Var(intervalleX, intervalleFactMin);
+
+                                intervalle = conf.getIntervalle(rare, duree, intervalleMin0);
+                                intervalleVar = conf.getIntervalleVar(rare, intervalleX, duree, intervalleMin0);
+
+                                intervalleCorrec = intervalle;
+                                intervalleCorrecVar = intervalleVar;
+                                intervalleMin = conf.getIntervalleMin(rare, duree);
+                                intervalleMinVar = conf.getIntervalleMinVar(rare, intervalleX, duree);
+
+
+                                atterissageMin = conf.getAtterrissageMin(rare);
+                                atterissageMinVar = conf.getatterrissageMinVar(intervalleX, atterissageMin);
+
+
+
+
+
+                                theoric = (finFutur - current.Pub).TotalDays / intervalleMin0;
+                                densite = nbFutur / theoric;
+                                if (densite > 1)
+                                    densite = 1;
+                            }
+                            //if (densite < 1)
+                            //    rapport = rapport * densite;
+                        }
+
+
+
+
+                        //  album.Rare ? conf.intervalleR : conf.intervalle;
+                        coeff = 1 / rapport;
+
+                        if (conf.dureeCoeff)
+                            coeff = conf.getCoeff(rare, coeff, duree);
+
+                        coeffVar = coeff;
+
+                        if (conf.coeffDensite)
+                        {
+                            coeff /= densite;
+
+                            coeffVar *= intervalleFactMoy;
+                        }
+
+                        if (conf.honneurAuxVieux && nbRestant < TrackAlbum.NB_MIN_POUR_FREQUENT)
+                        {
+                            if (nbRestant > 0)
+                            {
+                                var t = TrackAlbum.NB_MIN_POUR_FREQUENT / nbRestant;
+                                coeff *= t;
+                                coeffVar *= t;
+                            }
+                        }
+
+                        if (this.album.Album == "PARLER CONTRE LA TERREUR")
+                        {
+                        }
+
+                        var recup = intervalleMin0 - atterissageMin;
+                        //   var recupVar = intervalleMin0Var - atterissageMinVar;
+
+
+                        delta = intervalle; // conf.getIntervalle(album.Rare);
+                        delta0 = delta;
+                        deltaHorizon0 = delta;
+                        deltaHorizon = delta;
+
+
+                        deltaHorizon0Var = intervalleVar;
+                        deltaHorizonVar = intervalleVar;
+
+                        rapportBorne = conf.getHorizonCorrec(rapport, intervalleX);
+
+                        if ((this.album.Album == "Rendez-vous avec X" || this.album.Album == "Sur les épaules de Darwin") && (index0 > indexCourant - 10 && index0 < indexCourant + 10))
+                        {
+                        }
+
+
+
+                        deltaHorizon0 = intervalleMin0 + recup * (1 - rapport) / rapport + (1 - densite) / (densite * rapport);
+                        //deltaHorizon0Var = intervalleMin0Var + recupVar * (1 - rapport) / rapport + (1 - 1 / intervalleFactMoy) / (rapport / intervalleFactMoy); 
+                        //deltaHorizon0Var = intervalleFactMoy + ((1 - rapport) / rapport) * (intervalleFactMoy - atterissageMinVar); // ça pue
+                        var d0 = (lastPub2 - pubMoyForCalcul).TotalDays;
+                        var d1 = (lastPub2 - last.Pub).TotalDays;
+                        var d00 = (pubMoyForCalcul - last.Pub).TotalDays;
+
+
+                        var deltaMoy = d1; // System.Math.Min(d0, d1);
+                        if (deltaMoy < 0)
+                            deltaMoy = 0;
+
+                        // var deltaTotalh = (finFuturH - debutFutur).TotalDays;
+
+                        var correcMoy0 = (deltaTotalH - deltaMoy * rapportBorne) / nbFuturh;
+                        var correcMoy1 = (deltaTotal - deltaMoy * rapportBorne) / nbFutur;
+                        var correcMoy = System.Math.Min(correcMoy0, correcMoy1);
+                        //  var correcMoy2 = intervalleFactMoy * deltaTotal / (deltaTotal + deltaMoy * rapportBorne);
+                        double correcMoy2 = intervalleFactMoy;
+                        double deltaTotalForH = deltaTotal;
+                        if (deltaTotalH < deltaTotal && deltaTotalH > 0)
+                            deltaTotalForH = deltaTotalH;
+
+                        double coeffMoy = rapportBorne * deltaMoy / deltaTotalForH;
+                        //double minh = System.Math.Max(intervalleMinVar, intervalleMin0);
+                        //double deltah = intervalleFactMoy - minh;
+
+
+                        if (conf.horizonCut)
+                            correcMoy2 = _intervalleFactMoy * (1 - coeffMoy * densite); //    intervalleFactMoy * (1 -coeffMoy);
+                        else
+                        {
+                            //zero=> 
+                            //var d = deltah / (1 + coeffMoy);
+                            //correcMoy2 = minh + d;
+                            correcMoy2 = intervalleFactMoy / (1 + coeffMoy * densite);
+                            //intervalleFactMoy / (1 + rapportBorne * deltaMoy / deltaTotalForH);
+                        }
+                        //if (correcMoy2 < minh)
+                        //    correcMoy2 = minh;
+                        // 1 - 10/5 =>-1  5/(5+10) =0.33
+                        // 1- 1/100 => 0.99   100/(100+1) =0.99
+                        deltaHorizon00Var = (intervalleFactMoy - atterissageMinVar * (1 - rapportBorne)) / rapportBorne;
+
+
+                        deltaHorizon0Var = (correcMoy2 - atterissageMinVar * (1 - rapportBorne)) / rapportBorne;
+                        // im=7, rapport=0.9
+
+                        double min = 0;
+                        double hor = 0;
+
+
+
+                        foreach (double h in futurhl)
+                        {
+                            if (this.album.Album == "Sur les épaules de Darwin")
+                            {
+                            }
+                            var p = PeriodBuilder.getDensite(list, index0, conf, h);
+                            double moy = p.Moy();
+                            var limitMoy = conf.limitMoy;
+                            if (limitMoy > 0 && moy > limitMoy)
+                                moy = limitMoy;
+                            double _intervalleX = (moy - 1) / 6;
+                            var _intervalleMin0 = conf.getIntervalleMin0(rare);
+                            var _atterissageMinVar = conf.getatterrissageMinVar(_intervalleX, atterissageMin);
+                            var _rapportBorne = conf.getHorizonCorrec(rapport, _intervalleX);
+
+                            hor = (moy - _atterissageMinVar * (1 - _rapportBorne)) / _rapportBorne;
+                            //hor = (moy - atterissageMinVar * (1 - rapportBorne)) / rapportBorne;
+                            double ecartMax = p.nb * _rapportBorne * (hor - _intervalleMin0);
+                            if (ecartMax > 0 && deltaMoy > ecartMax)
+                            {
+                                var moy2 = p.Moy(deltaMoy - ecartMax);
+                                if (limitMoy > 0 && moy2 > limitMoy)
+                                    moy2 = limitMoy;
+                                hor = (moy2 - _atterissageMinVar * (1 - _rapportBorne)) / _rapportBorne;
+                                // hor = (moy2 - atterissageMinVar * (1 - rapportBorne)) / rapportBorne;
+                            }
+                            if (hor > min)
+                                min = hor;
+                        }
+
+                        if (deltaHorizon0Var >= min)
+                        {
+                        }
+                        else
+                        {
+                            if (this.album.Album == "Sur les épaules de Darwin")
+                            {
+                            }
+                            deltaHorizon0Var = min;
+                        }
+
+
+                        deltaHorizon = deltaHorizon0;
+                        deltaHorizonVar = deltaHorizon0Var;
+
+
+
+                        var tolerance = conf.getTolerance(rare);
+                        double tolerancePart = 0;
+                        if (tolerance > 0)
+                        {
+                            var ecart0 = (lastRead.Pub2 - lastRead.Pub).TotalDays;
+                            tolerancePart = (tolerance - ecart0) / conf.getNbTolerance(rare);
+                            if (deltaHorizon < tolerancePart)
+                                deltaHorizon = tolerancePart;
+                            else if (conf.toleranceNegative && tolerancePart < 0)
+                                deltaHorizon += tolerancePart;
+
+
+                            if (deltaHorizonVar < tolerancePart)
+                            {
+                                deltaHorizonVar = tolerancePart;
+                                useTolerance = true;
+                            }
+                            else if (conf.toleranceNegative && tolerancePart < 0)
+                                deltaHorizonVar += tolerancePart;
+                        }
+
+
+
+
+                        if (!noHorizon && deltaHorizon < intervalle)
+                            intervalleCorrec = deltaHorizon;
+
+                        if (!noHorizon && deltaHorizonVar < intervalleVar)
+                        {
+                            intervalleCorrecVar = deltaHorizonVar;
+                            if (!conf.horizonFinal)
+                                borneParHorizon = true;
+                        }
+
+                        //if (intervalleCorrec < intervalleMin)
+                        //    intervalleCorrec = intervalleMin;
+
+                        //if (intervalleCorrecVar < intervalleMinVar)
+                        //    intervalleCorrecVar = intervalleMinVar;
+                        //0.1 => 10
+                        //0.9 => 1.11
+                        //coeff -= 1; // 9  0.11
+                        //var dminmax = intervalle - intervalleMin;
+
+                        var _delta0 = borne(coeff, intervalle, intervalleMin, intervalleMin0); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+                        var _deltaVar0 = borne(coeffVar, intervalleVar, intervalleMinVar, intervalleMin0);
+
+
+
+
+                        var _delta = borne(coeff, intervalleCorrec, intervalleMin, intervalleMin0); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+                        var _deltaVar = borne(coeffVar, intervalleCorrecVar, intervalleMinVar, intervalleMin0);
+
+
+                        if (conf.horizonFinal)
+                        {
+                            if (_delta0 < delta)
+                                delta = _delta0;
+                            else if (_delta0 == delta)
+                            { }
+                            else
+                            { }
+
+
+
+                            if (_deltaVar0 < deltaVar)
+                                deltaVar = _deltaVar0;
+                            else if (_deltaVar0 == deltaVar)
+                            { }
+                            else
+                            { }
+
+                            if (delta > deltaHorizon)
+                            {
+                                if (noHorizon)
+                                {
+                                }
+                                else
+                                    delta = deltaHorizon;
+                            }
+
+                            //if (delta < tolerancePart)
+                            //    delta = tolerancePart; 
+
+                            if (deltaVar > deltaHorizonVar)
+                            {
+                                if (noHorizon)
+                                {
+                                }
+                                else
+                                {
+                                    deltaVar = deltaHorizonVar;
+                                    borneParHorizon = true;
+                                }
+                            }
+
+                            //if (deltaVar < tolerancePart)
+                            //    deltaVar = tolerancePart; 
+
+                        }
+                        else
+                        {
+
+
+                            if (_delta < delta)
+                                delta = _delta;
+                            else if (_delta == delta)
+                            { }
+                            else
+                            { }
+
+
+                            if (_deltaVar < deltaVar)
+                                deltaVar = _deltaVar;
+                            else if (_deltaVar == deltaVar)
+                            { }
+                            else
+                            { }
+                        }
+
+
+
+
+
+                    }
+
+                    //misc.log("{3} {4}/{5} [{0}] {1} {2} ", name, lastRead.Name, lastRead.Pub, delta.ToString("#.##"), nbRead, nbTotal, name);
+
+
+                    if (conf.intervalleVar)
+                    {
+                        delta = deltaVar;
+                        atterissageMin = atterissageMinVar;
+                        intervalleMin = intervalleMinVar;
+                        // intervalleMin0 = intervalleMin0Var;
+                        intervalle = intervalleVar;
+                        deltaHorizon = deltaHorizonVar;
+                    }
+
+                    if (delta > deltaMax)
+                    {
+                        futurChoisi = futur;
+                        deltaMax = delta;
+                        _densite = densite;
+
+                        rapportBorneHead = rapportBorne;
+                        _delta0Corr = delta0Corr;
+                        _deltaHorizon = deltaHorizon;
+                        _deltaHorizon0 = deltaHorizon00Var;
+                        nbReadHead = nbRead;
+                        nbTotalHead = nbTotal;
+
+                        useToleranceHead = useTolerance;
+                        _borneParHorizon = borneParHorizon;
+
+                        _intervalleCorrec = intervalleCorrec;
+                        _intervalleCorrecVar = intervalleCorrecVar;
+                        _densite = densite;
+                        _intervalleFactMoy = intervalleFactMoy;
+                        _atterissageMin = atterissageMin;
+
+                        intervalleMin0Head = intervalleMin0;
+                        intervalleHead = intervalle;
+                        intervalleMinHead = intervalleMin;
+
+                    }
+                }
+
+                if ((this.album.Album == "Rendez-vous avec X") && (index0 > indexCourant - 2 && index0 < indexCourant + 10))
+                {
+                }
+
+                if (conf.extPente > 0)
+                {
+                    var d0 = (DateTime.Now - pub2).TotalDays;
+                    var dl = conf.extDelta;
+                    if (dl == 0)
+                    {
+                        dl = d0;
+                    }
+
+                    var __delta0 = d0 / conf.extPente;
+                    var __delta = delta0;
+                    //01/01/2014 ->01/01/2017
+                    //04/01/2017 -> 04/01/2014
+                    var dateLimitEcoule = DateTime.Now.AddDays(-dl);
+
+                    var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
+                    log.log("{0} {1}", deltaMax.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
+
+                    if (deltaLimiteEcoule > deltaMax)
+                    {
+                        double _coeff = deltaLimiteEcoule / deltaMax;
+                        __delta = borne(_coeff, intervalleHead, intervalleMinHead, intervalleMinHead);
+                    }
+
+                    if (__delta < 1)
+                        __delta = 1;
+
+                    if (__delta > deltaMax)
+                        deltaMax = __delta;
+
+
+                    //if (delta > intervalle)
+                    //    delta = intervalle;
+                }
+
+
+                //if (this.album.Album == "Sur les épaules de Darwin" && index0 >= indexCourant - 10)
+                //{
+                //}
+
+                if (intervalleMinHead > deltaMax)
+                    intervalleMinHead = deltaMax;
+                //if (intervalleMin0Head > intervalleMinHead)
+                //    intervalleMin0Head = intervalleMinHead;
+                if (_atterissageMin > intervalleMinHead)
+                    _atterissageMin = intervalleMinHead;
+                var _atterissageMin0 = conf.atterrissageMin0;
+                if (_atterissageMin < _atterissageMin0)
+                {
+                    _atterissageMin = _atterissageMin0;
+                }
+                if (intervalleMinHead < _atterissageMin)
+                    intervalleMinHead = _atterissageMin;
+                if (deltaMax < _atterissageMin)
+                    deltaMax = _atterissageMin;
+
+
+
+
+
+                // }
+
+
+
+
+
+                if (conf.limitRead && deltaLecture > intervalleHead)
+                {
+                    //13 /10 ->7
+                    var _old = deltaMax;
+
+                    deltaMax += intervalleHead - deltaLecture;
+                    log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), deltaMax.ToString("0.##"));
+                }
+
+
+
+
+
+                if (deltaMax < intervalleMinHead)
+                    deltaMax = intervalleMinHead;
+
+                if (deltaMax > intervalleHead)
+                    deltaMax = intervalleHead;
+
+
+
+                DateTime limitFuture = lastPub2.AddDays(deltaMax).truncateToMinute();
+                DateTime ll = pub2.AddDays(_atterissageMin).truncateToMinute();
+                if (limitFuture < ll)
+                    limitFuture = ll;
+                //  limitFuture = pub2.AddDays(delta).truncateToMinute();
+                double ecart = 0;
+                if (indexLastRead + 1 < count)
+                {
+                    TrackSort _next = list[indexLastRead + 1];
+                    ecart = (limitFuture - _next.Pub).TotalDays;
+                }
+
+                DateTime limitFutureRab = pub2.AddDays(conf.coeffRab * ecart).truncateToMinute();
+                //var cumul = (limitFuture - next.Pub).TotalDays;
+                //var dtaux = next.Pub.AddDays(conf.coeffRab * cumul).truncateToMinute();
+                //if (dtaux > limitFutureRab)
+                //    limitFutureRab = dtaux; 
+                DateTime nextDate = limitFuture;
+
+                int nb = 0;
+                int nblissage = 0;
+                double deltaAtterrissage = intervalleMinHead;
+                double atterrissageVacance = deltaAtterrissage;
+
+                if (this.album.Album == "La tête au carré" && lastRead != null && lastRead.Pub > new DateTime(2015, 4, 8))
+                {
+                }
+
+                if (conf.noCollision)
+                    deltaAtterrissage = deltaMax;
+                //if (conf.extPente > 0)
+                //    deltaAtterrissage = delta0;
+                string causes = "";
+
+                //if (conf.deltaConst || conf.extPente > 0)
+                //{
+                //}
+
+                //else
+                {
+                    var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
+                    var _deltaRab = limitFuture.AddDays(conf.deltaRab);
+
+                    DateTime dt = lastRead.Pub.AddDays(intervalleMin0Head);
+
+                    var sbCause = new StringBuilder();
+
+                    for (int i = indexLastRead + 1; i < count; i++)
+                    {
+                        var t = list[i];
+                        if (conf.useVirtuel)
+                        {
+                            // on utilise des tracks virtuels pour pallier aux absences (week end, track manquant...)
+                            dt = dt.AddDays(intervalleMin0Head);
+                        }
+                        else
+                            dt = t.Pub;
+
+
+                        nb++;
+                        if (dt > limitFuture)
+                        {
+                            sbCause = new StringBuilder();
+                            nextDate = dt;
+                            nblissage++;
+
+                            int nbCause = 0;
+                            if (dt <= _deltaMin)
+                            {
+                                sbCause.Append(" deltaMin");
+                                nbCause++;
+                            }
+                            if (dt <= _deltaRab)
+                            {
+                                sbCause.Append(" deltaRab");
+                                nbCause++;
+                            }
+                            if (nb <= conf.deltaNbMin)
+                            {
+                                sbCause.Append(" deltaNbMin");
+                                nbCause++;
+                            }
+                            if (nblissage <= conf.deltaNbRab)
+                            {
+                                sbCause.Append(" deltaNbRab");
+                                nbCause++;
+                            }
+                            if (dt <= limitFutureRab)
+                            {
+                                sbCause.Append(" coeffRab");
+                                nbCause++;
+                            }
+
+                            if (nbCause > 0)
+                            {
+                                causes = sbCause.ToString();
+                                continue;
+                            }
+
+
+                            break;
+
+
+                            //if (dt > _deltaMin && dt > _deltaRab && nb > conf.deltaNbMin && nblissage > conf.deltaNbRab && dt > limitFutureRab)
+                            //    break;
+                        }
+
+                    }
+
+                    if (nb > 0 && conf.noCollision) //    (nextDate > limitFuture && nb > 0 && conf.noCollision)
+                    {
+                        deltaAtterrissage = (nextDate - limitFuture).TotalDays / (double)nb;
+                        if (deltaAtterrissage > intervalleMinHead)
+                            deltaAtterrissage = intervalleMinHead;
+                    }
+                }
+
+                if (deltaAtterrissage < _atterissageMin)
+                {
+                    causes += " corrigé atterrissageMin";
+                    deltaAtterrissage = _atterissageMin;
+                }
+
+
+                atterrissageVacance = deltaMax * rapport + deltaAtterrissage * (1 - rapport);
+
+
+                //string atter = string.Format("{0}->{1}", delta.ToString("0.##"), deltaAtterrissage.ToString("0.##"));
+                //if (conf.vacances && deltaAtterrissage != atterrissageVacance)
+                string atter = string.Format("{0}/{1}:{2}->{3}({4})", _intervalleFactMoy.ToString("0.##"), futurChoisi, deltaMax.ToString("0.##"), deltaAtterrissage.ToString("0.##"), atterrissageVacance.ToString("0.##"));
+
+                string deltas = string.Format("{0} ic={1}({2}) h={3} h0={4} i={5} r={6}% ({7}%)", atter,
+                   conf.intervalleVar ? _intervalleCorrecVar.ToString("0.##") : _intervalleCorrec.ToString("0.##"),
+                   conf.intervalleVar ? _intervalleCorrec.ToString("0.##") : _intervalleCorrecVar.ToString("0.##"),
+                   _deltaHorizon.ToString("0.##"), _deltaHorizon0.ToString("0.##"), intervalleHead.ToString("0.##"),
+                   (100 * rapport).ToString("0"), (100 * rapportBorneHead).ToString("0"));
+                //    deltaLastRead0.ToString("0.##"), delta0Corr.ToString("0.##"));
+                string stats = string.Format("{0}/{1}={2}% c={3} d={4}% dr={5} r={6}({7})", nbReadHead, nbTotalHead, (100 * rapport).ToString("0"), coeff.ToString("0.##"), (_densite * 100).ToString("0"), (100 * _densite * rapport).ToString("0"),
+                    deltaLastRead0.ToString("0.##"), _delta0Corr.ToString("0.##"));
+                var sbAlbum = new StringBuilder();
+
+                sbAlbum.Append(string.Format("[{0}]", album.Album));
+                if (album.Rare) sbAlbum.Append(" rare ");
+                else if (rare) sbAlbum.Append(" rare+ ");
+                sbAlbum.Append(current.track.Duree.TotalMinute.ToString("0 m"));
+
+                string _usetolerance = useToleranceHead ? "+" : " ";
+                {
+                    string h = _borneParHorizon ? "h" : " ";
+                    string _rapportBorne = (rapportBorneHead == 1 & rapport < 1) ? "~" : " ";
+                    var str = string.Format("{0} {1}{2}{3}{4} lect={5} causes={6}", stats, sbAlbum.ToString(), _usetolerance, h, _rapportBorne, deltaLecture.ToString("#,#"), causes);
+
+
+                    if (played)
+                    {
+                        if (index0 >= indexCourant && index0 <= indexLastSelected)
+                            log.logNoDate(str);
+                        else
+                            logDebug.logNoDate(str);
+                    }
+                }
+
+
+                //  nb = 0;
+                // bool enRetard = limitFuture < date0;
+
+                //int indexDepart = indexLastRead + 1;
+                // int indexNext = index0 + 1;
+
+                //if (current != lastRead)
+                int suivant = index0 + 1;
+                if (suivant < count)
+                {
+
+                    var t = list[index0 + 1]; // current; // list[indexNext];
+
+                    var _deltaAtterrissage = deltaAtterrissage;
+                    var __atterrissageMin = _atterissageMin;
+                    if (conf.vacances && firstSel)
+                    {
+                        _deltaAtterrissage = atterrissageVacance;
+                        __atterrissageMin = deltaMax * rapport + _atterissageMin * (1 - rapport);
+                    }
+
+                    DateTime dt = lastPub2;
+
+                    if (suivant == indexLastRead + 1 && !conf.useVirtuel2)
+                    {
+                        dt = limitFuture;
+                        // lastPubTh = limitFuture;
+                    }
+                    else
+                    {
+
+
+                        var d = (t.Pub - last.Pub).TotalDays / intervalleMin0Head;
+
+
+                        if (conf.useVirtuel2)
+                        {
+                            dt = lastPub2.AddDays(d * _deltaAtterrissage).truncateToMinute();  //  (int)(tsatt.TotalMinute * nb)).truncateToMinute();
+                            // lastPubTh = lastPub2.AddDays(d * _atterrissageMin).truncateToMinute();
+                        }
+                        else
+                        {
+                            dt = lastPub2.AddDays(_deltaAtterrissage).truncateToMinute();
+                            // lastPubTh = lastPubTh.AddDays(_atterrissageMin).truncateToMinute();
+                        }
+                        if (conf.deltaConstLate >= 0 && t.track.Selected && dt < date1 && t.Pub2 < date1)
+                        {
+                            var dt2 = dt;
+                            if (conf.useVirtuel2)
+                                dt2 = lastPub2.AddDays(d * deltaMax).truncateToMinute();
+                            else
+                                dt2 = lastPub2.AddDays(deltaMax).truncateToMinute();
+                            //if (dt2 <= date0)
+                            dt = dt2;
+                            //else
+                            //    dt = date0.AddMinutes(1);
+                        }
+
+
+                    }
+
+                    if (!firstSel)
+                    {
+                        if (dt > date0)
+                            firstSel = true;
+                    }
+
+
+
+                    var dtMin = lastPub2.AddDays(_atterissageMin);
+
+                    if (dt < dtMin)
+                        dt = dtMin;
+                    bool erasedNext = false;
+                    if (conf.erasedDone)
+                    {
+                        if (!played && current.Pub2 <= current.Pub)
+                            erasedNext = true;
+                    }
+                    if (t.Pub >= dt || conf.enabled == sortMode.reset || erasedNext)
+                    {
+                        if (dt > t.Pub)
+                        {
+                        }
+                        eraseSort(t, deltas, pubMoy);
+                    }
+                    else
+                    {
+                        var __delta = (dt - t.Pub).TotalDays;
+                        if (cumulMin > 0 && cumulMax > 0 && conf.extPente == 0)
+                        {
+                            if (__delta > cumulMin)
+                            {
+                                __delta = borneCumul(__delta, cumulMin, cumulMax);
+                                dt = t.Pub.AddDays(__delta).truncateToMinute();
+                            }
+                        }
+
+                        if (conf.elastique2 < 1)
+                        {
+                            var deltacorr2 = __delta * conf.elastique2;
+                            dt = t.Pub.AddDays(deltacorr2).truncateToMinute();
+                        }
+
+
+
+                        if (dt < dtMin)
+                            dt = dtMin;
+
+                        var limitDelta = conf.limitDelta;
+                        if (limitDelta > 0)
+                        {
+                            var dtMax = lastPub2.AddDays(limitDelta);
+                            if (dt > dtMax)
+                                dt = dtMax;
+                        }
+
+                        if (dt > DateTime.Now)
+                        {
+                        }
+
+                        if ((dt - t.Pub).TotalDays > 100)
+                        {
+                        }
+
+                        if (t.Pub >= dt || erasedNext)
+                            eraseSort(t, deltas, pubMoy);
+                        else
+                            writeComment(t, dt, deltas, pubMoy);
+                        //nb++;
+                    }
+
+
+                    last = t;
+                    lastPub2 = t.Pub2; // dt;
+                    //if (t.Pub2 < lastPub2)
+                    //{
+                    //    if (t.Pub != t.Pub2)
+                    //    {
+                    //    }
+                    //    lastPub2 = t.Pub2;
+                    //}
+
+                    //  lastPub2 = System.Math.Min(dt, t.Pub2); // dt;  //t.Pub2; FIX BUG ??
+                    //if (lastPubTh > lastPub2)
+                    //    lastPubTh = lastPub2;
+
+                    pubMoy = pubMoy.AddDays(_intervalleFactMoy);
+                    pubMoyForCalcul = pubMoyForCalcul.AddDays(_intervalleFactMoy);
+
+                    if (pubMoyForCalcul > lastPub2)
+                        pubMoyForCalcul = lastPub2;
+
+
+                    if (played)
+                    {
+                        //prelastRead = current;
+                        ////lastPlayed = lastRead.PlayedDate;
+                        //indexPrelastRead = index0;
+                    }
+
+                }
+
+
+                index0++;
+            }
+
+
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
+                {
+                    var aux = currentPub2.AddMinutes(1);
+                    log.log("correction2 pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux;
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+            }
+
+        }
+
+
+        public void Build()
+        {
+            if (album.Album == "SCIENCE PUBLIQUE")
+            {
+            }
+            if (done)
+                return;
+            done = true;
+            if (conf.enabled == sortMode.no)
+                return;
+            int count = list.Count;
+            if (count == 0)
+                return;
+
+            //if (conf.enabled == sortMode.histo)
+            //{
+            //    buildAll();
+            //    return;
+            //}
+            //else
+            //{
+            //checkSelected = true;
+            //apply = true;
+            date0 = Conf.Date0;
+            if (conf.deltaConstLate >= 0)
+                date1 = date0.AddDays(conf.deltaConstLate);
+            // newDate0 = Conf.NewDate0;
+            if (conf.oldMode)
+                build0();
+            else
+                build();
+            return;
+            //  }
+
+            #region old
+            /* if (conf.enabled == sortMode.reset)
+            {
+                foreach (var t in list)
+                {
+                    eraseSort(t, true, true);
+                }
+
+                return;
+            }
+
+            int indexLastRead = -1;
+            int indexNextSelected = -1;
+            DateTime lastPlayed = DateTime.MinValue;
+            TrackSort next = null;
+            //  TrackSort reallyLastRead = null;
+            DateTime currentPub = DateTime.MinValue;
+            DateTime currentPub2 = DateTime.MinValue;
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                //if (conf.extPente > 0)
+                //{
+                //    if (!track.Played && track.Pub == track.Pub2)
+                //        track.Pub2 = Conf.Date0; 
+                //}
+
+                if (track.Pub > currentPub && track.Pub2 <= currentPub2)
+                {
+                    var aux = currentPub2.AddMinutes(1);
+                    log.log("correction pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux;
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+
+
+                if (track.Played) // && track.PlayedDate > lastPlayed)
+                {
+                    // ok mais quid du cas au fil de l'histoire : date dans le futur
+                    if (track.Pub2 <= Conf.Date0 || conf.extPente > 0)
+                    {
+                        if (next == null)
+                        {
+                            indexLastRead = i;
+                            lastPlayed = track.PlayedDate;
+                        }
+                    }
+                }
+
+                else if (next == null)
+                {
+                    if (track.Selected)
+                    {
+                        next = track;
+                        indexNextSelected = i;
+                        // break;
+                    }
+                }
+            }
+
+
+            if (indexLastRead < 0)
+                return;
+            if (next == null)
+                return;
+            var intervalle = conf.getIntervalle(album.Rare);
+            var intervalleMin = conf.getIntervalleMin(album.Rare);
+            var lastRead = list[indexLastRead];
+            double deltaLastRead0 = (lastRead.Pub2 - lastRead.Pub).TotalDays;
+            DateTime pub2 = lastRead.Pub2;
+
+            double delta0Corr = deltaLastRead0;
+
+            double cumulMin = conf.getCumulMin(album.Rare);
+            double cumulMax = conf.getCumulMax(album.Rare);
+
+            if (pub2 > lastRead.Pub && conf.extPente == 0)
+            {
+                if (conf.elastique < 1)
+                {
+                    delta0Corr = deltaLastRead0 * conf.elastique;
+                    pub2 = lastRead.Pub.AddDays(delta0Corr).truncateToMinute();
+                }
+
+
+                //if (cumulMin > 0 && cumulMax > 0 && delta0Corr > cumulMin)
+                //{
+                //    delta0Corr = borneCumul(delta0Corr, cumulMin, cumulMax);
+                //    pub2 = lastRead.Pub.AddDays(delta0Corr);
+                //}
+            }
+
+
+
+
+            var deltaLecture = (DateTime.Now - lastPlayed).TotalDays;
+
+            int nbReads = 0;
+            int nbTotals = 0;
+
+            int nbRead = 0;
+            int nbTotal = 0;
+
+            int _nbRead = 0;
+            int _nbTotal = 0;
+            double delta = conf.getIntervalle(album.Rare);
+            double delta0 = delta;
+            var _histo = conf.getHisto(album.Rare);
+            if (_histo > 0)
+            {
+                double histo = _histo;
+
+                DateTime histo0 = next.Pub;
+                if (conf.histoMode == histoMode.fix)
+                    histo0 = Conf.Date0;
+                DateTime limit = histo0.AddDays(-histo);
+
+                for (int i = indexNextSelected - 1; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotals >= conf.totalMin)
+                        break;
+
+                    if (t.Played)
+                        nbReads++;
+
+
+                    nbTotals++;
+
+                }
+
+
+
+                limit = lastRead.Pub.AddDays(-histo);
+                for (int i = indexLastRead; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotal >= conf.totalMin)
+                        break;
+
+                    if (t.Played)
+                        nbRead++;
+
+
+                    nbTotal++;
+
+                }
+
+
+                if (conf.histoMode == histoMode.read)
+                {
+                    _nbRead = nbRead;
+                    _nbTotal = nbTotal;
+                }
+                else
+                {
+                    _nbRead = nbReads;
+                    _nbTotal = nbTotals;
+                }
+
+
+                if (_nbRead > 0 && _nbTotal > 0)
+                {
+                    if (_nbTotal < conf.totalMin)
+                        _nbTotal = conf.totalMin;
+                    //  album.Rare ? conf.intervalleR : conf.intervalle;
+                    var ecouteMax = conf.getEcouteMax(album.Rare); // album.Rare ? conf.ecouteMaxR : conf.ecouteMax;
+
+                    delta = (intervalle * (double)_nbTotal) / (ecouteMax * (double)_nbRead);
+                    var coeff = (double)_nbTotal / (double)_nbRead;
+
+                    //0.1 => 10
+                    //0.9 => 1.11
+                    //coeff -= 1; // 9  0.11
+                    //var dminmax = intervalle - intervalleMin;
+
+                    var _delta = borne(coeff, intervalle, intervalleMin); // intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+
+                    if (_delta < delta)
+                        delta = _delta;
+                    else
+                    {
+                    }
+
+                }
+
+                //misc.log("{3} {4}/{5} [{0}] {1} {2} ", name, lastRead.Name, lastRead.Pub, delta.ToString("#.##"), nbRead, nbTotal, name);
+
+
+            }
+
+
+
+            if (conf.extPente > 0)
+            {
+                var d0 = (DateTime.Now - pub2).TotalDays;
+                var dl = conf.extDelta;
+                if (dl == 0)
+                {
+                    dl = d0;
+                }
+
+                delta0 = d0 / conf.extPente;
+                delta = delta0;
+                //01/01/2014 ->01/01/2017
+                //04/01/2017 -> 04/01/2014
+                var dateLimitEcoule = DateTime.Now.AddDays(-dl);
+
+                var deltaLimiteEcoule = (dateLimitEcoule - pub2).TotalDays;
+                log.log("{0} {1}", delta.ToString("0.##"), deltaLimiteEcoule.ToString("0.##"));
+
+                if (deltaLimiteEcoule > delta)
+                    delta = deltaLimiteEcoule;
+
+                if (delta < 1)
+                    delta = 1;
+
+                //if (delta > intervalle)
+                //    delta = intervalle;
+            }
+
+            if (conf.limitRead && deltaLecture > intervalle)
+            {
+                //13 /10 ->7
+                var _old = delta;
+
+                delta += intervalle - deltaLecture;
+                log.log("limitation par lecture {0} -> {1}", _old.ToString("0.##"), delta.ToString("0.##"));
+            }
+
+
+
+
+            if (delta < intervalleMin)
+                delta = intervalleMin;
+
+            if (delta > intervalle)
+                delta = intervalle;
+
+
+
+            DateTime limitFuture = pub2.AddDays(delta).truncateToMinute();
+            DateTime nextDate = limitFuture;
+
+            int nb = 0;
+            int nblissage = 0;
+            double deltaAtterrissage = intervalleMin;
+
+            if (conf.noCollision)
+                deltaAtterrissage = TimeSpan.FromDays(delta).TotalDays;
+            if (conf.extPente > 0)
+                deltaAtterrissage = TimeSpan.FromDays(delta0).TotalDays;
+
+            if (conf.deltaConst)
+            {
+            }
+
+            else
+            {
+                var _deltaMin = lastRead.Pub.AddDays(conf.deltaMin);
+                var _deltaRab = limitFuture.AddDays(conf.deltaRab);
+                double deltaattAux = 0;
+                for (int i = indexLastRead + 1; i < count; i++)
+                {
+                    var t = list[i];
+
+                    if (conf.deltaCheckSelected)
+                    {
+                        if (!t.Selected)
+                            continue;
+                        if (!t.Enabled)
+                            continue;
+                    }
+
+                    if (t.Pub >= limitFuture)
+                    {
+                        nextDate = t.Pub;
+                        nblissage++;
+                        if (nextDate > limitFuture && nb > 0 && conf.noCollision)
+                        {
+                            var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
+                            if (_deltaAtt < deltaAtterrissage)
+                            {
+                                if (_deltaAtt > deltaattAux)
+                                    deltaattAux = _deltaAtt;
+                            }
+                        }
+                        if (t.Pub >= _deltaMin && t.Pub >= _deltaRab && nb >= conf.deltaNbMin && nblissage > conf.deltaNbRab)
+                            break;
+                    }
+                    nb++;
+                }
+
+                if (nextDate > limitFuture && nb > 0 && conf.noCollision)
+                {
+                    if (deltaattAux > 0)
+                        deltaAtterrissage = deltaattAux;
+                    else
+                    {
+                        var _deltaAtt = (nextDate - limitFuture).TotalDays / (double)nb;
+                        if (_deltaAtt < deltaAtterrissage)
+                            deltaAtterrissage = _deltaAtt;
+                    }
+
+                    if (deltaAtterrissage > intervalleMin)
+                        deltaAtterrissage = intervalleMin;
+                }
+            }
+
+            var tsatt = timeSpan.FromDays(deltaAtterrissage);
+            if (tsatt.TotalMinute < 1)
+                tsatt = timeSpan.FromMinutes(1);
+
+            string deltas = string.Format("{0} {1} {2}->{3}", deltaLastRead0.ToString("0.##"), delta0Corr.ToString("0.##"), delta.ToString("0.##"), tsatt.TotalDay.ToString("0.##"));
+
+            log.log("{0} {1}/{2} ({3}/{4}) [{5}] {6} {7} ({8}) lecture={9} ", deltas, nbRead, nbTotal, nbReads, nbTotals, album.Album, lastRead.track.Name, lastRead.Pub, pub2, deltaLecture.ToString("#.##"));
+
+
+            nb = 0;
+            for (int i = indexLastRead + 1; i < count; i++)
+            {
+
+                var t = list[i];
+
+                if (conf.deltaCheckSelected)
+                {
+                    if (!t.Selected)
+                        continue;
+                    if (!t.Enabled)
+                        continue;
+                }
+                var dt = limitFuture.AddMinutes((int)(tsatt.TotalMinute * nb)).truncateToMinute();
+
+
+                var _delta = (dt - lastRead.Pub2).TotalDays;
+                if (t.Pub >= dt || conf.enabled == sortMode.reset)
+                    eraseSort(t, false, true);
+                else
+                {
+                    if (cumulMin > 0 && cumulMax > 0 && conf.extPente == 0)
+                    {
+                        var __delta = (dt - t.Pub).TotalDays;
+                        if (__delta > cumulMin)
+                        {
+                            __delta = borneCumul(__delta, cumulMin, cumulMax);
+                            dt = t.Pub.AddDays(__delta).truncateToMinute();
+                        }
+                    }
+
+                    writeComment(t, dt, true, true, Conf.Date0, Conf.NewDate0);
+                    nb++;
+                }
+
+
+            }
+
+
+            for (int i = 0; i < count; i++)
+            {
+                var track = list[i];
+                if (track.Pub > currentPub && track.Pub2 > track.Pub && track.Pub2 <= currentPub2)
+                {
+                    var aux = currentPub2.AddMinutes(1);
+                    log.log("correction2 pub2 pour respect ordre {0} -> {1} {2}", track.Pub2, aux, track);
+                    track.Pub2 = aux;
+                }
+
+                currentPub = track.Pub;
+                currentPub2 = track.Pub2;
+            }
+            */
+            #endregion
+
+
+        }
+
+
+
+        private void eraseSort(TrackSort track, string desc, DateTime dateMoy)
+        {
+            writeComment(track, track.Pub, desc, dateMoy);
+            //bool go = apply;
+            //if (!go)
+            //{
+            //    go = true;
+            //    if (!checkSelected && !track.track.Selected)
+            //        go = false;
+            //}
+            //if (!go)
+            //{
+            //    track.Pub2 = track.Pub;
+            //    return;
+            //}
+
+            ////if (!force && !track.Selected)
+            ////    return;
+            //if (conf.canGoBack || conf.enabled == sortMode.reset)
+            //{
+            //    if (!track.Played && track.Enabled)
+            //    {
+            //        DateTime pub = track.Pub;
+            //        if (track.Pub2 >= date0 && pub <date0)
+            //        {
+            //            log.log("**********{0} pub2 erase passe en dessous de Date0 {1}->{2} ({3})", track.Name, track.Pub2, track.Pub, Conf.Date0);
+            //            repeches.Add(track);
+            //            // track.Pub2 = TrackInfoItunes.Date0.AddSeconds(nbrepeches);
+            //            if (pub < dateRepeche)
+            //                dateRepeche = pub;
+            //        }
+            //        else if (track.Pub2 >=newDate0 && pub < newDate0)
+            //        {
+            //            log.log("**********{0} pub2 erase passe en dessous de NewDate0 {1}->{2} ({3})", track.Name, track.Pub2, track.Pub, Conf.NewDate0);
+            //            repeches.Add(track);
+            //            // track.Pub2 = TrackInfoItunes.Date0.AddSeconds(nbrepeches);
+            //            if (pub < dateRepeche)
+            //                dateRepeche = pub;
+            //        }
+            //    }
+
+            //    //}
+            //    //else
+            //    //{
+            //    if (track.Pub2 != track.Pub)
+            //        nbModif++;
+            //    track.Pub2 = track.Pub;
+            //    //}
+            //    track.track.BuildComment();
+            //    // writeComment(track);
+            //}
+        }
+
+        //private void applyPub(TrackSort track)
+        //{
+        //    writeComment(track, track.Pub2, false, true, Conf.Date0, Conf.NewDate0);
+        //}
+
+        private void writeComment(TrackSort track, DateTime dt, string desc, DateTime pubMoy)
+        {
+            dt = dt.truncateToMinute();
+            //bool go = apply;
+            //if (!go)
+            //{
+            //    go = true;
+            //    if (checkSelected && !track.track.Selected)
+            //        go = false;
+            //}
+            //if (!go)
+            //{
+            //    track.Pub2 = dt;
+            //    return;
+            //}
+
+
+
+            //if (checkSelected && !track.Selected)
+            //    return;
+
+
+            if (conf.canGoBack)
+            {
+                if (!getPlayed(track, false) && track.Enabled)
+                {
+                    if (track.pub20 >= date0 && dt < date0)
+                    {
+                        if (conf.canGoBackButForceSelected)
+                        {
+                            log.log("**********{0} pub2 set passe en dessous de Date0 MAIS repéché {1}->{2} ({3})", track.Name, track.pub20, dt, date0);
+                            nbRepecheForce++;
+                            dt = date0.AddMinutes(nbRepecheForce);
+                        }
+                        else
+                        {
+                            log.log("**********{0} pub2 set passe en dessous de Date0 {1}->{2} ({3})", track.Name, track.pub20, dt, date0);
+                            repeches.Add(track);
+                        }
+                        if (dt < dateRepeche)
+                            dateRepeche = dt;
+                    }
+
+                    //else if (track.pub20 >= newDate0 && dt < newDate0)
+                    //{
+
+                    //    if (conf.canGoBackButForceSelected)
+                    //    {
+                    //        log.log("**********{0} pub2 set passe en dessous de NewDate0 MAIS repéché {1}->{2} ({3})", track.Name, track.pub20, dt, date0);
+                    //        nbRepecheForce++;
+                    //        dt = date0.AddMinutes(nbRepecheForce);
+                    //    }
+                    //    else
+                    //    {
+                    //        log.log("**********{0} pub2 set passe en dessous de NewDate0 {1}->{2} ({3})", track.Name, track.pub20, dt, newDate0);
+                    //        repeches.Add(track);
+                    //    }
+
+                    //    if (dt < dateRepeche)
+                    //        dateRepeche = dt;
+
+                    //}
+                }
+            }
+            else
+            {
+                if (dt == track.pub20)
+                {
+                    logDebug.logNoDate("\t{0} {1} {2}\t{3}", track.Pub.ToString(DATE_FORMAT), dt.ToString(DAY_FORMAT), desc, track.Name);
+                    return;
+                }
+                else if (dt < track.pub20)
+                {
+                    logDebug.logNoDate("\t{0} {1}<= {2} {3}\t{4}", track.Pub.ToString(DATE_FORMAT), track.pub20.ToString(DAY_FORMAT), dt.ToString(DAY_FORMAT), desc, track.Name);
+                    return;
+                }
+            }
+            var delta = (dt - track.Pub).TotalDays;
+            var delta0 = (track.pub20 - track.Pub).TotalDays;
+
+            var deltaMoy0 = (track.pub20 - pubMoy).TotalDays;
+            var deltaMoy1 = (dt - pubMoy).TotalDays;
+
+
+            var sbDelta = new StringBuilder();
+            sbDelta.Append("(");
+            var strD0 = delta0.ToString("#.#");
+            var strD1 = delta.ToString("#.#");
+
+            var strDM0 = deltaMoy0.ToString("#.#");
+            var strDM1 = deltaMoy1.ToString("#.#");
+            if (delta0 > 0)
+            {
+                if (delta0 > 0)
+                    sbDelta.Append(strD0);
+                //sbDelta.Append("|");
+                ////  if (deltaMoy0 > 0)
+                //sbDelta.Append(strDM0);
+            }
+            if (strD0 != strD1)
+            {
+                sbDelta.Append("->");
+                if (delta > 0)
+                    sbDelta.Append(strD1);
+                //sbDelta.Append("|");
+                //if (deltaMoy1 > 0)
+                //    sbDelta.Append(strDM1);
+            }
+            //sbDelta.Append("|");
+            //if (deltaMoy0 != 0)
+            //{
+            //    sbDelta.Append(strDM0);
+
+            //    if (strDM1 != strDM0)
+            //    {
+            //        sbDelta.Append("->");
+            //        if (deltaMoy1 > 0)
+            //            sbDelta.Append(strDM1);
+            //    }
+            //}
+            sbDelta.Append(")");
+
+            while (sbDelta.Length < 22)
+                sbDelta.Append(" ");
+
+            var strDelta = sbDelta.ToString();
+
+            if (track.pub20 != dt)
+            {
+
+                if (track.pub20.truncateToMinute() != dt)
+                {
+                    //if (track.track.Selected)
+                    //{
+                    nbModif++;
+                    var d = System.Math.Abs((track.pub20 - dt).TotalHours);
+                    if (d > 1)
+                        nbModifPertinent++;
+
+                    var dd = System.Math.Abs((track.pub20 - dt).TotalMinutes);
+                    if (dd <= 5)
+                    {
+                        log.log("poil de cul {0}", track);
+                    }
+
+                    // var str = string.Format("\t{0}\t{1}=>\t{2}({3})\t{4} {5}", track.Pub, track.pub20, dt, strDelta, desc, track.Name);
+                    var str = string.Format("\t{0} {1}{2}\t{3}\t{4}", track.Pub.ToString(DATE_FORMAT), dt.ToString(DAY_FORMAT), strDelta, desc, track.Name); // ", track.pub20, dt, strDelta, desc, track.Name);
+                    if (track.track.Selected)
+                        log.logNoDate(str);
+                    else
+                        logDebug.logNoDate(str);
+                    //}
+                }
+                track.Pub2 = dt;
+            }
+            else if (track.pub20 > track.Pub)
+            {
+                // if (track.track.Selected)
+                var str = string.Format("\t{0} {1}{2}\t{3}\t{4}", track.Pub.ToString(DATE_FORMAT), dt.ToString(DAY_FORMAT), strDelta, desc, track.Name);
+                // var str = string.Format("\t{0}\t{1}({2})\t{3} {4}", track.Pub, track.pub20, strDelta, desc, track.Name);
+                if (track.track.Selected)
+                    log.logNoDate(str);
+                else
+                    logDebug.logNoDate(str);
+            }
+            else
+            {
+                var sbBlanc = new StringBuilder();
+
+                var str = string.Format("\t{0} {1}{2}\t{3}\t{4}", track.Pub.ToString(DATE_FORMAT), Regex.Replace(dt.ToString(DAY_FORMAT), ".", " "), strDelta, desc, track.Name);
+                // var str = string.Format("\t{0} ({1})\t{2} {3}", track.Pub, strDelta, desc,track.Name);
+                logDebug.logNoDate(str);
+            }
+
+
+            track.track.BuildComment();
+            //  track.track.BuildComposer(); 
+        }
+
+        private static double borne(double coeff, double intervalle, double intervalleMin, double intervalleMin0)
+        {
+            double _delta = 0;
+            if (intervalle < intervalleMin)
+                intervalleMin = intervalle;
+            if (coeff <= 1)
+                _delta = coeff * intervalleMin;
+            else
+            {
+                coeff -= 1; // 9  0.11
+                var dminmax = intervalle - intervalleMin;
+                _delta = intervalle - dminmax / (1 + (intervalleMin / dminmax) * coeff);
+            }
+
+            if (_delta < intervalleMin0)
+                _delta = intervalleMin0;
+            return _delta;
+        }
+
+        private static double borneCumul(double delta, double cumulMin, double cumulMax)
+        {
+            if (cumulMin < 0 || cumulMax < 0)
+                return delta;
+            if (delta < cumulMin)
+                return delta;
+            var coeff = delta / cumulMin;
+            return borne(coeff, cumulMax, cumulMin, cumulMin);
+        }
+
+        private double _coeffLecture = -1;
+        public double getCoeffLecture(TrackInfoItunes track)
+        {
+            if (_coeffLecture > 0)
+                return _coeffLecture;
+            int count = list.Count;
+            int index = -1;
+            for (int i = 0; i < count; i++)
+            {
+                if (list[i].track == track)
+                {
+                    index = i;
+                    break;
+                }
+            }
+            if (index < 0)
+                return 0;
+
+            var _histo = conf.getHisto(track.Rare);
+
+            if (_histo > 0)
+            {
+                int nbTotal = 0;
+                int nbRead = 0;
+                double histo = _histo;
+
+
+
+
+                DateTime limit = track.Pub.AddDays(-histo);
+                for (int i = index - 1; i >= 0; i--)
+                {
+                    var t = list[i];
+                    var dt = t.Pub;
+                    if (dt < limit && nbTotal >= conf.totalMin)
+                        break;
+
+                    if (getPlayed(t, true))
+                        nbRead++;
+
+
+                    nbTotal++;
+
+                }
+
+                if (nbTotal > 0)
+                    _coeffLecture = nbRead / nbTotal;
+                else
+                    return 0;
+            }
+            else
+                return 0;
+
+            return _coeffLecture;
+
+
+
+        }
+    }
+}]]></content>
+  </file>
+  <file path="\pdb.podcast\Tuning\Album.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using pdb.util;
+using System.Xml;
+
+namespace pdb.podcast.Tuning
+{
+    public class ConfAlbums : ConfAlbum
+    {
+        public static ConfAlbums Main;
+        public ConfAlbums()
+        {
+            Main = this;
+        }
+
+        public ConfAlbums(XmlElement node)
+            : base(null, node)
+        {
+            items = new List<ConfAlbum>();
+            foreach (XmlNode sub in node.ChildNodes)
+            {
+                if (sub is XmlElement && sub.Name == "album")
+                {
+                    items.Add(new ConfAlbum(node, sub as XmlElement));
+                }
+            }
+            Main = this;
+        }
+
+        public ConfAlbum getItem(string album)
+        {
+            foreach (ConfAlbum g in items)
+            {
+                if (g.name.Contains(album))
+                    return g;
+
+            }
+            return null;
+        }
+
+        private List<ConfAlbum> items = new List<ConfAlbum>();
+        public List<ConfAlbum> Items { get { return items; } }
+    }
+
+    public class ConfAlbum : LimitItemBase
+    {
+        public bool checkPub;
+        public bool checkDoublon;
+        public double maxGlobal = 18;
+
+        /// <summary>
+        /// Date en-deça de laquelle ou oublie qu'il a été joué ou désactivé
+        /// </summary>
+        public DateTime forgot = DateTime.MinValue;
+        /// <summary>
+        /// Date au-delà de laquelle ou n'oublie pas qu'il a été désactivé ou joué
+        /// </summary>
+        public DateTime forgotMax = DateTime.MaxValue;
+        /// <summary>
+        /// Date en-deça de laquelle ou oublie qu'il a été joué ou désactivé - pour les courts
+        /// </summary>
+        public DateTime forgotShort = DateTime.MinValue;
+       
+
+        /// <summary>
+        /// nom de l'album ou suite d'albums
+        /// </summary>
+        public List<string> name = new List<string>();
+        public readonly string Names;
+
+        public ConfAlbum()
+        {
+        }
+
+        public ConfAlbum(XmlElement parent, XmlElement node)
+            : base(parent, node)
+        {
+            if (node == null)
+                return;
+            name = new List<string>();
+            buildb("checkPub", v => checkPub = v);
+            buildb("checkDoublon", v => checkDoublon = v);
+            buildd("maxGlobal", v => maxGlobal = v);
+            buildDate("forgot", v => forgot = v);
+            buildDate("forgotMax", v => forgotMax = v);
+
+            buildDate("forgotShort", v => forgotShort = v);
+           // buildDate("forgotMaxShort", v => forgotMaxShort = v);
+
+            this.build(parent, node);
+
+            var str = "";
+            builds("name", v => str = v);
+            Names = str;
+
+            if (!string.IsNullOrEmpty(str))
+            {
+                foreach (string album in str.Split('|'))
+                {
+                    if (!string.IsNullOrWhiteSpace(album))
+                        name.Add(album.toKey());
+                }
+            }
+        }
+    }
+
+}
+]]></content>
+  </file>
   <file path="\PieceDb.Consolid\albums\AlbumMedianne.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
