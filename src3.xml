@@ -1,51 +1,4 @@
 <db path="C:\bernard\db2\">
-  <file path="buro\buroSimple\Program.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace buroSimple
-{
-    class Program
-    {
-        static void Main(string[] args)
-        {
-            int countArgs = args.GetLength(0);
-            double delay = 20.0;
-            bool unique = false;
-            bool sortBySize = false;
-            bool uniqueName = false;
-            bool reverse = false; 
-            bool fullscreen = false; 
-            for (int i = 0; i <countArgs; i++)
-            {
-                if (args[i] == "-t")
-                {
-                    if (i + 1 < countArgs)
-                    {
-                        delay = Convert.ToDouble(args[i + 1]);
-                    }
-
-                }
-                else if (args[i] == "/u")
-                    unique = true;
-                else if (args[i] == "/s")
-                    sortBySize = true;
-                else if (args[i] == "/un")
-                    uniqueName = true;
-                else if (args[i] == "/r")
-                    reverse = true; 
-                 else if (args[i] == "/fs")
-                    fullscreen = true; 
-            }
-            var wp = new Walpaper() { delay = delay, unique = unique, sortBySize = sortBySize, uniqueName = uniqueName,reverse=reverse, fullscreen= fullscreen }; 
-            wp.go(); 
-        }
-    }
-}
-]]></content>
-  </file>
   <file path="buro\buroSimple\Walpaper.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
@@ -259,15 +212,16 @@ namespace buroSimple
         private void paramGr(Graphics graphics)
         {
             graphics.CompositingMode = CompositingMode.SourceCopy;
-            graphics.CompositingQuality = CompositingQuality.AssumeLinear;
-            graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+            graphics.CompositingQuality = CompositingQuality.HighSpeed;
+            graphics.InterpolationMode = InterpolationMode.Low;
             graphics.SmoothingMode = SmoothingMode.None;
             graphics.PixelOffsetMode = PixelOffsetMode.None;
         }
 
         private Image createFileFs(FileDto f)
         {
-            Image img = Image.FromFile(f.Path);
+            Image img = Image.FromFile(f.Path); 
+
 
             int largeur0 = img.Width;
             int hauteur0 = img.Height;
@@ -275,8 +229,6 @@ namespace buroSimple
             Console.WriteLine("{0}={1}x{2} {3}", largeur0 * hauteur0, largeur0, hauteur0, f.HumanReadableSize);
 
             double r0 = (double)HAUTEUR / (double)LARGEUR;
-
-
             double r = (double)hauteur0 / (double)largeur0;
 
             //facteur d'augmentation
@@ -289,32 +241,30 @@ namespace buroSimple
             int hauteurTrame;
 
             Bitmap trame;
-            img.Save(TMP_FILE1, ImageFormat.Png);
+            img.Save(TMP_FILE1, ImageFormat.Bmp);
             var imgVerif = ImageUtil.Scan(TMP_FILE1);
             if (imgVerif == null)
             {
                 img.Dispose();
                 return null;
             }
-
-            imgVerif.Dispose();
-
+           
             int l = largeur0;
             int h = hauteur0;
-            int l0 = l;
-            int h0 = h;
+            //int l0 = l;
+            //int h0 = h;
             //Image currentImage = img;
-            while (true)
-            {
-                l *= 2;
-                if (l > LARGEUR)
-                    break;
-                h *= 2;
-                if (h > HAUTEUR)
-                    break;
-                l0 = l;
-                h0 = h;
-            }
+            //while (true)
+            //{
+            //    l *= 2;
+            //    if (l > LARGEUR)
+            //        break;
+            //    h *= 2;
+            //    if (h > HAUTEUR)
+            //        break;
+            //    l0 = l;
+            //    h0 = h;
+            //}
 
             if (r > r0)
                 scale = HAUTEUR / hauteur0;
@@ -324,30 +274,45 @@ namespace buroSimple
             l *= scale;
             h *= scale;
 
-            l=l0; 
-            h=h0; 
+            //l = l0;
+            //h = h0;
 
             var trameInter = new Bitmap(l, h);
-            using (Graphics g = Graphics.FromImage(trameInter))
+            Graphics g = null;
+            try
             {
-                paramGr(g);
-                //int _xrec = (int)((LARGEUR - l) / 2.0);
-                //int _yrec = (int)((HAUTEUR - h) / 2.0);
-                //Rectangle _centré = new Rectangle(_xrec, _yrec, l, h);
-                Rectangle rect = new Rectangle(0, 0, l, h);
-                // g.DrawImageUnscaledAndClipped(img, _centré);
-               // g.DrawImageUnscaledAndClipped(img, rect);
-             g.DrawImage(img, rect, 0,0, l,h, GraphicsUnit.Pixel); 
-             //    g.DrawImage(img, rect); 
-               
-              //  trameInter.Dispose();
-                // img.Dispose();
-
-
-               // return Image.FromFile(TMP_FILE);
+                trameInter = new Bitmap(l, h, PixelFormat.Format64bppArgb);
+                g = Graphics.FromImage(trameInter);
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                trameInter = new Bitmap(l, h);
+            }
+           // g = Graphics.FromImage(img);
+            paramGr(g);
+            Rectangle rect = new Rectangle(0, 0, l, h);
+            g.DrawImageUnscaledAndClipped(img, rect);
+            ////int _xrec = (int)((LARGEUR - l) / 2.0);
+            ////int _yrec = (int)((HAUTEUR - h) / 2.0);
+            ////Rectangle _centré = new Rectangle(_xrec, _yrec, l, h);
+            //Rectangle rect = new Rectangle(0, 0, l, h);
+            //// g.DrawImageUnscaledAndClipped(img, _centré);
+            //g.DrawImageUnscaledAndClipped(img, rect);
+            ////g.DrawImage(img, rect, 0, 0, l, h, GraphicsUnit.Pixel);
+            ////    g.DrawImage(img, rect); 
 
-             trameInter.Save(TMP_FILE2, ImageFormat.Bmp);
+            ////  trameInter.Dispose();
+            //// img.Dispose();
+
+
+            //// return Image.FromFile(TMP_FILE);
+
+
+            trameInter.Save(TMP_FILE2, ImageFormat.Bmp);
+           // return trameInter;
+
+            // g.Dispose();
 
             if (r > r0)
             {
@@ -367,7 +332,7 @@ namespace buroSimple
                 hauteurTrame = Convert.ToInt32(HAUTEUR * r / r0);
             }
 
-            trame = new Bitmap(LARGEUR, HAUTEUR);
+            trame = new Bitmap(LARGEUR, HAUTEUR, PixelFormat.Format64bppArgb);
             Graphics graphics = Graphics.FromImage(trame);
 
 
@@ -448,11 +413,7 @@ namespace buroSimple
             trame = new Bitmap(largeurTrame, hauteurTrame);
             Graphics graphics = Graphics.FromImage(trame);
 
-            graphics.CompositingMode = CompositingMode.SourceCopy;
-            graphics.CompositingQuality = CompositingQuality.HighQuality;
-            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            graphics.SmoothingMode = SmoothingMode.HighQuality;
-            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+           paramGr(graphics); 
 
 
             int xrec = (largeurTrame - largeur0) / 2;
@@ -461,7 +422,7 @@ namespace buroSimple
             graphics.DrawImage(img, centré, 0, 0, largeur0, hauteur0, GraphicsUnit.Pixel);
 
 
-            trame.Save(TMP_FILE, ImageFormat.Png);
+            trame.Save(TMP_FILE, ImageFormat.Bmp);
             trame.Dispose();
             img.Dispose();
             graphics.Dispose();
@@ -497,70 +458,6 @@ namespace buroSimple
             //}
         }
     }
-}
-]]></content>
-  </file>
-  <file path="buro\buroSimple\WinAPI.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Runtime.InteropServices;
-
-
-namespace buroSimple
-{
-    public class WinAPI
-    {
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        private static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
-        private const int SPI_SETDESKWALLPAPER = 20;
-        private const int SPIF_SENDCHANGE = 0x2;
-
-        internal static bool BmpLoad(String filename)
-        {
-            try
-            {
-                int i = WinAPI.SystemParametersInfo(SPI_SETDESKWALLPAPER, 3, filename, SPIF_SENDCHANGE);
-                if (i == 1) { return true; }
-                return false;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-                return false;
-            }
-
-        }
-
-        public static Guid GUID_CONSOLE_DISPLAY_STATE = new Guid(0x6fe69556, 0x704a, 0x47a0, 0x8f, 0x24, 0xc2, 0x8d, 0x93, 0x6f, 0xda, 0x47);
-        public const int DEVICE_NOTIFY_WINDOW_HANDLE = 0x00000000;
-        public const int WM_POWERBROADCAST = 0x0218;
-        public const int PBT_POWERSETTINGCHANGE = 0x8013;
-
-        [StructLayout(LayoutKind.Sequential, Pack = 4)]
-        public struct POWERBROADCAST_SETTING
-        {
-            public Guid PowerSetting;
-            public uint DataLength;
-            public byte Data;
-        }
-
-        [DllImport(@"User32", SetLastError = true, EntryPoint = "RegisterPowerSettingNotification", CallingConvention = CallingConvention.StdCall)]
-        public static extern IntPtr RegisterPowerSettingNotification(IntPtr hRecipient, ref Guid PowerSettingGuid, Int32 Flags);
-
-
-
-        [DllImport(@"User32", SetLastError = true, EntryPoint = "UnregisterPowerSettingNotification", CallingConvention = CallingConvention.StdCall)]
-        public static extern bool UnregisterPowerSettingNotification(IntPtr handle);
-
-        [DllImport("Kernel32.DLL", CharSet = CharSet.Auto,
-       SetLastError = true)]
-        public extern static
-            bool GetDevicePowerState(
-                IntPtr hDevice,
-                out bool fOn);
-    }
-
 }
 ]]></content>
   </file>
@@ -749,252 +646,289 @@ namespace buroSimpleLib
 
             return dif;
         }
+
+        public static Image Scale(Image source, int scale)
+        {
+            Bitmap src = source as Bitmap;
+            if (src == null)
+                src = new Bitmap(source);
+
+
+            int w = src.Width;
+            int h = src.Height;
+
+            int w2 = w * scale;
+            int h2 = h * scale;
+            Bitmap dest = new Bitmap(w2,h2, src.PixelFormat); 
+
+            var bmSrc = new LockBitmap(src);
+            var bmDest = new LockBitmap(dest);
+
+            bmSrc.LockBits();
+            bmDest.LockBits();
+
+            for (int i = 0; i < w; i++)
+            {
+                for (int j = 0; j < h; j++)
+                {
+                    Color c = bmSrc.GetPixel(i, j);
+                    int x0 = scale * i;
+                    int x1 = x0 + scale;
+
+                    int y0 = scale * j;
+                    int y1 = y0 + scale;
+
+                    for (int x = x0; x < x1; x++)
+                    {
+                        for (int y = y0; y < y1; y++)
+                        {
+                            bmDest.SetPixel(x, y, c);
+                        }
+                    }
+
+                }
+            }
+            bmDest.UnlockBits();
+            bmSrc.UnlockBits();
+
+            return dest;
+        }
     }
 }
 ]]></content>
   </file>
-  <file path="buro\buroSimpleSearch\Program.cs">
+  <file path="buro\buroSimpleLib\LockBitmap.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using pdb.util.ordo;
-using buroSimpleLib;
-using System.IO;
 using System.Drawing;
-using System.Threading;
-using pdb.util;
-using System.Configuration;
 using System.Drawing.Imaging;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 
-namespace buroSimpleSearch
+namespace buroSimpleLib
 {
-    class Program
+   public class LockBitmap
+{
+    Bitmap source = null;
+    IntPtr Iptr = IntPtr.Zero;
+    BitmapData bitmapData = null;
+ 
+    public byte[] Pixels { get; set; }
+    public int Depth { get; private set; }
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+ 
+    public LockBitmap(Bitmap source)
     {
-        static List<FileDto> list = new List<FileDto>();
-        static HashSet<string> imageType = new HashSet<string> { "bmp", "gif", "ico", "jpeg", "jpg", "jpe", "png", "svg", "tif", "tiff" };
-        static HashSet<string> noImageType = new HashSet<string>();
-
-        static listCandidat imageCandidat = new listCandidat();
-        static listCandidat NoImageCandidat = new listCandidat();
-        static volatile object _lock = new object();
-        static int LEVEL_MIN = 0;
-
-        static void Main(string[] args)
+        this.source = source;
+    }
+ 
+    /// <summary>
+    /// Lock bitmap data
+    /// </summary>
+    public void LockBits()
+    {
+        try
         {
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
-            new Program().go();
+            // Get width and height of bitmap
+            Width = source.Width;
+            Height = source.Height;
+ 
+            // get total locked pixels count
+            int PixelCount = Width * Height;
+ 
+            // Create rectangle to lock
+            Rectangle rect = new Rectangle(0, 0, Width, Height);
+ 
+            // get source bitmap pixel format size
+            Depth = System.Drawing.Bitmap.GetPixelFormatSize(source.PixelFormat);
+ 
+            // Check if bpp (Bits Per Pixel) is 8, 24, or 32
+            if (Depth != 8 && Depth != 24 && Depth != 32)
+            {
+                throw new ArgumentException("Only 8, 24 and 32 bpp images are supported.");
+            }
+ 
+            // Lock bitmap and return bitmap data
+            bitmapData = source.LockBits(rect, ImageLockMode.ReadWrite, 
+                                         source.PixelFormat);
+ 
+            // create byte array to copy pixel values
+            int step = Depth / 8;
+            Pixels = new byte[PixelCount * step];
+            Iptr = bitmapData.Scan0;
+ 
+            // Copy data from pointer to array
+            Marshal.Copy(Iptr, Pixels, 0, Pixels.Length);
         }
-
-        static Ordonnanceur ordo;
-        static StreamWriter sw = new StreamWriter(FileDto.PATH);
-        void go()
+        catch (Exception ex)
         {
-            // Scan(@"H:\spacer.gif");
-            //  Scan(@"C:\temp\wp.bmp");
-            //Scan(@"H:\noir.png");
-            //Scan(@"H:\blanc.png");
-            //Scan(@"H:\bleu.png");
-            //Scan(@"H:\rouge.png");
-            //Scan(@"H:\vert.png");
-
-
-            //Scan(@"C:\apps\oracle\11.2.0.3\client-32\uix\cabo\images\bltdscn.gif");
-            //Scan(@"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\VCWizards\AppWiz\Generic\CustomWizard\Templates\1033\spacer.gif");
-
-            var _nbProc = ConfigurationManager.AppSettings["nbProc"];
-            int nbProc = 3;
-            if (!string.IsNullOrEmpty(_nbProc))
-                nbProc = Convert.ToInt32(_nbProc);
-            ordo = new Ordonnanceur(nbProc);
-
-            var paths = ConfigurationManager.AppSettings["paths"];
-            if (string.IsNullOrEmpty(paths))
-                paths = @"C:\";
-            var tab = paths.Split(';');
-            foreach (string path in tab)
-            {
-                if (string.IsNullOrEmpty(path))
-                    continue;
-                ordo.addTask(new TaskDir(ordo, new DirectoryInfo(path)));
-            }
-            //ordo.addTask(new TaskDir(ordo, new DirectoryInfo(@"C:\")));
-            //ordo.addTask(new TaskDir(ordo, new DirectoryInfo(@"E:\")));
-            //ordo.addTask(new TaskDir(ordo, new DirectoryInfo(@"I:\")));
-            while (ordo.Busy)
-                Thread.Sleep(30);
-            sw.Dispose();
+            throw;
         }
-
-        private class TaskDir : Task
+    }
+ 
+    /// <summary>
+    /// Unlock bitmap data
+    /// </summary>
+    public void UnlockBits()
+    {
+        try
         {
-            private DirectoryInfo dir;
-            public TaskDir(Ordonnanceur ordo, DirectoryInfo dir)
-                : base(ordo)
-            {
-                this.dir = dir;
-            }
-
-            protected override void action()
-            {
-                //   ConsoleLogger.log(dir.FullName);
-                List<FileDto> aux = null;
-                foreach (FileInfo f in dir.GetFiles())
-                {
-                    // ConsoleLogger.log("check " + f.FullName);
-                    FileDto fd = check(f);
-                    if (fd != null)
-                    {
-                        ConsoleLogger.log(fd.ToStringSearch());
-                        if (aux == null)
-                            aux = new List<FileDto>();
-                        aux.Add(fd);
-                    }
-                }
-                if (aux != null)
-                {
-                    lock (_lock)
-                    {
-                        foreach (FileDto fd in aux)
-                        {
-                            fd.appendToDb(sw);
-                        }
-                    }
-                }
-                //ConsoleLogger.log("fin " +dir.FullName);
-                done = true;
-
-                foreach (DirectoryInfo sub in dir.GetDirectories())
-                {
-                    ordo.addsubTask(new TaskDir(ordo, sub));
-                }
-            }
-
-
-
-            public override string ToString()
-            {
-                return dir.FullName;
-            }
+            // Copy data from byte array to pointer
+            Marshal.Copy(Pixels, 0, Iptr, Pixels.Length);
+ 
+            // Unlock bitmap data
+            source.UnlockBits(bitmapData);
         }
-
-        private class candidat
+        catch (Exception ex)
         {
-            public candidat(String ext) { this.ext = ext; }
-            private String ext;
-            private int note = 0;
-            public void increment()
-            {
-                note++;
-            }
-            public bool Accepted { get { return note >= 10; } }
+            throw ex;
         }
-        private class listCandidat
+    }
+ 
+    /// <summary>
+    /// Get the color of the specified pixel
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <returns></returns>
+    public Color GetPixel(int x, int y)
+    {
+        Color clr = Color.Empty;
+ 
+        // Get color components count
+        int cCount = Depth / 8;
+ 
+        // Get start index of the specified pixel
+        int i = ((y * Width) + x) * cCount;
+ 
+        if (i > Pixels.Length - cCount)
+            throw new IndexOutOfRangeException();
+ 
+        if (Depth == 32) // For 32 bpp get Red, Green, Blue and Alpha
         {
-            private IDictionary<String, candidat> list = new Dictionary<String, candidat>();
-
-            public bool record(String ext)
-            {
-                candidat cand;
-                if (!list.ContainsKey(ext))
-                {
-                    cand = new candidat(ext);
-                    list.Add(ext, cand);
-                }
-                cand = list[ext];
-                cand.increment();
-                return cand.Accepted;
-            }
+            byte b = Pixels[i];
+            byte g = Pixels[i + 1];
+            byte r = Pixels[i + 2];
+            byte a = Pixels[i + 3]; // a
+            clr = Color.FromArgb(a, r, g, b);
         }
-
-        //static public Image Scan(string file)
-        //{
-        //   return ImageUtil.Scan(file); 
-        //}
-
-        static FileDto check(FileInfo f)
+        if (Depth == 24) // For 24 bpp get Red, Green and Blue
         {
-            var file = f.FullName;
-            //  Console.WriteLine(file.FullName);
-            var ext = Path.GetExtension(file).ToLower().Replace(".", "");
-            if (noImageType.Contains(ext)) return null;
-
-
-
-            Image img;
-            FileDto fdto = null;
-            try
-            {
-                img = Image.FromFile(file);
-                if (img != null)
-                    fdto = new FileDto() { Path = file, Size = f.Length, Height = img.Height, Width = img.Width };
-
-                img.Dispose();
-            }
-            catch (Exception)
-            {
-                fdto = null;
-            }
-
-            if (ext != null && ext.Length > 1)
-            {
-                if (!imageType.Contains(ext))
-                {
-                    ConsoleLogger.log("TYPE:" + ext + " " + file + " " + fdto);
-                    if (fdto != null)
-                    {
-                        lock (imageCandidat)
-                        {
-                            if (imageCandidat.record(ext))
-                            {
-                                imageType.Add(ext);
-                                ConsoleLogger.log("TYPE OK!!:" + ext + " " + file);
-                            }
-                        }
-
-                    }
-                    else
-                    {
-                        lock (NoImageCandidat)
-                        {
-                            if (NoImageCandidat.record(ext))
-                            {
-                                noImageType.Add(ext);
-                                ConsoleLogger.log("TYPE NOK!!:" + ext + " " + file);
-                            }
-                        }
-                        return null;
-                    }
-                }
-
-            }
-            return fdto;
-
-
-
-
+            byte b = Pixels[i];
+            byte g = Pixels[i + 1];
+            byte r = Pixels[i + 2];
+            clr = Color.FromArgb(r, g, b);
         }
-
-        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
+        if (Depth == 8)
+        // For 8 bpp get color value (Red, Green and Blue values are the same)
         {
-
-            sw.Dispose();
+            byte c = Pixels[i];
+            clr = Color.FromArgb(c, c, c);
         }
-
-        static void write()
+        return clr;
+    }
+ 
+    /// <summary>
+    /// Set the color of the specified pixel
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="color"></param>
+    public void SetPixel(int x, int y, Color color)
+    {
+        // Get color components count
+        int cCount = Depth / 8;
+ 
+        // Get start index of the specified pixel
+        int i = ((y * Width) + x) * cCount;
+ 
+        if (Depth == 32) // For 32 bpp set Red, Green, Blue and Alpha
         {
-            using (StreamWriter sw = new StreamWriter(FileDto.PATH))
-            {
-                foreach (FileDto f in list)
-                {
-                    sw.Write(f.Path);
-                    sw.Write(";");
-                    sw.WriteLine(f.Size);
-                }
-            }
+            Pixels[i] = color.B;
+            Pixels[i + 1] = color.G;
+            Pixels[i + 2] = color.R;
+            Pixels[i + 3] = color.A;
+        }
+        if (Depth == 24) // For 24 bpp set Red, Green and Blue
+        {
+            Pixels[i] = color.B;
+            Pixels[i + 1] = color.G;
+            Pixels[i + 2] = color.R;
+        }
+        if (Depth == 8)
+        // For 8 bpp set color value (Red, Green and Blue values are the same)
+        {
+            Pixels[i] = color.B;
         }
     }
 }
+}
+]]></content>
+  </file>
+  <file path="buro\testImages\Program.cs">
+    <content><![CDATA[using buroSimpleLib;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace testImages
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Image png = Image.FromFile(@"C:\temp\2x20.png"); 
+            Image png = Image.FromFile(@"C:\temp\png.png");
+            Image png2 = ImageUtil.Scale(png, 2);
+            png2.Save(@"C:\temp\png2.bmp", ImageFormat.Bmp);
+        }
+    }
+}
+]]></content>
+  </file>
+  <file path="buro\testImages\Properties\AssemblyInfo.cs">
+    <content><![CDATA[using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+// General Information about an assembly is controlled through the following 
+// set of attributes. Change these attribute values to modify the information
+// associated with an assembly.
+[assembly: AssemblyTitle("testImages")]
+[assembly: AssemblyDescription("")]
+[assembly: AssemblyConfiguration("")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("testImages")]
+[assembly: AssemblyCopyright("Copyright ©  2019")]
+[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCulture("")]
+
+// Setting ComVisible to false makes the types in this assembly not visible 
+// to COM components.  If you need to access a type in this assembly from 
+// COM, set the ComVisible attribute to true on that type.
+[assembly: ComVisible(false)]
+
+// The following GUID is for the ID of the typelib if this project is exposed to COM
+[assembly: Guid("d1d8f637-998f-42e3-846c-38de2d0c06b3")]
+
+// Version information for an assembly consists of the following four values:
+//
+//      Major Version
+//      Minor Version 
+//      Build Number
+//      Revision
+//
+// You can specify all the values or you can default the Build and Revision Numbers 
+// by using the '*' as shown below:
+// [assembly: AssemblyVersion("1.0.*")]
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
 ]]></content>
   </file>
 </db>
