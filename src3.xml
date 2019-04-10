@@ -59,6 +59,10 @@ namespace buroSimple
         /// tri par pixel et taille
         /// </summary>
         public bool combine = false;
+        /// <summary>
+        /// Un seul grand écran 
+        /// </summary>
+        public bool oneScreen = false;
 
         private bool GO;
         public void go()
@@ -218,12 +222,23 @@ namespace buroSimple
                 string fileName = Path.GetFileName(f.Path);
                 if (hs.Contains(fileName))
                     continue;
+                bool errorFs = false;
                 try
                 {
                     Image img = null;
                     if (fullscreen)
-                        img = createFileFs(f);
-                    else
+                    {
+                        try
+                        {
+                            img = createFileFs(f);
+                        }
+                        catch (Exception ex)
+                        {
+                            errorFs = true;
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
+                    if (errorFs)
                         img = createFile(f);
                     if (img != null)
                     {
@@ -244,15 +259,22 @@ namespace buroSimple
                             nbLoaded++;
                             File.Copy(TMP_FILE, loaded.FullName + "\\" + nbLoaded + ".bmp", true);
                             File.WriteAllText(INDEX_FILE, f.Path);
-                            Thread.Sleep((int)(delay * 1000.0));
+                            if (!errorFs)
+                                Thread.Sleep((int)(delay * 1000.0));
+                            else
+                                Thread.Sleep((int)(Math.Min(1, delay) * 1000.0));
                             if (uniqueName)
                                 hs.Add(fileName);
 
-                            while (ScreenUtil.isRecovered(TMP_FILE, false))
+                            if (!errorFs)
                             {
-                                Console.WriteLine("Pause reason Recovered");
-                                Thread.Sleep(1000);
+                                while (ScreenUtil.isRecovered(TMP_FILE, oneScreen))
+                                {
+                                    Console.WriteLine("Pause reason Recovered");
+                                    Thread.Sleep((int)(1000 * Math.Max(1, delay)));
+                                }
                             }
+
 
 
                         }
@@ -546,524 +568,6 @@ namespace buroSimple
             //    if (i1 != null)
             //        i1.Dispose();
             //}
-        }
-    }
-}
-]]></content>
-  </file>
-  <file path="buro\buroSimpleLib\DirectBitmap.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-
-namespace buroSimpleLib
-{
-    public class DirectBitmap : IDisposable
-    {
-        public Bitmap Bitmap { get; private set; }
-        public Int32[] Bits { get; private set; }
-        public bool Disposed { get; private set; }
-        public int Height { get; private set; }
-        public int Width { get; private set; }
-
-        protected GCHandle BitsHandle { get; private set; }
-
-        public DirectBitmap(int width, int height)
-        {
-            Width = width;
-            Height = height;
-            Bits = new Int32[width * height];
-            BitsHandle = GCHandle.Alloc(Bits, GCHandleType.Pinned);
-            Bitmap = new Bitmap(width, height, width * 4, PixelFormat.Format32bppPArgb, BitsHandle.AddrOfPinnedObject());
-        }
-
-        public DirectBitmap(Bitmap bitmap)
-        {
-            Width = bitmap.Width;
-            Height = bitmap.Height;
-            Bits = new Int32[Width * Height];
-            BitsHandle = GCHandle.Alloc(Bits, GCHandleType.Pinned);
-            Bitmap = bitmap;
-        }
-        public void SetPixel(int x, int y, Color colour)
-        {
-            int index = x + (y * Width);
-            int col = colour.ToArgb();
-
-            Bits[index] = col;
-        }
-
-        public Color GetPixel(int x, int y)
-        {
-            int index = x + (y * Width);
-            int col = Bits[index];
-            Color result = Color.FromArgb(col);
-
-            return result;
-        }
-
-        public void Dispose()
-        {
-            if (Disposed) return;
-            Disposed = true;
-            Bitmap.Dispose();
-            BitsHandle.Free();
-        }
-    }
-}
-]]></content>
-  </file>
-  <file path="buro\buroSimpleLib\ImageUtil.cs">
-    <content><![CDATA[using pdb.util;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-
-namespace buroSimpleLib
-{
-    public static class ImageUtil
-    {
-        /// <summary>
-        /// Scan d'une image pour déterminer si elle est vide
-        /// </summary>
-        /// <param name="file"></param>
-        /// <returns>null=> image noire</returns>
-        public static unsafe Image Scan(string file)
-        {
-            int LEVEL_MIN = 0;
-            Bitmap b = null;
-            DateTime debut = DateTime.Now;
-            try
-            {
-                b = new Bitmap(file);//note this has several overloads, including a path to an image
-            }
-
-            catch
-            {
-                ConsoleLogger.log("Impossible de créer un Bitmap {0}", file);
-                try
-                {
-                    Image i = Image.FromFile(file);
-                    return i;
-                }
-                catch
-                {
-                    return null;
-                }
-            }
-            DateTime debutScan = DateTime.Now;
-            BitmapData bData = b.LockBits(new Rectangle(0, 0, b.Width, b.Height), ImageLockMode.ReadOnly, b.PixelFormat);
-
-            var Depth = Bitmap.GetPixelFormatSize(b.PixelFormat);
-
-            //  byte bitsPerPixel = Bitmap.GetBitsPerPixel(bData.PixelFormat);
-
-            /*This time we convert the IntPtr to a ptr*/
-            byte* scan0 = (byte*)bData.Scan0.ToPointer();
-            bool ok = false;
-            for (int i = 0; i < bData.Height; ++i)
-            {
-                if (ok)
-                    break;
-                for (int j = 0; j < bData.Width; ++j)
-                {
-                    byte* data = scan0 + i * bData.Stride + j * Depth / 8;
-
-                    //data is a pointer to the first byte of the 3-byte color data
-                    //data[0] = blueComponent;
-                    //data[1] = greenComponent;
-                    //data[2] = redComponent;
-                    if (data[0] > LEVEL_MIN || data[1] > LEVEL_MIN || data[2] > LEVEL_MIN)
-                    {
-                        //if (data[3] > 0)
-                        ok = true;
-                        break;
-                    }
-                }
-            }
-
-            b.UnlockBits(bData);
-
-            var ts = (DateTime.Now - debut).TotalMilliseconds.ToString("0");
-            var tsLoad = (debutScan - debut).TotalMilliseconds.ToString("0");
-
-            var tsScan = (DateTime.Now - debutScan).TotalMilliseconds.ToString("0");
-            if (!ok)
-            {
-                ConsoleLogger.log("Blank {0} {1} ms", file, tsScan);
-                b.Dispose();
-                return null;
-            }
-            else if (ts.Length >= 3)
-                ConsoleLogger.log("load:{0}ms scan:{1}ms total:{2} ms", tsLoad, tsScan, ts);
-            return b;
-        }
-
-        public static bool AreIdentical(Image b1, string file2)
-        {
-            return !AreDifferent(b1, file2);
-        }
-
-        /// <summary>
-        /// Détermine si deux images sont différentes ( au moins un pixel différent ) 
-        /// </summary>
-        /// <param name="img"></param>
-        /// <param name="file2"></param>
-        /// <returns></returns>
-        public static unsafe bool AreDifferent(Image img, string file2)
-        {
-
-
-            Bitmap b2 = null;
-            Bitmap b1 = null;
-
-
-            DateTime debut = DateTime.Now;
-            DateTime debutScan = DateTime.Now;
-            bool dif = false;
-            try
-            {
-                try
-                {
-                    //b1 = new Bitmap(file1);//note this has several overloads, including a path to an image
-                    b2 = new Bitmap(file2);
-                    if (img is Bitmap)
-                        b1 = img as Bitmap;
-                    else
-                        b1 = new Bitmap(img);
-                    if (b1.Width != b2.Width)
-                        dif = true;
-                    else if (b1.Height != b2.Height)
-                        dif = true;
-                }
-
-                catch
-                {
-                    dif = true;
-                }
-                if (!dif)
-                {
-                    debutScan = DateTime.Now;
-                    BitmapData bData1 = b1.LockBits(new Rectangle(0, 0, b1.Width, b1.Height), ImageLockMode.ReadOnly, b1.PixelFormat);
-                    BitmapData bData2 = b2.LockBits(new Rectangle(0, 0, b2.Width, b2.Height), ImageLockMode.ReadOnly, b2.PixelFormat);
-
-                    var Depth = Bitmap.GetPixelFormatSize(b1.PixelFormat);
-
-                    //  byte bitsPerPixel = Bitmap.GetBitsPerPixel(bData.PixelFormat);
-
-                    /*This time we convert the IntPtr to a ptr*/
-                    byte* scan01 = (byte*)bData1.Scan0.ToPointer();
-                    byte* scan02 = (byte*)bData2.Scan0.ToPointer();
-
-                    for (int i = 0; i < bData1.Height; ++i)
-                    {
-                        if (dif)
-                            break;
-                        for (int j = 0; j < bData1.Width; ++j)
-                        {
-                            if (dif)
-                                break;
-                            byte* data1 = scan01 + i * bData1.Stride + j * Depth / 8;
-                            byte* data2 = scan02 + i * bData2.Stride + j * Depth / 8;
-
-                            //data is a pointer to the first byte of the 3-byte color data
-                            //data[0] = blueComponent;
-                            //data[1] = greenComponent;
-                            //data[2] = redComponent;
-
-                            for (int c = 0; c < 3; c++)
-                            {
-                                if (data1[c] != data2[c])
-                                {
-                                    dif = true;
-                                    break;
-                                }
-                            }
-
-                        }
-                    }
-
-                    b1.UnlockBits(bData1);
-                    b2.UnlockBits(bData2);
-                }
-            }
-            finally
-            {
-                if (b2 != null)
-                    b2.Dispose();
-            }
-
-            var ts = (DateTime.Now - debut).TotalMilliseconds.ToString("0");
-            var tsLoad = (debutScan - debut).TotalMilliseconds.ToString("0");
-
-            var tsScan = (DateTime.Now - debutScan).TotalMilliseconds.ToString("0");
-            if (!dif)
-            {
-                ConsoleLogger.log("equal {0} {1} ms", file2, tsScan);
-            }
-            else if (ts.Length >= 3)
-                ConsoleLogger.log("load:{0}ms scan:{1}ms total:{2} ms", tsLoad, tsScan, ts);
-
-
-            return dif;
-        }
-
-        public static Image Scale(string source, int scale)
-        {
-            return Scale(Image.FromFile(source), scale);
-        }
-
-        public static Image Scale2(Image source, int scale)
-        {
-
-
-            scale = 1;
-
-            Bitmap src = null;
-            if (source is Bitmap)
-                src = source as Bitmap;
-            else
-                src = new Bitmap(source);
-
-            var scaled = new DirectBitmap(source.Width * scale, source.Height * scale);
-
-            var srcb = new DirectBitmap(src);
-
-
-            int width = source.Width;
-            int height = source.Height;
-
-            for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < height; j++)
-                {
-                    Color c = srcb.GetPixel(i, j);
-                    int x0 = scale * i;
-                    int x1 = x0 + scale;
-                    int y0 = scale * j;
-                    int y1 = y0 + scale;
-                    for (int x = x0; x < x1; x++)
-                    {
-                        for (int y = y0; y < y1; y++)
-                        {
-                            scaled.SetPixel(x, y, c);
-                        }
-                    }
-                }
-            }
-            return scaled.Bitmap;
-
-        }
-
-        public static unsafe Image Scale1(Image source, int scale)
-        {
-
-
-            if (scale == 1)
-                return source;
-
-            Bitmap scaled = new Bitmap(source.Width * scale, source.Height * scale);
-            Bitmap src = null;
-            if (source is Bitmap)
-                src = source as Bitmap;
-            else
-                src = new Bitmap(source);
-
-            DateTime debut = DateTime.Now;
-            DateTime debutScan = DateTime.Now;
-            bool dif = false;
-            try
-            {
-
-                BitmapData bData1 = src.LockBits(new Rectangle(0, 0, src.Width, src.Height), ImageLockMode.ReadOnly, src.PixelFormat);
-                BitmapData bData2 = scaled.LockBits(new Rectangle(0, 0, scaled.Width, scaled.Height), ImageLockMode.ReadOnly, scaled.PixelFormat);
-
-                var Depth = Bitmap.GetPixelFormatSize(src.PixelFormat);
-
-                //  byte bitsPerPixel = Bitmap.GetBitsPerPixel(bData.PixelFormat);
-
-                /*This time we convert the IntPtr to a ptr*/
-                byte* scan01 = (byte*)bData1.Scan0.ToPointer();
-                byte* scan02 = (byte*)bData2.Scan0.ToPointer();
-
-                for (int i = 0; i < bData1.Height; ++i)
-                {
-                    if (dif)
-                        break;
-                    for (int j = 0; j < bData1.Width; ++j)
-                    {
-                        if (dif)
-                            break;
-                        byte* data1 = scan01 + i * bData1.Stride + j * Depth / 8;
-                        byte* data2 = scan02 + i * bData2.Stride + j * Depth / 8;
-
-                        //data is a pointer to the first byte of the 3-byte color data
-                        //data[0] = blueComponent;
-                        //data[1] = greenComponent;
-                        //data[2] = redComponent;
-
-
-                        int x0 = scale * i;
-                        int x1 = x0 + scale;
-                        int y0 = scale * j;
-                        int y1 = y0 + scale;
-                        for (int x = x0; x < x1; x++)
-                        {
-                            for (int y = y0; y < y1; y++)
-                            {
-                                data2 = scan02 + x * bData2.Stride + y * Depth / 8;
-                                for (int c = 0; c < 3; c++)
-                                {
-                                    data2[c] = data1[c];
-                                }
-                                data2[3] = 255;
-                            }
-                        }
-                    }
-                }
-
-
-                src.UnlockBits(bData1);
-                scaled.UnlockBits(bData2);
-
-            }
-            finally
-            {
-
-            }
-
-            var ts = (DateTime.Now - debut).TotalMilliseconds.ToString("0");
-            if (ts.Length >= 3)
-                ConsoleLogger.log("copie:{0} ms  ms", ts);
-            return scaled;
-        }
-
-
-        public static Image Scale(Image source, int scale)
-        {
-            //    if (scale == 1)
-            //        return source;
-
-            Bitmap scaled = new Bitmap(source.Width * scale, source.Height * scale);
-            Bitmap src = null;
-            //if (source is Bitmap)
-            //    src = source as Bitmap;
-            //else
-            src = new Bitmap(source);
-            LockBitmap org = new LockBitmap(src);
-            LockBitmap modif = new LockBitmap(scaled);
-            org.LockBits(ImageLockMode.ReadOnly);
-            modif.LockBits(ImageLockMode.WriteOnly);
-
-            int width = org.Width;
-            int height = org.Height;
-
-            for (int i = 0; i < width; i++)
-            {
-                for (int j = 0; j < height; j++)
-                {
-                    Color c = org.GetPixel(i, j);
-                    int x0 = scale * i;
-                    int x1 = x0 + scale;
-                    int y0 = scale * j;
-                    int y1 = y0 + scale;
-                    for (int x = x0; x < x1; x++)
-                    {
-                        for (int y = y0; y < y1; y++)
-                        {
-                            modif.SetPixel(x, y, c);
-                        }
-                    }
-                }
-            }
-            org.UnlockBits();
-            modif.UnlockBits();
-            return scaled;
-        }
-
-      
-
-       
-    }
-
-
-}
-]]></content>
-  </file>
-  <file path="buro\buroSimpleLib\ScreenUtil.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-
-namespace buroSimpleLib
-{
-    public class ScreenUtil
-    {
-        public static Bitmap getScreenShot(Screen screen)
-        {
-            var bounds = screen.Bounds;
-            Bitmap screenshot = new Bitmap(bounds.Width,
-                                   bounds.Height);
-            using (Graphics screenGraph = Graphics.FromImage(screenshot))
-            {
-                screenGraph.CopyFromScreen(bounds.X,
-                                           bounds.Y,
-                                           0,
-                                           0,
-                                         bounds.Size,
-                                           CopyPixelOperation.SourceCopy);
-            }
-            return screenshot;
-        }
-
-        public static bool isRecovered(string wpf, bool firstScreen)
-        {
-            Screen sc = Screen.PrimaryScreen;
-            if (!firstScreen)
-            {
-                foreach (Screen s in Screen.AllScreens)
-                {
-                    if (s == sc)
-                        continue;
-                    sc = s;
-                    break;
-                }
-            }
-            var bound = sc.Bounds;
-            int x = 523;
-            int y = 907;
-
-
-            Bitmap wp = new Bitmap(wpf);
-            Color c = wp.GetPixel(x, y);
-
-
-            Bitmap screenShot = getScreenShot(sc);
-            screenShot.Save(@"C:\temp\sc.bmp");
-            screenShot.Dispose();
-            screenShot = new Bitmap(@"C:\temp\sc.bmp");
-            Color cs = screenShot.GetPixel(x, y);
-            screenShot.Dispose();
-            wp.Dispose();
-            int dif = 0;
-            dif += Math.Abs(c.B - cs.B);
-            dif += Math.Abs(c.G - cs.G);
-            dif += Math.Abs(c.R - cs.R);
-            if (dif < 16)
-                return false;
-            return true;
         }
     }
 }
