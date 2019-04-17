@@ -27,6 +27,7 @@ namespace buroSimple
         {
             int countArgs = args.GetLength(0);
             double delay = 20.0;
+            double delayFast = 1.0; 
             bool unique = false;
             bool sortBySize = false;
             bool uniqueName = false;
@@ -47,6 +48,15 @@ namespace buroSimple
                     if (i + 1 < countArgs)
                     {
                         delay = Convert.ToDouble(args[i + 1]);
+                    }
+
+                }
+
+                 if (args[i] == "-tt")
+                {
+                    if (i + 1 < countArgs)
+                    {
+                        delayFast = Convert.ToDouble(args[i + 1]);
                     }
 
                 }
@@ -91,6 +101,7 @@ namespace buroSimple
             var wp = new Walpaper()
             {
                 delay = delay,
+                delayFast = delayFast,
                 unique = unique,
                 sortBySize = sortBySize,
                 uniqueName = uniqueName,
@@ -178,9 +189,18 @@ namespace buroSimple
         /// Vérification recouvrement 
         /// </summary>
         public bool checkScreen = false;
+        /// <summary>
+        /// delai après une image floue;
+        /// </summary>
+        public double delayFast = 1.0;
 
+        /// <summary>
+        /// répertoires permis
+        /// </summary>
         public List<string> include;
-
+        /// <summary>
+        /// Répertoires défendus
+        /// </summary>
         public List<string> exclude;
 
         private bool GO;
@@ -318,6 +338,8 @@ namespace buroSimple
             bool checkScreen = this.checkScreen;
             DateTime last = DateTime.Now;
             FileDto lastF = null;
+            if (File.Exists(TMP_FILE))
+                File.Delete(TMP_FILE);
             for (int i = index0 + 1; i < count; i++)
             {
                 while (!GO)
@@ -419,10 +441,13 @@ namespace buroSimple
                             Console.WriteLine("----------------------------------------------------------");
                             if (checkScreen)
                             {
-                                while (ScreenUtil.isRecovered(TMP_FILE, oneScreen))
+                                if (File.Exists(TMP_FILE))
                                 {
-                                    Console.WriteLine("Pause reason Recovered");
-                                    Thread.Sleep((int)(1000 * Math.Max(1, delay)));
+                                    while (ScreenUtil.isRecovered(TMP_FILE, oneScreen))
+                                    {
+                                        Console.WriteLine("Pause reason Recovered");
+                                        Thread.Sleep((int)(1000 * Math.Max(1, delay)));
+                                    }
                                 }
                             }
                             last = DateTime.Now;
@@ -432,7 +457,7 @@ namespace buroSimple
                             nbLoaded++;
                             File.Copy(TMP_FILE, loaded.FullName + "\\" + Path.GetFileName(f.Path) + "_" + nbLoaded + ".bmp", true);
                             File.WriteAllText(INDEX_FILE, f.Path);
-                            double delta = errorFs ? Math.Min(1, delay) : delay;
+                            double delta = errorFs ? delayFast : delay;
                             nextFlash = DateTime.Now.AddSeconds(delta);
 
                             if (uniqueName)
@@ -744,268 +769,4 @@ namespace buroSimple
 }
 ]]></content>
   </file>
-  <file path="buro\buroSimpleSearch\Program.cs">
-    <content><![CDATA[using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using pdb.util.ordo;
-using buroSimpleLib;
-using System.IO;
-using System.Drawing;
-using System.Threading;
-using pdb.util;
-using System.Configuration;
-using System.Drawing.Imaging;
-
-namespace buroSimpleSearch
-{
-    class Program
-    {
-        static List<FileDto> list = new List<FileDto>();
-        static HashSet<string> imageType = new HashSet<string> { "bmp", "gif", "ico", "jpeg", "jpg", "jpe", "png", "svg", "tif", "tiff" };
-        static HashSet<string> noImageType = new HashSet<string>();
-
-        static listCandidat imageCandidat = new listCandidat();
-        static listCandidat NoImageCandidat = new listCandidat();
-        static volatile object _lock = new object();
-        static int LEVEL_MIN = 0;
-
-        static void Main(string[] args)
-        {
-            Console.CancelKeyPress += new ConsoleCancelEventHandler(Console_CancelKeyPress);
-            new Program().go();
-        }
-
-        static Ordonnanceur ordo;
-        static StreamWriter sw = new StreamWriter(FileDto.PATH);
-        void go()
-        {
-            // Scan(@"H:\spacer.gif");
-            //  Scan(@"C:\temp\wp.bmp");
-            //Scan(@"H:\noir.png");
-            //Scan(@"H:\blanc.png");
-            //Scan(@"H:\bleu.png");
-            //Scan(@"H:\rouge.png");
-            //Scan(@"H:\vert.png");
-
-
-            //Scan(@"C:\apps\oracle\11.2.0.3\client-32\uix\cabo\images\bltdscn.gif");
-            //Scan(@"C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\VCWizards\AppWiz\Generic\CustomWizard\Templates\1033\spacer.gif");
-
-            var _nbProc = ConfigurationManager.AppSettings["nbProc"];
-            int nbProc = 3;
-            if (!string.IsNullOrEmpty(_nbProc))
-                nbProc = Convert.ToInt32(_nbProc);
-            ordo = new Ordonnanceur(nbProc);
-
-            var dirs = new List<string>();
-
-            var paths = ConfigurationManager.AppSettings["paths"];
-            if (string.IsNullOrEmpty(paths))
-            {
-                foreach (var drive in Environment.GetLogicalDrives())
-                {
-                    dirs.Add(drive);
-                }
-            }
-            else
-            {
-                var tab = paths.Split(';');
-                foreach (string path in tab)
-                {
-                    if (string.IsNullOrEmpty(path))
-                        continue;
-                    dirs.Add(paths);
-                }
-            }
-
-            foreach (string dir in dirs)
-            {
-                ordo.addTask(new TaskDir(ordo, new DirectoryInfo(dir)));
-            }
-            //ordo.addTask(new TaskDir(ordo, new DirectoryInfo(@"C:\")));
-            //ordo.addTask(new TaskDir(ordo, new DirectoryInfo(@"E:\")));
-            //ordo.addTask(new TaskDir(ordo, new DirectoryInfo(@"I:\")));
-            while (ordo.Busy)
-                Thread.Sleep(30);
-            sw.Flush();
-            sw.Dispose();
-
-            Console.WriteLine("fin");
-            Console.Read();
-        }
-
-        private class TaskDir : Task
-        {
-            private DirectoryInfo dir;
-            public TaskDir(Ordonnanceur ordo, DirectoryInfo dir)
-                : base(ordo)
-            {
-                this.dir = dir;
-            }
-
-            protected override void action()
-            {
-                //   ConsoleLogger.log(dir.FullName);
-                List<FileDto> aux = null;
-                foreach (FileInfo f in dir.GetFiles())
-                {
-                    // ConsoleLogger.log("check " + f.FullName);
-                    FileDto fd = check(f);
-                    if (fd != null)
-                    {
-                        ConsoleLogger.log(fd.ToStringSearch());
-                        if (aux == null)
-                            aux = new List<FileDto>();
-                        aux.Add(fd);
-                    }
-                }
-                if (aux != null)
-                {
-                    lock (_lock)
-                    {
-                        foreach (FileDto fd in aux)
-                        {
-                            fd.appendToDb(sw);
-                        }
-                        sw.Flush();
-                    }
-                }
-                //ConsoleLogger.log("fin " +dir.FullName);
-                done = true;
-
-                foreach (DirectoryInfo sub in dir.GetDirectories())
-                {
-                    ordo.addsubTask(new TaskDir(ordo, sub));
-                }
-            }
-
-
-
-            public override string ToString()
-            {
-                return dir.FullName;
-            }
-        }
-
-        private class candidat
-        {
-            public candidat(String ext) { this.ext = ext; }
-            private String ext;
-            private int note = 0;
-            public void increment()
-            {
-                note++;
-            }
-            public bool Accepted { get { return note >= 10; } }
-        }
-        private class listCandidat
-        {
-            private IDictionary<String, candidat> list = new Dictionary<String, candidat>();
-
-            public bool record(String ext)
-            {
-                candidat cand;
-                if (!list.ContainsKey(ext))
-                {
-                    cand = new candidat(ext);
-                    list.Add(ext, cand);
-                }
-                cand = list[ext];
-                cand.increment();
-                return cand.Accepted;
-            }
-        }
-
-        //static public Image Scan(string file)
-        //{
-        //   return ImageUtil.Scan(file); 
-        //}
-
-        static FileDto check(FileInfo f)
-        {
-            var file = f.FullName;
-            //  Console.WriteLine(file.FullName);
-            var ext = Path.GetExtension(file).ToLower().Replace(".", "");
-            if (noImageType.Contains(ext)) return null;
-
-
-
-            Image img;
-            FileDto fdto = null;
-            try
-            {
-                img = Image.FromFile(file);
-                if (img != null)
-                    fdto = new FileDto() { Path = file, Size = f.Length, Height = img.Height, Width = img.Width };
-
-                img.Dispose();
-            }
-            catch (Exception)
-            {
-                fdto = null;
-            }
-
-            if (ext != null && ext.Length > 1)
-            {
-                if (!imageType.Contains(ext))
-                {
-                    ConsoleLogger.log("TYPE:" + ext + " " + file + " " + fdto);
-                    if (fdto != null)
-                    {
-                        lock (imageCandidat)
-                        {
-                            if (imageCandidat.record(ext))
-                            {
-                                imageType.Add(ext);
-                                ConsoleLogger.log("TYPE OK!!:" + ext + " " + file);
-                            }
-                        }
-
-                    }
-                    else
-                    {
-                        lock (NoImageCandidat)
-                        {
-                            if (NoImageCandidat.record(ext))
-                            {
-                                noImageType.Add(ext);
-                                ConsoleLogger.log("TYPE NOK!!:" + ext + " " + file);
-                            }
-                        }
-                        return null;
-                    }
-                }
-
-            }
-            return fdto;
-
-
-
-
-        }
-
-        static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-
-            sw.Dispose();
-        }
-
-        static void write()
-        {
-            using (StreamWriter sw = new StreamWriter(FileDto.PATH))
-            {
-                foreach (FileDto f in list)
-                {
-                    sw.Write(f.Path);
-                    sw.Write(";");
-                    sw.WriteLine(f.Size);
-                }
-            }
-        }
-    }
-}
-]]></content>
-  </file>
-  </db>
+</db>
