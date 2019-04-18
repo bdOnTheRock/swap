@@ -27,7 +27,7 @@ namespace buroSimple
         {
             int countArgs = args.GetLength(0);
             double delay = 20.0;
-            double delayFast = 1.0; 
+            double delayFast = 1.0;
             bool unique = false;
             bool sortBySize = false;
             bool uniqueName = false;
@@ -37,63 +37,63 @@ namespace buroSimple
             bool combine = false;
             bool oneScreen = false;
             bool checkScreen = false;
+            bool displayImgError = false;
+            bool scanImgError = false;
+            bool abortScan = false;
 
             List<string> include = null;
             List<string> exclude = null;
 
             for (int i = 0; i < countArgs; i++)
             {
-                if (args[i] == "-t")
+                var arg = args[i];
+
+                switch (arg)
                 {
+                    case "-t":
                     if (i + 1 < countArgs)
                     {
                         delay = Convert.ToDouble(args[i + 1]);
                     }
-
-                }
-
-                 if (args[i] == "-tt")
-                {
+                    break;
+                    case "-tt":
                     if (i + 1 < countArgs)
                     {
                         delayFast = Convert.ToDouble(args[i + 1]);
                     }
+                    break;
 
-                }
-
-                else if (args[i] == "-i")
-                {
+                    case "-i":
                     if (i + 1 < countArgs)
                     {
                         include = getList(args[i + 1]);
                     }
-                }
+                    break;
 
-                else if (args[i] == "-e")
-                {
+                    case "-e":
                     if (i + 1 < countArgs)
                     {
                         exclude = getList(args[i + 1]);
                     }
+                    break;
+
+
+
+
+                    case "/u": unique = true; break;
+                    case "/s": sortBySize = true; break;
+                    case "/c": combine = true; break;
+                    case "/un": uniqueName = true; break;
+                    case "/r": reverse = true; break;
+                    case "/fs": fullscreen = true; break;
+                    case "/hr": highResolution = true; break;
+                    case "/os": oneScreen = true; break;
+                    case "/cs": checkScreen = true; break;
+                    case "/de": displayImgError = true; break;
+                    case "/se": scanImgError = true; break;
+                    case "/as": abortScan = true; break;
+
                 }
-                else if (args[i] == "/u")
-                    unique = true;
-                else if (args[i] == "/s")
-                    sortBySize = true;
-                else if (args[i] == "/c")
-                    combine = true;
-                else if (args[i] == "/un")
-                    uniqueName = true;
-                else if (args[i] == "/r")
-                    reverse = true;
-                else if (args[i] == "/fs")
-                    fullscreen = true;
-                else if (args[i] == "/hr")
-                    highResolution = true;
-                else if (args[i] == "/os")
-                    oneScreen = true;
-                else if (args[i] == "/cs")
-                    checkScreen = true;
             }
 
             //var test = buroSimpleLib.ImageUtil.Scale(@"C:\temp\pochette.jpg", 2); 
@@ -112,11 +112,15 @@ namespace buroSimple
                 oneScreen = oneScreen,
                 checkScreen = checkScreen,
                 include = include,
-                exclude = exclude
+                exclude = exclude,
+                displayImgError = displayImgError,
+                scanImgError = scanImgError, 
+                abortScan = abortScan
             };
             wp.go();
         }
     }
+
 }
 ]]></content>
   </file>
@@ -147,6 +151,7 @@ namespace buroSimple
         const string TMP_PREPAR = @"C:\Temp\wpp.bmp";
         const string INDEX_FILE = @"C:\Temp\wp.index.txt";
         const string TMP_LOADED = @"C:\Temp\Loaded";
+        const string TMP_LOADED_MINI = @"C:\Temp\Loaded\Mini";
         const string HISTO = @"C:\Temp\WP_HISTO\";
 
         /// <summary>
@@ -203,7 +208,30 @@ namespace buroSimple
         /// </summary>
         public List<string> exclude;
 
+        /// <summary>
+        /// En mode fs affiche les images floues
+        /// </summary>
+        public bool displayImgError = false;
+        /// <summary>
+        /// en mode fs, vérifie les doublons
+        /// </summary>
+        public bool scanImgError = false;
+        /// <summary>
+        /// En cas de vérification trop longue, on interrompt la verif d'identité
+        /// </summary>
+        public bool abortScan = false;
+
         private bool GO;
+
+        private void checkSession()
+        {
+            while (currentSwitchSessionStatus != SessionSwitchReason.SessionLogon
+                 && currentSwitchSessionStatus != SessionSwitchReason.SessionUnlock)
+            {
+                Console.WriteLine("Pause reason " + currentSwitchSessionStatus);
+                Thread.Sleep(1000);
+            }
+        }
         public void go()
         {
             if (!Directory.Exists(HISTO))
@@ -212,6 +240,10 @@ namespace buroSimple
             DirectoryInfo loaded = new DirectoryInfo(TMP_LOADED);
             if (!loaded.Exists)
                 loaded.Create();
+
+            DirectoryInfo loadedMini = new DirectoryInfo(TMP_LOADED_MINI);
+            if (!loadedMini.Exists)
+                loadedMini.Create();
 
 
             SystemEvents.PowerModeChanged += new PowerModeChangedEventHandler(SystemEvents_PowerModeChanged);
@@ -336,6 +368,7 @@ namespace buroSimple
             long size = -1;
             int nbLoaded = 0;
             bool checkScreen = this.checkScreen;
+
             DateTime last = DateTime.Now;
             FileDto lastF = null;
             if (File.Exists(TMP_FILE))
@@ -347,12 +380,7 @@ namespace buroSimple
                     Thread.Sleep(1000);
                 }
 
-                while (currentSwitchSessionStatus != SessionSwitchReason.SessionLogon
-                    && currentSwitchSessionStatus != SessionSwitchReason.SessionUnlock)
-                {
-                    Console.WriteLine("Pause reason " + currentSwitchSessionStatus);
-                    Thread.Sleep(1000);
-                }
+                checkSession();
 
 
 
@@ -387,6 +415,11 @@ namespace buroSimple
                     {
                         fl.Delete();
                     }
+                    foreach (FileInfo fl in loadedMini.GetFiles())
+                    {
+                        fl.Delete();
+                    }
+
                     nbLoaded = 0;
                 }
                 else
@@ -413,13 +446,23 @@ namespace buroSimple
                             Console.WriteLine(ex.Message);
                         }
                     }
-                    if (errorFs || !fullscreen)
+                    if ((errorFs && displayImgError) || !fullscreen)
                         img = createFile(f);
                     if (img != null)
                     {
                         bool ok = true;
-                        foreach (FileInfo fl in loaded.GetFiles())
+                        DirectoryInfo d = loaded;
+                        if (errorFs)
+                            d = loadedMini;
+                        bool scanAborted = false;
+                        foreach (FileInfo fl in d.GetFiles())
                         {
+                            if (abortScan && DateTime.Now > nextFlash)
+                            {
+                                Console.WriteLine(">>>>>>>>>>>>>>>>>scan aborted");
+                                scanAborted = true;
+                                break;
+                            }
                             if (ImageUtil.AreIdentical(img, fl.FullName))
                             {
                                 ok = false;
@@ -436,8 +479,13 @@ namespace buroSimple
                                 Console.WriteLine("courant:{0}", lastF);
                             Console.WriteLine("à venir:{0}", f);
                             Console.WriteLine("Attente:{0:0} ms Traitement:{1:0} ms", (nextFlash - DateTime.Now).TotalMilliseconds, (DateTime.Now - last).TotalMilliseconds);
+
+                            checkSession();
                             while (DateTime.Now < nextFlash)
+                            {
                                 Thread.Sleep(30);
+                                checkSession();
+                            }
                             Console.WriteLine("----------------------------------------------------------");
                             if (checkScreen)
                             {
@@ -455,7 +503,8 @@ namespace buroSimple
                             WinAPI.BmpLoad(TMP_FILE);
                             lastF = f;
                             nbLoaded++;
-                            File.Copy(TMP_FILE, loaded.FullName + "\\" + Path.GetFileName(f.Path) + "_" + nbLoaded + ".bmp", true);
+                            if (!scanAborted && (!errorFs || scanImgError))
+                                File.Copy(TMP_FILE, d.FullName + "\\" + Path.GetFileName(f.Path) + "_" + nbLoaded + ".bmp", true);
                             File.WriteAllText(INDEX_FILE, f.Path);
                             double delta = errorFs ? delayFast : delay;
                             nextFlash = DateTime.Now.AddSeconds(delta);
@@ -764,6 +813,91 @@ namespace buroSimple
             //    if (i1 != null)
             //        i1.Dispose();
             //}
+        }
+    }
+}
+]]></content>
+  </file>
+  <file path="buro\buroSimpleLib\ScreenUtil.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+
+namespace buroSimpleLib
+{
+    public class ScreenUtil
+    {
+        public static Bitmap getScreenShot(Screen screen)
+        {
+            var bounds = screen.Bounds;
+            Bitmap screenshot = new Bitmap(bounds.Width,
+                                   bounds.Height);
+            using (Graphics screenGraph = Graphics.FromImage(screenshot))
+            {
+                screenGraph.CopyFromScreen(bounds.X,
+                                           bounds.Y,
+                                           0,
+                                           0,
+                                         bounds.Size,
+                                           CopyPixelOperation.SourceCopy);
+            }
+            return screenshot;
+        }
+
+        public static bool isRecovered(string wpf, bool firstScreen)
+        {
+            try
+            {
+                Screen sc = Screen.PrimaryScreen;
+                if (!firstScreen)
+                {
+                    foreach (Screen s in Screen.AllScreens)
+                    {
+                        if (s == sc)
+                            continue;
+                        sc = s;
+                        break;
+                    }
+                }
+                var bound = sc.Bounds;
+                int x = 523;
+                int y = 907;
+
+
+
+
+                Bitmap wp = new Bitmap(wpf);
+                double coeff = (double)wp.Width / (double)bound.Width;
+
+                int xWp = (int)(x * coeff);
+                int yWp = (int)(y * coeff);
+
+                Color c = wp.GetPixel(xWp, yWp);
+
+
+                Bitmap screenShot = getScreenShot(sc);
+                screenShot.Save(@"C:\temp\sc.bmp");
+                screenShot.Dispose();
+                screenShot = new Bitmap(@"C:\temp\sc.bmp");
+                Color cs = screenShot.GetPixel(x, y);
+                screenShot.Dispose();
+                wp.Dispose();
+                int dif = 0;
+                dif += Math.Abs(c.B - cs.B);
+                dif += Math.Abs(c.G - cs.G);
+                dif += Math.Abs(c.R - cs.R);
+                if (dif < 16)
+                    return false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return true;
+            }
         }
     }
 }
