@@ -2,9 +2,6 @@
   <file path="buro\buroSimple\Program.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
 
 namespace buroSimple
 {
@@ -29,6 +26,10 @@ namespace buroSimple
             double delay = 20.0;
             double delayFast = 1.0;
             double abortScan = -1;
+            double lsm = -1;
+            int precision = 0;
+
+            int lsn = -1;
             bool unique = false;
             bool sortBySize = false;
             bool uniqueName = false;
@@ -87,6 +88,27 @@ namespace buroSimple
                     }
                     break;
 
+                    case "-lsm":
+                    if (i + 1 < countArgs)
+                    {
+                        lsm = Convert.ToDouble(args[i + 1]);
+                    }
+                    break;
+
+                    case "-lsn":
+                    if (i + 1 < countArgs)
+                    {
+                        lsn = Convert.ToInt32(args[i + 1]);
+                    }
+                    break;
+
+                    case "-p":
+                    if (i + 1 < countArgs)
+                    {
+                        precision = Convert.ToInt32(args[i + 1]);
+                    }
+                    break;
+
 
 
 
@@ -100,7 +122,7 @@ namespace buroSimple
                     case "/os": oneScreen = true; break;
                     case "/cs": checkScreen = true; break;
                     case "/de": displayImgError = true; break;
-                    case "/se": scanImgError = true; break;                  
+                    case "/se": scanImgError = true; break;
                     case "/m": modul = true; break;
                     case "/mem": useMem = true; break;
 
@@ -128,7 +150,10 @@ namespace buroSimple
                 scanImgError = scanImgError,
                 abortScan = abortScan,
                 modul = modul,
-                useMem = useMem
+                useMem = useMem,
+                lsm = lsm,
+                lsn = lsn,
+                precision = precision
             };
             wp.go();
         }
@@ -243,6 +268,21 @@ namespace buroSimple
         /// </summary>
         public bool useMem;
 
+        /// <summary>
+        /// Limitation de verif en minutes
+        /// </summary>
+        public double lsm = -1;
+
+        /// <summary>
+        /// Limitation de verif en nombre
+        /// </summary>
+        public int lsn = -1;
+
+        /// <summary>
+        /// Précision de comparaison d'image. Est déclarée différente si delta v + r +b sup. delata
+        /// </summary>
+        public int precision = 0;
+
         private bool GO;
 
         private void checkSession()
@@ -292,13 +332,15 @@ namespace buroSimple
             DateTime nextAbort = DateTime.Now;
 
             ImageUtil.UseMem = useMem;
-            bool first = true;
+            bool firstImg = true;
 
 
 
             HAUTEUR = ScreenUtil.Hauteur;
             LARGEUR = ScreenUtil.Largeur;
+            double rapport = (double)LARGEUR / (double)HAUTEUR;
             var list = new List<FileDto>();
+            HashSet<string> paths = new HashSet<string>();
             using (StreamReader sr = new StreamReader(DB))
             {
                 string line = "";
@@ -341,7 +383,8 @@ namespace buroSimple
                             }
                             if (!go)
                                 continue;
-                            list.Add(fd);
+                            if (paths.Add(path))
+                                list.Add(fd);
                         }
                     }
                     catch
@@ -349,6 +392,17 @@ namespace buroSimple
                     }
 
                 }
+            }
+
+            list.Sort((x, y) => x.Path.CompareTo(y.Path));
+
+            using (StreamWriter sw = new StreamWriter(DB))
+            {
+                foreach (FileDto fd in list)
+                {
+                    fd.appendToDb(sw);
+                }
+                sw.Flush();
             }
 
             list.Sort((x, y) =>
@@ -506,23 +560,32 @@ namespace buroSimple
                         if (errorFs)
                             d = loadedMini;
                         bool scanAborted = false;
+                        bool mustMenage = false;
                         var files = d.GetFiles().ToList();
                         files.Sort((x, y) => -x.LastWriteTime.CompareTo(y.LastWriteTime));
                         var next = nextAbort;
-                        if (first)
+                        var nextMenage = nextFlash;
+                        if (firstImg)
                         {
-                            first = false;
-                            next = next.AddSeconds(abortScan);
+                            if (abortScan > 0)
+                            {
+                                next = next.AddSeconds(abortScan);
+                                nextMenage = nextMenage.AddSeconds(abortScan);
+                            }
+                            else
+                                nextMenage = DateTime.MaxValue;
                         }
                         foreach (FileInfo fl in files)
                         {
-                            if (abortScan >0 && DateTime.Now > next)
+                            if (DateTime.Now > nextMenage)
+                                mustMenage = true;
+                            if (abortScan > 0 && DateTime.Now > next)
                             {
                                 Console.WriteLine(">>>>>>>>>>>>>>>>>scan aborted");
                                 scanAborted = true;
                                 break;
                             }
-                            if (ImageUtil.AreIdentical(img, fl.FullName))
+                            if (ImageUtil.AreIdentical(img, fl.FullName, precision))
                             {
                                 ok = false;
                                 break;
@@ -530,8 +593,36 @@ namespace buroSimple
                         }
                         img.Dispose();
 
+
+                        if (mustMenage)
+                        {
+                            if (lsn > 0 || lsm > 0)
+                            {
+                                int nb = 0;
+                                int NBmax = lsn > 0 ? lsn : int.MaxValue;
+                                DateTime lim = DateTime.MaxValue;
+                                if (lsm > 0)
+                                    lim = DateTime.Now.AddMinutes(-lsm);
+                                foreach (FileInfo fl in files)
+                                {
+                                    nb++;
+                                    if (nb > NBmax || fl.LastWriteTime < lim)
+                                    {
+                                        try
+                                        {
+                                            Console.WriteLine("suppr {0} {1} {2}", nb, (DateTime.Now - fl.LastWriteTime).toString(), fl.FullName);
+                                            ImageUtil.ClearMem(fl.FullName);
+                                            fl.Delete();
+                                        }
+                                        catch { }
+                                    }
+                                }
+                            }
+                        }
+
                         if (ok)
                         {
+                            firstImg = false;
                             Console.WriteLine();
                             Console.WriteLine("----------------------------------------------------------");
                             if (lastF != null)
@@ -565,12 +656,26 @@ namespace buroSimple
                             if (!scanAborted && (!errorFs || scanImgError))
                                 File.Copy(TMP_FILE, d.FullName + "\\" + Path.GetFileName(f.Path) + "_" + nbLoaded + ".bmp", true);
                             File.WriteAllText(INDEX_FILE, f.Path);
-                            double delta = errorFs ? delayFast : delay;
+                            double delta = scanAborted || errorFs ? delayFast : delay;
                             if (modul)
                             {
-                                var dimMin = Math.Min(f.Width, f.Height);
-                                var coeff = Math.Sqrt(f.Pixels()) / dimMin;
-                                delta /= coeff;
+                                var rap = (double)f.Width / (double)f.Height;
+                                double coeff = 1;
+                                // parfait : même que rapport ou 1;
+                                if (rap >= 1)
+                                {
+                                    if (rap > rapport)
+                                        coeff = (rap / rapport);
+                                    else
+                                        coeff = 1;
+                                }
+                                else
+                                {
+                                    coeff = 1 / rap;
+                                }
+                                //  var dimMin = Math.Min(f.Width, f.Height);
+
+                                delta /= Math.Sqrt(coeff);
                             }
                             nextFlash = DateTime.Now.AddSeconds(delta);
                             nextAbort = DateTime.Now.AddSeconds(abortScan);
@@ -902,6 +1007,7 @@ namespace buroSimpleLib
     public class ImageUtil
     {
         public static bool UseMem { get; set; }
+
         private static Dict<string, Bitmap> mem = new Dict<string, Bitmap>();
         public static void ClearMem()
         {
@@ -915,6 +1021,20 @@ namespace buroSimpleLib
 
             }
             mem.Clear();
+        }
+
+        public static void ClearMem(string file)
+        {
+            var f = mem[file];
+            if (f != null)
+            {
+                try
+                {
+                    f.Dispose();
+                }
+                catch { }
+                mem.Remove(file);
+            }
         }
         /// <summary>
         /// Scan d'une image pour déterminer si elle est vide
@@ -992,9 +1112,9 @@ namespace buroSimpleLib
             return b;
         }
 
-        public static bool AreIdentical(Image b1, string file2)
+        public static bool AreIdentical(Image b1, string file2, int delta)
         {
-            return !AreDifferent(b1, file2);
+            return !AreDifferent(b1, file2, delta);
         }
 
         /// <summary>
@@ -1003,7 +1123,7 @@ namespace buroSimpleLib
         /// <param name="img"></param>
         /// <param name="file2"></param>
         /// <returns></returns>
-        public static unsafe bool AreDifferent(Image img, string file2)
+        public static unsafe bool AreDifferent(Image img, string file2, int delta)
         {
             //  ConsoleLogger.log("checkDif {0}", file2); 
 
@@ -1070,16 +1190,27 @@ namespace buroSimpleLib
                             //data[0] = blueComponent;
                             //data[1] = greenComponent;
                             //data[2] = redComponent;
-
+                            int deltaCumul = 0;
                             for (int c = 0; c < 3; c++)
                             {
                                 if (data1[c] != data2[c])
                                 {
-                                    dif = true;
-                                    break;
+                                    if (delta == 0)
+                                    {
+                                        dif = true;
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        deltaCumul += System.Math.Abs(data1[c] - data2[c]);
+                                        if (deltaCumul > delta)
+                                        {
+                                            dif = true;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
-
                         }
                     }
 
@@ -1232,7 +1363,7 @@ namespace buroSimpleLib
 
             }
 
-            var ts = (DateTime.Now - debut); 
+            var ts = (DateTime.Now - debut);
             if (ts.TotalMilliseconds >= 100)
                 ConsoleLogger.log("copie:{0}", ts);
             return scaled;
@@ -1290,4 +1421,129 @@ namespace buroSimpleLib
 }
 ]]></content>
   </file>
- </db>
+  <file path="db4\pdb.util\DateUtil.cs">
+    <content><![CDATA[using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+namespace pdb.util
+{
+
+    public static class DateUtil
+    {
+        private enum months
+        {
+            janvier = 1,
+            fevrier = 2,
+            mars = 3,
+            novembre = 11,
+            decembre = 12
+        }
+
+        public static DateTime truncateToMinute(this DateTime dt)
+        {
+            if (dt.Second > 0 || dt.Millisecond > 0)
+                return new DateTime(dt.Ticks - dt.Ticks % TimeSpan.TicksPerMinute);
+            return dt;
+        }
+
+
+        public static DateTime? toDate(this string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return null;
+            byte[] tempBytes;
+            tempBytes = System.Text.Encoding.GetEncoding("ISO-8859-8").GetBytes(input);
+            string _input = System.Text.Encoding.UTF8.GetString(tempBytes);
+            _input = input.ToLower();
+
+            // bool formatLitteral = false;
+            int month = -1;
+
+            foreach (var m in Enum.GetValues(typeof(months)))
+            {
+                string mm = m.ToString();
+                if (_input.Contains(mm))
+                {
+                    month = (int)m;
+                    break;
+                }
+            }
+
+
+
+            return null;
+        }
+
+        public static string toString(this TimeSpan ts)
+        {
+            bool minus = ts.TotalSeconds <0; 
+            var sb = new pdb.util.StringBuilder();
+            var Days = ts.Days;
+            if (Days >= 1)
+            {
+                return "";
+            }
+
+            if (minus)
+            {
+                sb.Append("-"); 
+                ts = -ts; 
+            }
+            int i0 = 0;
+
+            var h = ts.Hours;
+            if (h >= 1)
+            {
+                sb.Append(h);
+                sb.Append("h ");
+                i0 = 1;
+            }
+
+
+            var m = ts.Minutes;
+            if (m >= 1)
+            {
+                if (i0 == 0)
+                    i0 = 2;
+                sb.Append(m);
+                sb.Append("m ");
+            }
+
+            if (i0 == 0 || i0 > 1)
+            {
+                if (i0 == 2)
+                {
+                    sb.Append(ts.Seconds);
+                    sb.Append("s ");
+                }
+                else
+                {
+                    var s = ts.TotalSeconds;
+
+                    if (s >= 1)
+                    {                        
+                        sb.Append(s.ToString("0.#"));
+                        sb.Append("s ");
+                    }
+                    else
+                    {
+                        var ms = ts.Milliseconds;
+                        if (ms >= 30)
+                        {
+                            sb.Append(ms);
+                            sb.Append(" ms ");
+                        }
+
+                    }
+                }
+            }
+
+            return sb.ToString();
+        }
+    }
+}
+]]></content>
+  </file>
+</db>
