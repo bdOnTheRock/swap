@@ -1,553 +1,787 @@
 <?xml version="1.0" encoding="utf-8"?>
-<db version="3" seq_piece="52125">
+<db version="3" seq_piece="53107">
   <pieces>
-    <piece id="66">
+    <piece id="211">
       <classement>
-        <version date="07/06/2019 12:37:42" value="31.5" />
+        <version date="11/06/2019 17:11:04" value="00001014.1" />
       </classement>
+      <duration>284344</duration>
+    </piece>
+    <piece id="1147">
+      <files>
+        <file>Ipod\touch\claude\Claude Nougaro\Les Plus Belles Chansons\05 - Tu verras (O que sera).mp3</file>
+      </files>
+    </piece>
+    <piece id="52815" parent="1147" />
+    <piece id="1205">
+      <files>
+        <file>Ipod\touch\claude\compilation\compilation Claude\Ashes to ashes.mp3</file>
+        <file>Ipod\touch\claude\compilation\compilation pop rock\Ashes to ashes.mp3</file>
+      </files>
+      <duration>264361</duration>
+    </piece>
+    <piece id="52152" parent="1205" />
+    <piece id="52462" parent="1205" />
+    <piece id="1392">
+      <files>
+        <file>Ipod\touch\claude\compilation\Ray Charles compilation\11 - Georga on my mind.mp3</file>
+      </files>
+    </piece>
+    <piece id="52449" parent="1392">
+      <name>
+        <version date="11/06/2019 10:53:40" value="Georgia on my mind" />
+      </name>
+    </piece>
+    <piece id="1861">
+      <classement>
+        <version date="11/06/2019 15:54:10" value="0042.4" />
+      </classement>
+      <files>
+        <file>Compilations\chanson\50 Ans De Chanson Française- 1914-1964\3\17 Hymne À L'amour.ogg</file>
+        <file>Ipod\touch\claude\divers\\01 - Hymne à l'Amour.mp3</file>
+      </files>
       <dates>
-        <date>07/06/2019 12:40:16</date>
+        <date>11/06/2019 15:47:24</date>
+      </dates>
+      <duration>208000</duration>
+    </piece>
+    <piece id="48211" parent="1861" />
+    <piece id="52817" parent="1861" />
+    <piece id="2748">
+      <classement>
+        <version date="11/06/2019 15:43:29" value="223.3" />
+      </classement>
+      <files>
+        <file>Ipod\touch\claude\compilation\compilation pop rock\02 - Purple Haze.mp3</file>
+        <file>Ipod\touch\claude\compilation\The Ultimate Experience\02 - Purple Haze.m4a</file>
+      </files>
+    </piece>
+    <piece id="52153" parent="2748" />
+    <piece id="52192" parent="2748" />
+    <piece id="3084">
+      <classement>
+        <version date="11/06/2019 18:18:26" value="112.3" />
+      </classement>
+      <files>
+        <file>Ipod\touch\claude\compilation\compilation\Chao-Bongo Bong(great song).mp3</file>
+      </files>
+    </piece>
+    <piece id="52801" parent="3084">
+      <name>
+        <version date="11/06/2019 11:39:55" value="Bongo Bong" />
+      </name>
+    </piece>
+    <piece id="3224">
+      <files>
+        <file>Ipod\touch\claude\Michael Jackson\Number Ones\03 - Billie Jean.mp3</file>
+      </files>
+    </piece>
+    <piece id="52746" parent="3224" />
+    <piece id="8458">
+      <files>
+        <file>Ipod\touch\claude\compilation\compilation Claude\Amen omen.mp3</file>
+      </files>
+    </piece>
+    <piece id="52479" parent="8458" />
+    <piece id="10002">
+      <classement>
+        <version date="11/06/2019 15:09:13" value="00000002320.3" />
+      </classement>
+    </piece>
+    <piece id="24553">
+      <artist>
+        <version date="11/06/2019 09:53:52" value="Bach" />
+      </artist>
+    </piece>
+    <piece id="24880">
+      <name>
+        <version date="11/06/2019 10:06:18" value="Hotel California" />
+      </name>
+    </piece>
+    <piece id="24881">
+      <dates>
+        <date>11/06/2019 10:32:01</date>
       </dates>
     </piece>
-    <piece id="161">
+    <piece id="25085">
       <classement>
-        <version date="07/06/2019 11:22:08" value="00001440.1" />
+        <version date="11/06/2019 18:23:03" value="00001142.1" />
       </classement>
     </piece>
-    <piece id="470">
+    <piece id="35286">
       <classement>
-        <version date="07/06/2019 10:42:25" value="00000522.1" />
+        <version date="11/06/2019 15:06:06" value="000231.5" />
+      </classement>
+      <files>
+        <file>Ipod\touch\claude\Léo Ferré\Léo Ferré best of cd 1\03 - comme à Ostende.mp3</file>
+      </files>
+    </piece>
+    <piece id="52708" parent="35286" />
+    <piece id="37420">
+      <files>
+        <file>Ipod\touch\claude\Queen\Greatest Hits II\09 - Who Wants to Live Forever.mp3</file>
+      </files>
+      <duration>297227</duration>
+    </piece>
+    <piece id="52783" parent="37420" />
+    <piece id="38096">
+      <files>
+        <file>Ipod\touch\claude\compilation\\01 - Nougaro - L'île Hélène.mp3</file>
+      </files>
+      <duration>287849</duration>
+    </piece>
+    <piece id="52732" parent="38096" />
+    <piece id="38331">
+      <classement>
+        <version date="11/06/2019 15:49:59" value="000000454.1" />
       </classement>
     </piece>
-    <piece id="836">
+    <piece id="52126">
+      <artist>
+        <version date="11/06/2019 10:25:20" value="Guns N' Roses" />
+      </artist>
+      <name>
+        <version date="11/06/2019 10:25:20" value="Knockin' on Heaven's Door" />
+      </name>
       <classement>
-        <version date="07/06/2019 12:45:31" value="041.4" />
+        <version date="11/06/2019 10:26:02" value="00000203.2" />
+      </classement>
+      <duration>539485</duration>
+    </piece>
+    <piece id="52168">
+      <classement>
+        <version date="11/06/2019 10:43:20" value="0001333.3" />
       </classement>
     </piece>
-    <piece id="868">
+    <piece id="52196">
       <classement>
-        <version date="07/06/2019 10:51:10" value="141.3" />
+        <version date="11/06/2019 11:01:52" value="00141.1" />
       </classement>
+      <duration>264256</duration>
     </piece>
-    <piece id="1068">
+    <piece id="52217">
       <classement>
-        <version date="07/06/2019 18:27:44" value="00002252.3" />
+        <version date="11/06/2019 11:11:05" value="00000000513.2" />
       </classement>
-      <dates>
-        <date>07/06/2019 17:42:22</date>
-      </dates>
+      <duration>176377</duration>
     </piece>
-    <piece id="1336">
+    <piece id="52220">
       <classement>
-        <version date="07/06/2019 11:58:12" value="00000331.4" />
-      </classement>
-    </piece>
-    <piece id="1382">
-      <classement>
-        <version date="07/06/2019 14:37:18" value="00003503.3" />
-      </classement>
-      <duration>166000</duration>
-    </piece>
-    <piece id="1389">
-      <classement>
-        <version date="07/06/2019 11:36:31" value="00000000550.2" />
-      </classement>
-      <dates>
-        <date>07/06/2019 11:36:11</date>
-      </dates>
-    </piece>
-    <piece id="1613">
-      <classement>
-        <version date="07/06/2019 11:40:19" value="001104.3" />
-      </classement>
-    </piece>
-    <piece id="1682">
-      <classement>
-        <version date="07/06/2019 12:05:12" value="00000153.2" />
-      </classement>
-      <dates>
-        <date>07/06/2019 12:05:27</date>
-      </dates>
-    </piece>
-    <piece id="2048">
-      <classement>
-        <version date="07/06/2019 18:36:55" value="00001500.1" />
-      </classement>
-    </piece>
-    <piece id="2052">
-      <classement>
-        <version date="07/06/2019 14:04:14" value="00001420.1" />
-      </classement>
-    </piece>
-    <piece id="2080">
-      <classement>
-        <version date="07/06/2019 12:23:58" value="00000445.1" />
-      </classement>
-    </piece>
-    <piece id="2633">
-      <classement>
-        <version date="07/06/2019 12:04:06" value="00000452.1" />
-      </classement>
-    </piece>
-    <piece id="2636">
-      <classement>
-        <version date="07/06/2019 11:11:02" value="000000520.1" />
-      </classement>
-    </piece>
-    <piece id="2849">
-      <classement>
-        <version date="07/06/2019 12:20:20" value="001042.3" />
-      </classement>
-    </piece>
-    <piece id="3082">
-      <classement>
-        <version date="07/06/2019 14:00:14" value="144.3" />
-      </classement>
-    </piece>
-    <piece id="3357">
-      <classement>
-        <version date="07/06/2019 11:12:58" value="0000543.2" />
+        <version date="11/06/2019 17:27:49" value="00000001000.2" />
       </classement>
       <dates>
-        <date>07/06/2019 11:14:17</date>
+        <date>11/06/2019 17:15:52</date>
       </dates>
+      <duration>75436</duration>
     </piece>
-    <piece id="3422">
+    <piece id="52227">
       <classement>
-        <version date="07/06/2019 12:28:55" value="213.3" />
+        <version date="11/06/2019 15:14:29" value="00000500.4" />
+      </classement>
+      <duration>266819</duration>
+    </piece>
+    <piece id="52231">
+      <artist>
+        <version date="11/06/2019 11:12:46" value="Nina Simone" />
+      </artist>
+      <classement>
+        <version date="11/06/2019 11:13:24" value="0001420.3" />
+      </classement>
+    </piece>
+    <piece id="52249">
+      <classement>
+        <version date="11/06/2019 11:05:21" value="00000213.2" />
+      </classement>
+    </piece>
+    <piece id="52265">
+      <classement>
+        <version date="11/06/2019 16:59:46" value="000001033.3" />
+      </classement>
+      <duration>1077272</duration>
+    </piece>
+    <piece id="52269">
+      <classement>
+        <version date="11/06/2019 17:53:52" value="00001134.1" />
+      </classement>
+      <duration>208093</duration>
+    </piece>
+    <piece id="52324">
+      <classement>
+        <version date="11/06/2019 13:50:44" value="00000525.1" />
       </classement>
       <dates>
-        <date>07/06/2019 12:31:08</date>
+        <date>11/06/2019 13:52:12</date>
       </dates>
     </piece>
-    <piece id="3992">
+    <piece id="52330">
       <classement>
-        <version date="07/06/2019 13:57:43" value="00003131.3" />
+        <version date="11/06/2019 10:44:56" value="000000001155.3" />
+      </classement>
+      <duration>384984</duration>
+    </piece>
+    <piece id="52331">
+      <classement>
+        <version date="11/06/2019 18:05:56" value="000000001314.3" />
       </classement>
     </piece>
-    <piece id="4137">
+    <piece id="52334">
       <classement>
-        <version date="07/06/2019 12:44:04" value="00251.3" />
+        <version date="11/06/2019 15:34:44" value="00000000403.5" />
       </classement>
     </piece>
-    <piece id="4151">
+    <piece id="52345">
       <classement>
-        <version date="07/06/2019 14:10:06" value="052.1" />
+        <version date="11/06/2019 14:18:35" value="00003121.3" />
+      </classement>
+    </piece>
+    <piece id="52397">
+      <classement>
+        <version date="11/06/2019 10:08:38" value="00003051.3" />
       </classement>
       <dates>
-        <date>07/06/2019 14:10:42</date>
+        <date>11/06/2019 10:10:38</date>
       </dates>
+      <duration>209322</duration>
     </piece>
-    <piece id="4206">
+    <piece id="52401">
       <classement>
-        <version date="07/06/2019 10:44:11" value="0001500.3" />
+        <version date="11/06/2019 15:37:41" value="00004150.3" />
       </classement>
     </piece>
-    <piece id="4561">
+    <piece id="52443">
       <classement>
-        <version date="07/06/2019 12:13:40" value="105.3" />
-      </classement>
-    </piece>
-    <piece id="4934">
-      <classement>
-        <version date="07/06/2019 11:27:00" value="00200.1" />
-      </classement>
-    </piece>
-    <piece id="5766">
-      <classement>
-        <version date="07/06/2019 11:56:19" value="00000420.4" />
-      </classement>
-    </piece>
-    <piece id="5768">
-      <classement>
-        <version date="07/06/2019 11:50:40" value="000001023.3" />
-      </classement>
-    </piece>
-    <piece id="5772">
-      <classement>
-        <version date="07/06/2019 11:01:22" value="000000501.1" />
-      </classement>
-    </piece>
-    <piece id="7136">
-      <classement>
-        <version date="07/06/2019 18:32:14" value="012.5" />
-      </classement>
-    </piece>
-    <piece id="7163">
-      <classement>
-        <version date="07/06/2019 11:46:49" value="00003413.3" />
-      </classement>
-    </piece>
-    <piece id="7303">
-      <classement>
-        <version date="07/06/2019 10:47:28" value="00004400.3" />
-      </classement>
-    </piece>
-    <piece id="8422">
-      <classement>
-        <version date="07/06/2019 14:16:27" value="0001002.4" />
+        <version date="11/06/2019 10:06:18" value="000214.5" />
       </classement>
       <dates>
-        <date>07/06/2019 14:16:52</date>
+        <date>11/06/2019 10:34:05</date>
       </dates>
+      <duration>123048</duration>
     </piece>
-    <piece id="8534">
+    <piece id="52452">
       <classement>
-        <version date="07/06/2019 11:16:10" value="0000554.4" />
+        <version date="11/06/2019 13:58:53" value="000000205.5" />
+      </classement>
+      <duration>234059</duration>
+    </piece>
+    <piece id="52456">
+      <classement>
+        <version date="11/06/2019 16:57:26" value="000000251.2" />
       </classement>
     </piece>
-    <piece id="8654">
+    <piece id="52499">
       <classement>
-        <version date="07/06/2019 12:22:52" value="0040.4" />
+        <version date="11/06/2019 10:17:59" value="0001050.1" />
+      </classement>
+      <files>
+        <file>Ipod\touch\claude\compilation\divers\01 - Morricone - The Good, The Bad And The Ugly.mp3</file>
+      </files>
+      <dates>
+        <date>11/06/2019 10:18:14</date>
+      </dates>
+      <duration>159321</duration>
+    </piece>
+    <piece id="52314" parent="52499" />
+    <piece id="52535">
+      <classement>
+        <version date="11/06/2019 14:20:44" value="0000454.5" />
       </classement>
     </piece>
-    <piece id="8888">
+    <piece id="52540">
       <classement>
-        <version date="07/06/2019 10:41:42" value="00000000540.2" />
+        <version date="11/06/2019 17:02:07" value="000000554.3" />
       </classement>
+      <duration>349362</duration>
     </piece>
-    <piece id="9876">
+    <piece id="52544">
       <classement>
-        <version date="07/06/2019 12:01:14" value="203.3" />
-      </classement>
-    </piece>
-    <piece id="10624">
-      <classement>
-        <version date="07/06/2019 14:33:48" value="000524.1" />
-      </classement>
-    </piece>
-    <piece id="10635">
-      <classement>
-        <version date="07/06/2019 11:37:20" value="000414.4" />
-      </classement>
-    </piece>
-    <piece id="10982">
-      <classement>
-        <version date="07/06/2019 11:06:39" value="000330.2" />
-      </classement>
-    </piece>
-    <piece id="11240">
-      <classement>
-        <version date="07/06/2019 14:34:36" value="00004430.3" />
-      </classement>
-    </piece>
-    <piece id="11337">
-      <classement>
-        <version date="07/06/2019 10:43:14" value="000323.2" />
-      </classement>
-    </piece>
-    <piece id="11623">
-      <classement>
-        <version date="07/06/2019 17:28:08" value="00002035.3" />
-      </classement>
-    </piece>
-    <piece id="11640">
-      <classement>
-        <version date="07/06/2019 11:44:38" value="00001301.3" />
-      </classement>
-    </piece>
-    <piece id="11715">
-      <classement>
-        <version date="07/06/2019 10:40:01" value="00122.4" />
-      </classement>
-    </piece>
-    <piece id="13184">
-      <classement>
-        <version date="07/06/2019 12:12:47" value="00003011.3" />
-      </classement>
-    </piece>
-    <piece id="13853">
-      <classement>
-        <version date="07/06/2019 11:33:35" value="000000423.4" />
-      </classement>
-    </piece>
-    <piece id="13855">
-      <classement>
-        <version date="07/06/2019 12:27:59" value="000000523.1" />
-      </classement>
-    </piece>
-    <piece id="13994">
-      <classement>
-        <version date="07/06/2019 17:37:00" value="00135.1" />
+        <version date="11/06/2019 11:34:13" value="000000535.3" />
       </classement>
       <dates>
-        <date>07/06/2019 17:38:04</date>
+        <date>11/06/2019 11:34:40</date>
+        <date>11/06/2019 11:30:46</date>
       </dates>
+      <duration>125388</duration>
     </piece>
-    <piece id="14229">
+    <piece id="52558">
       <classement>
-        <version date="07/06/2019 11:59:20" value="00000403.4" />
+        <version date="11/06/2019 15:35:54" value="000000002413.3" />
       </classement>
     </piece>
-    <piece id="14234">
+    <piece id="52562">
       <classement>
-        <version date="07/06/2019 12:36:37" value="00001555.3" />
+        <version date="11/06/2019 17:06:16" value="000000254.2" />
       </classement>
       <dates>
-        <date>07/06/2019 12:33:01</date>
+        <date>11/06/2019 17:05:47</date>
       </dates>
     </piece>
-    <piece id="15249">
+    <piece id="52563">
       <classement>
-        <version date="07/06/2019 10:38:13" value="0000534.2" />
-      </classement>
-    </piece>
-    <piece id="19786">
-      <classement>
-        <version date="07/06/2019 11:43:29" value="00002424.3" />
-      </classement>
-    </piece>
-    <piece id="20070">
-      <classement>
-        <version date="07/06/2019 11:05:54" value="00000131.2" />
-      </classement>
-    </piece>
-    <piece id="20869">
-      <classement>
-        <version date="07/06/2019 11:20:21" value="000000223.5" />
-      </classement>
-    </piece>
-    <piece id="20871">
-      <classement>
-        <version date="07/06/2019 11:52:57" value="00001042.1" />
-      </classement>
-    </piece>
-    <piece id="22064">
-      <classement>
-        <version date="07/06/2019 10:45:19" value="00003101.3" />
-      </classement>
-    </piece>
-    <piece id="23361">
-      <classement>
-        <version date="07/06/2019 18:29:24" value="00000455.1" />
-      </classement>
-    </piece>
-    <piece id="24510">
-      <classement>
-        <version date="07/06/2019 10:36:14" value="00003031.3" />
-      </classement>
-    </piece>
-    <piece id="24531">
-      <classement>
-        <version date="07/06/2019 10:57:14" value="000445.1" />
-      </classement>
-    </piece>
-    <piece id="24637">
-      <classement>
-        <version date="07/06/2019 11:03:28" value="000000513.1" />
-      </classement>
-    </piece>
-    <piece id="24713">
-      <classement>
-        <version date="07/06/2019 12:26:13" value="00000314.4" />
-      </classement>
-    </piece>
-    <piece id="24932">
-      <classement>
-        <version date="07/06/2019 12:47:40" value="0041.4" />
+        <version date="11/06/2019 11:08:30" value="0000001240.3" />
       </classement>
       <dates>
-        <date>07/06/2019 12:49:43</date>
+        <date>11/06/2019 11:08:16</date>
       </dates>
+      <duration>172309</duration>
     </piece>
-    <piece id="25079">
+    <piece id="52570">
       <classement>
-        <version date="07/06/2019 18:36:01" value="000000224.5" />
+        <version date="11/06/2019 11:26:52" value="00000505.1" />
+      </classement>
+      <duration>243125</duration>
+    </piece>
+    <piece id="52571">
+      <classement>
+        <version date="11/06/2019 18:12:05" value="00001411.1" />
       </classement>
     </piece>
-    <piece id="25183">
+    <piece id="52587">
       <classement>
-        <version date="07/06/2019 17:30:40" value="00002504.3" />
+        <version date="11/06/2019 13:54:46" value="00000554.1" />
       </classement>
     </piece>
-    <piece id="26049">
+    <piece id="52602">
       <classement>
-        <version date="07/06/2019 17:31:54" value="00000430.4" />
+        <version date="11/06/2019 15:42:01" value="00000304.4" />
       </classement>
-      <duration>100000</duration>
+      <duration>388446</duration>
     </piece>
-    <piece id="28260">
+    <piece id="52603">
       <classement>
-        <version date="07/06/2019 12:00:30" value="00001331.1" />
-      </classement>
-    </piece>
-    <piece id="28383">
-      <classement>
-        <version date="07/06/2019 11:07:54" value="001054.3" />
-      </classement>
-    </piece>
-    <piece id="28451">
-      <classement>
-        <version date="07/06/2019 14:02:27" value="000001040.3" />
-      </classement>
-    </piece>
-    <piece id="28550">
-      <classement>
-        <version date="07/06/2019 10:38:58" value="0000540.2" />
-      </classement>
-    </piece>
-    <piece id="28897">
-      <classement>
-        <version date="07/06/2019 17:23:28" value="00000413.4" />
+        <version date="11/06/2019 11:37:15" value="0000000425.1" />
       </classement>
       <dates>
-        <date>07/06/2019 17:19:34</date>
+        <date>11/06/2019 11:37:49</date>
       </dates>
     </piece>
-    <piece id="29328">
+    <piece id="52607">
       <classement>
-        <version date="07/06/2019 14:01:35" value="00002551.3" />
+        <version date="11/06/2019 14:52:38" value="00000002001.3" />
+      </classement>
+      <duration>287624</duration>
+    </piece>
+    <piece id="52609">
+      <classement>
+        <version date="11/06/2019 14:17:45" value="00000141.2" />
+      </classement>
+      <duration>482377</duration>
+    </piece>
+    <piece id="52634">
+      <classement>
+        <version date="11/06/2019 10:27:37" value="000205.5" />
+      </classement>
+      <duration>94438</duration>
+    </piece>
+    <piece id="52636">
+      <classement>
+        <version date="11/06/2019 18:25:18" value="000000452.1" />
       </classement>
     </piece>
-    <piece id="29347">
+    <piece id="52637">
       <classement>
-        <version date="07/06/2019 10:50:07" value="00002444.3" />
+        <version date="11/06/2019 15:33:52" value="0000001004.3" />
       </classement>
     </piece>
-    <piece id="29700">
+    <piece id="52641">
       <classement>
-        <version date="07/06/2019 10:55:54" value="00002521.3" />
+        <version date="11/06/2019 11:22:36" value="0000000410.4" />
       </classement>
     </piece>
-    <piece id="30421">
+    <piece id="52656">
       <classement>
-        <version date="07/06/2019 14:06:15" value="0001055.3" />
+        <version date="11/06/2019 14:13:03" value="00000542.1" />
       </classement>
     </piece>
-    <piece id="30710">
+    <piece id="52669">
       <classement>
-        <version date="07/06/2019 17:26:24" value="000502.1" />
+        <version date="11/06/2019 10:22:22" value="00000440.4" />
+      </classement>
+      <dates>
+        <date>11/06/2019 10:22:09</date>
+      </dates>
+      <duration>206345</duration>
+    </piece>
+    <piece id="52687">
+      <classement>
+        <version date="11/06/2019 16:17:44" value="00001034.1" />
+      </classement>
+      <dates>
+        <date>11/06/2019 16:25:14</date>
+      </dates>
+    </piece>
+    <piece id="52699">
+      <classement>
+        <version date="11/06/2019 14:04:02" value="000000001043.1" />
       </classement>
     </piece>
-    <piece id="32229">
+    <piece id="52704">
       <classement>
-        <version date="07/06/2019 18:28:23" value="00000322.2" />
+        <version date="11/06/2019 17:09:16" value="0000000352.4" />
       </classement>
     </piece>
-    <piece id="34839">
+    <piece id="52706">
       <classement>
-        <version date="07/06/2019 12:25:04" value="0001004.4" />
+        <version date="11/06/2019 15:10:49" value="00000001504.3" />
       </classement>
     </piece>
-    <piece id="36067">
+    <piece id="52709">
       <classement>
-        <version date="07/06/2019 10:34:28" value="033.2" />
+        <version date="11/06/2019 14:16:39" value="00000134.2" />
       </classement>
     </piece>
-    <piece id="37167">
+    <piece id="52710">
       <classement>
-        <version date="07/06/2019 12:09:31" value="000000303.2" />
+        <version date="11/06/2019 18:26:50" value="00000125.4" />
       </classement>
     </piece>
-    <piece id="37357">
+    <piece id="52720">
       <classement>
-        <version date="07/06/2019 11:24:26" value="00003323.3" />
+        <version date="11/06/2019 13:34:00" value="00003111.3" />
       </classement>
     </piece>
-    <piece id="38181">
+    <piece id="52728">
       <classement>
-        <version date="07/06/2019 14:12:42" value="000531.1" />
+        <version date="11/06/2019 14:24:18" value="000000333.2" />
       </classement>
     </piece>
-    <piece id="38332">
+    <piece id="52736">
       <classement>
-        <version date="07/06/2019 12:42:56" value="0000001113.3" />
+        <version date="11/06/2019 13:27:17" value="00000000523.2" />
+      </classement>
+      <duration>132209</duration>
+    </piece>
+    <piece id="52737">
+      <classement>
+        <version date="11/06/2019 17:56:03" value="00001122.1" />
+      </classement>
+      <duration>210420</duration>
+    </piece>
+    <piece id="52744">
+      <classement>
+        <version date="11/06/2019 15:16:19" value="00004050.3" />
+      </classement>
+      <duration>172490</duration>
+    </piece>
+    <piece id="52752">
+      <classement>
+        <version date="11/06/2019 11:28:22" value="00001530.1" />
       </classement>
     </piece>
-    <piece id="38333">
+    <piece id="52770">
       <classement>
-        <version date="07/06/2019 12:17:02" value="00000000451.2" />
+        <version date="11/06/2019 14:05:50" value="00003201.3" />
+      </classement>
+      <duration>254208</duration>
+    </piece>
+    <piece id="52778">
+      <classement>
+        <version date="11/06/2019 14:22:37" value="000000245.2" />
       </classement>
     </piece>
-    <piece id="38344">
+    <piece id="52779">
       <classement>
-        <version date="07/06/2019 10:54:14" value="00000001541.3" />
+        <version date="11/06/2019 18:14:31" value="00000132.2" />
+      </classement>
+      <duration>467160</duration>
+    </piece>
+    <piece id="52786">
+      <classement>
+        <version date="11/06/2019 14:24:56" value="000000000405.1" />
       </classement>
     </piece>
-    <piece id="38345">
+    <piece id="52787">
       <classement>
-        <version date="07/06/2019 11:09:12" value="00000002250.3" />
+        <version date="11/06/2019 17:59:33" value="00000001041.4" />
       </classement>
     </piece>
-    <piece id="38353">
+    <piece id="52789">
       <classement>
-        <version date="07/06/2019 11:55:18" value="0000000403.4" />
+        <version date="11/06/2019 15:07:02" value="000312.2" />
+      </classement>
+      <duration>321814</duration>
+    </piece>
+    <piece id="52804">
+      <name>
+        <version date="11/06/2019 14:58:27" value="Almost Blue" />
+      </name>
+      <classement>
+        <version date="11/06/2019 14:58:49" value="000352.4" />
       </classement>
     </piece>
-    <piece id="38354">
+    <piece id="52807">
       <classement>
-        <version date="07/06/2019 11:29:20" value="0000000354.4" />
+        <version date="11/06/2019 15:00:16" value="00001002.1" />
+      </classement>
+      <duration>435788</duration>
+    </piece>
+    <piece id="52812">
+      <classement>
+        <version date="11/06/2019 14:49:35" value="000224.5" />
+      </classement>
+      <duration>187356</duration>
+    </piece>
+    <piece id="52819">
+      <classement>
+        <version date="11/06/2019 14:02:20" value="000000323.2" />
       </classement>
     </piece>
-    <piece id="38432">
+    <piece id="52820">
       <classement>
-        <version date="07/06/2019 11:23:08" value="00001251.1" />
+        <version date="11/06/2019 17:31:17" value="000000404.4" />
       </classement>
     </piece>
-    <piece id="38520">
+    <piece id="52829">
       <classement>
-        <version date="07/06/2019 14:30:22" value="00002312.3" />
+        <version date="11/06/2019 14:10:50" value="00000423.4" />
       </classement>
     </piece>
-    <piece id="38549">
+    <piece id="52838">
       <classement>
-        <version date="07/06/2019 14:32:43" value="00003021.3" />
+        <version date="11/06/2019 13:36:07" value="00002045.3" />
       </classement>
     </piece>
-    <piece id="39063">
+    <piece id="52850">
       <classement>
-        <version date="07/06/2019 11:21:20" value="00003253.3" />
+        <version date="11/06/2019 13:47:45" value="000000000313.4" />
+      </classement>
+      <dates>
+        <date>11/06/2019 13:47:46</date>
+        <date>11/06/2019 13:46:14</date>
+      </dates>
+    </piece>
+    <piece id="52851">
+      <classement>
+        <version date="11/06/2019 15:08:08" value="00000002123.3" />
       </classement>
     </piece>
-    <piece id="39068">
+    <piece id="52852">
       <classement>
-        <version date="07/06/2019 14:38:19" value="00001450.1" />
+        <version date="11/06/2019 16:13:53" value="00000000501.2" />
+      </classement>
+      <dates>
+        <date>11/06/2019 16:00:27</date>
+      </dates>
+    </piece>
+    <piece id="52853">
+      <classement>
+        <version date="11/06/2019 18:20:17" value="00000002203.3" />
       </classement>
     </piece>
-    <piece id="40475">
+    <piece id="52861">
       <classement>
-        <version date="07/06/2019 18:34:11" value="000553.1" />
+        <version date="11/06/2019 11:35:38" value="000000551.3" />
+      </classement>
+      <duration>255000</duration>
+    </piece>
+    <piece id="52862">
+      <classement>
+        <version date="11/06/2019 17:10:01" value="000000545.3" />
       </classement>
     </piece>
-    <piece id="42292">
+    <piece id="52875">
       <classement>
-        <version date="07/06/2019 14:31:23" value="00000532.1" />
+        <version date="11/06/2019 10:14:07" value="000000232.5" />
       </classement>
     </piece>
-    <piece id="43679">
+    <piece id="52876">
       <classement>
-        <version date="07/06/2019 10:59:05" value="00001353.1" />
+        <version date="11/06/2019 16:56:00" value="00000433.4" />
       </classement>
     </piece>
-    <piece id="43754">
+    <piece id="52886">
       <classement>
-        <version date="07/06/2019 11:04:10" value="0001035.1" />
+        <version date="11/06/2019 16:54:54" value="00000223.2" />
       </classement>
     </piece>
-    <piece id="45638">
+    <piece id="52887">
       <classement>
-        <version date="07/06/2019 18:30:44" value="00003041.3" />
+        <version date="11/06/2019 10:48:14" value="00001403.1" />
       </classement>
     </piece>
-    <piece id="47603">
+    <piece id="52888">
       <classement>
-        <version date="07/06/2019 17:25:29" value="000455.1" />
+        <version date="11/06/2019 18:09:59" value="00001433.1" />
       </classement>
     </piece>
-    <piece id="48460">
+    <piece id="52910">
       <classement>
-        <version date="07/06/2019 10:48:39" value="00000544.1" />
+        <version date="11/06/2019 10:41:25" value="0000000401.2" />
       </classement>
     </piece>
-    <piece id="49287">
+    <piece id="52911">
       <classement>
-        <version date="07/06/2019 12:07:49" value="000452.1" />
+        <version date="11/06/2019 15:31:58" value="0000001041.3" />
       </classement>
     </piece>
-    <piece id="50266">
+    <piece id="52912">
       <classement>
-        <version date="07/06/2019 14:39:55" value="000440.4" />
+        <version date="11/06/2019 18:08:17" value="00001024.1" />
+        <version date="11/06/2019 18:07:35" value="00000535.1" />
       </classement>
+    </piece>
+    <piece id="52934">
+      <classement>
+        <version date="11/06/2019 15:18:43" value="000000530.1" />
+      </classement>
+      <dates>
+        <date>11/06/2019 15:23:17</date>
+      </dates>
+    </piece>
+    <piece id="52935">
+      <classement>
+        <version date="11/06/2019 11:24:23" value="000000313.2" />
+      </classement>
+    </piece>
+    <piece id="52936">
+      <classement>
+        <version date="11/06/2019 16:16:01" value="00000120.5" />
+      </classement>
+      <duration>267000</duration>
+    </piece>
+    <piece id="52950">
+      <classement>
+        <version date="11/06/2019 13:53:34" value="000000345.4" />
+      </classement>
+      <duration>202000</duration>
+    </piece>
+    <piece id="52951">
+      <classement>
+        <version date="11/06/2019 17:50:49" value="000001001.3" />
+      </classement>
+      <duration>114000</duration>
+    </piece>
+    <piece id="52960">
+      <classement>
+        <version date="11/06/2019 13:41:28" value="00000515.1" />
+      </classement>
+      <duration>388000</duration>
+    </piece>
+    <piece id="52961">
+      <classement>
+        <version date="11/06/2019 18:28:46" value="00004003.3" />
+      </classement>
+    </piece>
+    <piece id="52972">
+      <classement>
+        <version date="11/06/2019 13:40:03" value="000000354.4" />
+      </classement>
+    </piece>
+    <piece id="52973">
+      <classement>
+        <version date="11/06/2019 16:58:32" value="000000511.1" />
+      </classement>
+    </piece>
+    <piece id="52984">
+      <classement>
+        <version date="11/06/2019 13:37:19" value="000000430.4" />
+      </classement>
+    </piece>
+    <piece id="52985">
+      <classement>
+        <version date="11/06/2019 17:28:48" value="00000351.4" />
+      </classement>
+      <duration>249000</duration>
+    </piece>
+    <piece id="52996">
+      <classement>
+        <version date="11/06/2019 13:56:18" value="000000421.4" />
+      </classement>
+      <duration>229000</duration>
+    </piece>
+    <piece id="52997">
+      <classement>
+        <version date="11/06/2019 17:52:38" value="000000504.1" />
+      </classement>
+    </piece>
+    <piece id="53006">
+      <classement>
+        <version date="11/06/2019 11:09:32" value="000000240.5" />
+      </classement>
+    </piece>
+    <piece id="53007">
+      <classement>
+        <version date="11/06/2019 14:14:14" value="00003353.3" />
+      </classement>
+      <duration>175000</duration>
+    </piece>
+    <piece id="53025">
+      <classement>
+        <version date="11/06/2019 10:47:10" value="00001311.3" />
+      </classement>
+      <dates>
+        <date>11/06/2019 10:46:23</date>
+      </dates>
+    </piece>
+    <piece id="53026">
+      <classement>
+        <version date="11/06/2019 17:58:17" value="00003141.3" />
+      </classement>
+    </piece>
+    <piece id="53048">
+      <classement>
+        <version date="11/06/2019 13:29:03" value="000000155.5" />
+      </classement>
+    </piece>
+    <piece id="53049">
+      <classement>
+        <version date="11/06/2019 16:14:58" value="000000542.3" />
+      </classement>
+      <dates>
+        <date>11/06/2019 16:06:30</date>
+      </dates>
+      <duration>182000</duration>
+    </piece>
+    <piece id="53060">
+      <classement>
+        <version date="11/06/2019 13:30:57" value="00001054.1" />
+      </classement>
+    </piece>
+    <piece id="53072">
+      <classement>
+        <version date="11/06/2019 13:38:31" value="0000000343.2" />
+      </classement>
+    </piece>
+    <piece id="53073">
+      <classement>
+        <version date="11/06/2019 15:40:23" value="000000003110.3" />
+      </classement>
+      <duration>207000</duration>
+    </piece>
+    <piece id="53074">
+      <classement>
+        <version date="11/06/2019 17:29:59" value="00000001224.1" />
+      </classement>
+    </piece>
+    <piece id="53084">
+      <classement>
+        <version date="11/06/2019 13:28:03" value="00000341.4" />
+      </classement>
+    </piece>
+    <piece id="53085">
+      <classement>
+        <version date="11/06/2019 18:16:10" value="00000450.4" />
+      </classement>
+    </piece>
+    <piece id="53096">
+      <classement>
+        <version date="11/06/2019 13:26:26" value="00000000533.2" />
+      </classement>
+    </piece>
+    <piece id="53097">
+      <classement>
+        <version date="11/06/2019 15:26:40" value="000000001511.3" />
+      </classement>
+      <dates>
+        <date>11/06/2019 15:27:11</date>
+      </dates>
+    </piece>
+    <piece id="53098">
+      <classement>
+        <version date="11/06/2019 17:14:13" value="00000001005.4" />
+      </classement>
+      <dates>
+        <date>11/06/2019 17:14:35</date>
+      </dates>
     </piece>
   </pieces>
 </db>
