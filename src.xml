@@ -1300,7 +1300,7 @@ namespace pdb.gen.albums
                 IPieceAlbum p = list[index];
                 if (p.Piece.Keep)
                 {
-                    if (forceKeep && p.Piece.KeepCoeff > 0)
+                    if (p.Piece.KeepCoeff > 0)
                     {
                         if (firstKeep == null)
                             firstKeep = p;
@@ -1467,6 +1467,12 @@ namespace pdb.gen.albums
                                 //    cause.selectedMotifMin = !median.EffectMain;
                                 //}
                             }
+                            else
+                            {
+                                cause.selectedMotifMin = cause.resultByFirstMin;
+                                if (min != null)
+                                    cause.motifUp = min.getCauseUp(cause.selectedMotifMin);
+                            }
                             // selectedCoeff = selectedCoeff.main; // selectedByCoeff = true; 
                             Next = nextZero;
 
@@ -1590,7 +1596,7 @@ namespace pdb.gen.albums
                         Next = firstKeep2; refact = true;
                     }
                 }
-                else if (firstKeep != null && firstKeep == min && Next != firstKeep && !firstKeep.LastClassementRecent)
+                else if (forceKeep && firstKeep != null && firstKeep == min && Next != firstKeep && !firstKeep.LastClassementRecent)
                 {
                     {
                         Next = firstKeep; refact = true;
@@ -1606,11 +1612,13 @@ namespace pdb.gen.albums
                         {
                             if (Next != p)
                             {
-                                Next = p; refact = true;
+                                Next = p;
                             }
                             break;
                         }
                     }
+                    if (Next == nextZero && firstKeep != null && Next != firstKeep)
+                        Next = firstKeep;
                 }
 
                 if (refact)
@@ -2804,256 +2812,5 @@ namespace pdb.gen.albums
 }
 ]]></content>
   </file>
-  <file path="db4\PieceDb.Consolid\Tuning\ConfMedianne.cs">
-    <content><![CDATA[using System;
-using pdb.gen.medianne;
-using pdb.util;
-using System.Xml;
-using pdb.gen.auto;
-
-namespace pdb.gen.Tuning
-{
-    [Serializable]
-    public class ConfMedianne : TuningBase
-    {
-        public medianneMode type;
-        public decimal medianne = 0.5m;
-        public decimal quasi = 1m;
-
-        public bool enabled;
-        public decimal puissance = 1m;
-
-
-
-        public bool removeFirst;
-        public bool deleteFirst;
-        public removeLast removeLast;
-
-        public decimal expEnabled = 0m;
-
-        public decimal zero = 0m;
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool removeEnabled;
-        /// <summary>
-        /// cumule l'influence des deux parties main et min
-        /// </summary>
-        public bool combine;
-        /// <summary>
-        /// calcul simple des selectedMotif
-        /// </summary>
-        public bool simple;
-        /// <summary>
-        /// auto : si motifExclu on ne peut pas avoir un composant qui descent en même temps qu'un composant qui monte
-        /// </summary>
-        public bool motifExclu;
-        /// <summary>
-        /// Lors de la détermination du next; s'il est à zero, on force vers le keep
-        /// </summary>
-        public bool forceKeep;
-
-        /// <summary>
-        /// Lors de la détermination du next; s'il est à zero, on force vers le keep2
-        /// </summary>
-        public bool forceKeep2;
-
-        /// <summary>
-        /// Keep sert seulement à pas êter à zero. le classementValueLight ne doit pas baisser à cause d'un Keep
-        /// </summary>
-        public bool dontDownByKeep;
-
-        /// <summary>
-        /// Plutôt que d'aller vers le prochain zero, on tente le premier jamais noté
-        /// </summary>
-        public bool deepZero;
-
-
-
-        public modeMin cmpMin;
-
-        private ConfMedianneVirt _main;
-        private ConfMedianneVirt _min;
-
-        public ConfMedianneVirt Main { get { return _main; } }
-        public ConfMedianneVirt Min { get { return _min; } }
-
-        public ConfMedianne()
-        {
-            _main = new ConfMedianneVirt();
-            _min = new ConfMedianneVirt();
-
-        }
-
-        public void makeIdem()
-        {
-            _min = _main;
-        }
-
-        public void duplicateMainIf()
-        {
-            if (_min == _main)
-                _min = new ConfMedianneVirt(_main);
-        }
-
-        public ConfMedianne(ConfMedianne o, bool raz)
-        {
-            type = o.type;
-            medianne = o.medianne;
-            quasi = o.quasi;
-
-            enabled = o.enabled;
-
-
-
-            removeFirst = o.removeFirst;
-            deleteFirst = o.deleteFirst;
-            removeLast = o.removeLast;
-
-            expEnabled = o.expEnabled;
-
-            zero = o.zero;
-            removeEnabled = o.removeEnabled;
-
-
-
-            cmpMin = o.cmpMin;
-
-            _main = new ConfMedianneVirt(o._main, raz);
-            _min = new ConfMedianneVirt(o._min, raz);
-
-            this.simple = o.simple;
-            this.combine = o.combine;
-            this.motifExclu = o.motifExclu;
-            this.puissance = o.puissance;
-            this.forceKeep = o.forceKeep;
-            this.forceKeep2 = o.forceKeep2;
-            this.dontDownByKeep = o.dontDownByKeep;
-        }
-
-        public ConfMedianne(XmlElement parent, XmlElement child)
-            : base(parent, child)
-        {
-            var strType = "";
-            builds("type", v => strType = v);
-            type = (medianneMode)Enum.Parse(typeof(medianneMode), strType, true);
-            builddec("medianne", v => medianne = v);
-            builddec("quasi", v => quasi = v);
-            buildb("enabled", v => enabled = v);
-            buildb("removeFirst", v => removeFirst = v);
-            buildb("deleteFirst", v => deleteFirst = v);
-            builddec("expEnabled", v => expEnabled = v);
-            builddec("zero", v => zero = v);
-            buildb("removeEnabled", v => removeEnabled = v);
-            string _modeMin = "";
-            builds("cmpMin", v => _modeMin = v);
-            if (!string.IsNullOrEmpty(_modeMin))
-                cmpMin = (modeMin)Enum.Parse(typeof(modeMin), _modeMin, true);
-
-            string _removeLast = null;
-            builds("removeLast", v => _removeLast = v);
-            removeLast = (removeLast)Enum.Parse(typeof(removeLast), _removeLast, true);
-
-            buildb("combine", v => combine = v);
-            buildb("simple", v => simple = v);
-            buildb("motifExclu", v => motifExclu = v);
-
-            builddec("puissance", v => puissance = v);
-            buildb("forceKeep", v => forceKeep = v);
-            buildb("deepZero", v => deepZero = v);
-            buildb("forceKeep2", v => forceKeep2 = v);
-            buildb("dontDownByKeep", v => dontDownByKeep = v);
-
-            _main = null;
-            _min = null;
-            var subs = XMLTool.NodeLookUp(child, "virts");
-            if (subs != null)
-            {
-                foreach (XmlNode _n in subs.ChildNodes)
-                {
-                    if (_n is XmlElement)
-                    {
-                        if (_main == null)
-                        {
-                            _main = new ConfMedianneVirt(child, _n as XmlElement);
-
-                        }
-                        else if (_min == null)
-                        {
-                            _min = new ConfMedianneVirt(child, _n as XmlElement);
-                        }
-                    }
-                }
-                if (_min == null && _main != null)
-                    _min = new ConfMedianneVirt(_main);
-            }
-        }
-
-        public override void save(XmlWriter w)
-        {
-            base.save(w);
-            writeStart("cmp");
-            write("type", type);
-            write("medianne", medianne);
-            write("quasi", quasi);
-            write("puissance", puissance);
-            write("enabled", enabled);
-            write("removeFirst", removeFirst);
-            write("deleteFirst", deleteFirst);
-            write("expEnabled", expEnabled);
-            write("zero", zero);
-            write("removeEnabled", removeEnabled);
-            write("cmpMin", cmpMin);
-            write("removeLast", removeLast);
-            write("combine", combine);
-            write("simple", simple);
-            write("motifExclu", motifExclu);
-            write("forceKeep", forceKeep);
-            write("deepZero", deepZero);
-            write("forceKeep2", forceKeep2);
-            write("dontDownByKeep", dontDownByKeep);
-
-            writeStart("virts");
-            _main.save(w);
-            _min.save(w);
-            writeEnd();
-
-            writeEnd();
-
-
-
-        }
-
-
-        //public void auto(selectedCoeff motif)
-        //{
-        //    if (!enabled)
-        //        return;
-        //    if (motif == selectedCoeff.none)
-        //        return;
-        //    var coeffPrisEncompte = motif > selectedCoeff.noCoeff;
-        //    if (_min == _main || (_min.coeffVirt == 1m && !_min.coeffOldSwap))
-        //    {
-        //        _main.calcAuto(coeffPrisEncompte);
-        //    }
-        //    else
-        //    {
-        //        if (coeffPrisEncompte)
-        //        {
-        //            if (motif == selectedCoeff.main)
-        //                _main.calcAuto(true);
-        //            if (motif == selectedCoeff.min)
-        //                _min.calcAuto(true);
-        //        }
-        //        else
-        //        {
-        //            _main.calcAuto(false);
-        //            _min.calcAuto(false);
-        //        }
-        //    }
-        //}
-    }
-}
-]]></content>
-  </file>
+ 
 </db>
