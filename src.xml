@@ -1,4 +1,81 @@
 <db path="C:\bernard\db2\">
+  <file path="db4\pdb.podcast\Stat\ListenerStatBuilder.cs">
+    <content><![CDATA[using pdb.util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions
+using System.Text;
+
+namespace pdb.podcast.Stat
+{
+    class ListenerStatBuilder
+    {
+        private List<TrackInfoItunes> list;
+        public ListenerStatBuilder(List<TrackInfoItunes> list)
+        {
+            this.list = new List<TrackInfoItunes>(list);
+        }
+        public void build(DateTime limit)
+        {
+            Dictionary<DateTime, timeSpan> dict = new Dictionary<DateTime, timeSpan>();
+            foreach (TrackInfoItunes t in list)
+            {
+                var reads = (from d in t.Dates where d.type == TrackInfoItunes.TYPE_DATE select d.date).ToList();
+                reads.Sort();
+                DateTime tt = DateTime.MinValue;
+                foreach (DateTime dt in reads)
+                {
+                    if (dt < limit)
+                        continue;
+                    var d = dt.Date;
+                    if (d == tt)
+                        continue;
+                    tt = d;
+                    if (!dict.ContainsKey(d))
+                    {
+                        dict.Add(d, t.Duree);
+                    }
+                    else
+                        dict[d] += t.Duree;
+                }
+            }
+
+            var durees = new List<timeSpan>(dict.Values);
+            durees.Sort();
+
+            var dates = new List<DateTime>(dict.Keys);
+            dates.Sort();
+
+            if (dates.Count == 0)
+                return;
+
+            var firstDate = dates[0];
+            if (limit > DateTime.MinValue)
+                firstDate = limit.Date;
+
+            Dictionary<int, int> dictGraph = new Dictionary<int, int>();
+            dictGraph.Add(0, 0);
+            for (DateTime d = firstDate; d < DateTime.Now; d = d.AddDays(1))
+            {
+                if (!dict.ContainsKey(d))
+                {
+                    dictGraph[0]++;
+                }
+                else
+                {
+                    var minutes = dict[d].TotalMinute;
+                }
+            }
+
+        }
+
+
+
+    }
+}
+]]></content>
+  </file>
   <file path="db4\PieceDb.Consolid\albums\Album.cs">
     <content><![CDATA[using System;
 using System.Collections.Generic;
@@ -1608,13 +1685,17 @@ namespace pdb.gen.albums
                     for (; index < count; index++)
                     {
                         IPieceAlbum p = list[index];
-                        if (p.Piece.DeepClassement.isZero())
+                        if (p.Enabled)// p.Piece.DeepClassement.isZero())
                         {
-                            if (Next != p)
+                            var cl = p.Piece.DeepClassement;
+                            if (cl.isZero())
                             {
-                                Next = p;
+                                if (Next != p)
+                                {
+                                    Next = p;
+                                }
+                                break;
                             }
-                            break;
                         }
                     }
                     if (Next == nextZero && firstKeep != null && Next != firstKeep)
@@ -2812,5 +2893,4 @@ namespace pdb.gen.albums
 }
 ]]></content>
   </file>
- 
 </db>
