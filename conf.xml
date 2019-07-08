@@ -39,9 +39,9 @@
 	
 <date0>15/04/2015 08:14</date0> 
 	<dateRef>
-		<date0>07/12/2011 21:49</date0> 
-		<old>07/12/2011 21:49</old>  
-		<contexte>15/05/2012 00:00</contexte>
+		<date0>30/09/2012 15:53</date0> 
+		<old>30/09/2012 15:53</old>  
+		<contexte>19/09/2012 00:00</contexte>
 		<auto>true</auto>  
 		<offset>false</offset>
 	</dateRef>
@@ -49,7 +49,7 @@
 	<export enabled="false" dir="I:\Podcasts\" fIn="Y:\podTaf.txt" fOut="..\_tracks.txt" />
 	<import enabled="false" merge="false" list="_hibernate" dateMin="01/01/2014" dateMax="20/05/20" nblast="3" dLast="730,25" />
 	<hibernate enabled="true" list="_hibernate" dateMin="01/01/2014" dateMax="20/05/2028" nblast="0" dLast="1000" delay="8" delayAdd="0" delayPub="8" nbMaxDesel="-1" freewheelsDelay="365" freewheelsGlobal="true" />
-	<sort enabled="once" playVirtual="true" futurhl="" futurhlR="" vacances="false" rapportHorizonCoeff="2" rapportHorizonCoeffR="1" stopOnPub2="false" stopOnOffset="false" checkBefore="true" selectionBefore="true" mixVarDuree="false" mixVarDureeMax="false" mixCarre="true" mixtan="false" intervalleBorne="false" mixCarreMin="true" mixtanMin="true" intervalleBorneMin="false" mixCarreAtt="true" mixtanAtt="true" intervalleBorneAtt="true" dureeCoeff="true" coeffDensite="false" horizonFinal="true" honneurAuxVieux="false" intervalleVar="true" atterrissageMinVar="0,8" useintervalleFactMin="false" recheck="true" oldMode="false" minUseDuree="true" minUseDureeR="true" maxUseDuree="true" maxUseDureeR="true" noCollision="true" histoMode="read" dureeMin="18" intervalle="4" intervalleMin="1" intervalleMin0="1" ecouteMax="7" canGoBack="true" histo="365" nbHisto="100" intervalleR="14" intervalleMinR="7" intervalleMinR0="7" ecouteMaxR="2" histoR="365" nbHistoR="100" limitRead="false" deltaNbMin="0" deltaNbRab="0" deltaMin="0" deltaRab="0" totalMin="10" totalMin0="1" elastique="0,99" elastique2="0,995" rapportDuree="2" rapportDureeR="2" dureeBorne="0" dureeBorneDelta="0" densiteMin="0,1" coeffRab="0" deltaConstLate="-1" useVirtuel="false" useVirtuel2="false" erasedDone="true" atterrissageMin="0,7" atterrissageMin0="1" atterrissageMinR="5" futurh="90" horizonCut="false" futur="7;14;90;182;365;730;1827" futurR="7;14;90;182;365;730;1827" futura="0" limitMoy="28" limitMoyR="35" limitDelta="14" limitDeltaR="28" tolerance="4" toleranceR="4" nbTolerance="4" nbToleranceR="4" toleranceNegative="false" collisionDuree="15">
+	<sort enabled="once" playVirtual="true" futurhl="" futurhlR="" vacances="false" rapportHorizonCoeff="2" rapportHorizonCoeffR="1" stopOnPub2="false" stopOnOffset="false" checkBefore="true" selectionBefore="true" mixVarDuree="false" mixVarDureeMax="false" mixCarre="true" mixtan="false" intervalleBorne="false" mixCarreMin="true" mixtanMin="true" intervalleBorneMin="false" mixCarreAtt="true" mixtanAtt="true" intervalleBorneAtt="true" dureeCoeff="true" coeffDensite="false" horizonFinal="true" honneurAuxVieux="false" intervalleVar="true" atterrissageMinVar="0,8" useintervalleFactMin="false" recheck="true" oldMode="false" minUseDuree="true" minUseDureeR="true" maxUseDuree="true" maxUseDureeR="true" noCollision="true" histoMode="read" dureeMin="18" intervalle="4" intervalleMin="1" intervalleMin0="1" ecouteMax="7" canGoBack="true" histo="365" nbHisto="100" intervalleR="14" intervalleMinR="7" intervalleMinR0="7" ecouteMaxR="2" histoR="365" nbHistoR="100" limitRead="false" deltaNbMin="0" deltaNbRab="0" deltaMin="0" deltaRab="0" totalMin="10" totalMin0="1" elastique="0,99" elastique2="0,995" rapportDuree="2" rapportDureeR="2" dureeBorne="0" dureeBorneDelta="0" densiteMin="0,1" coeffRab="0" deltaConstLate="-1" useVirtuel="false" useVirtuel2="false" erasedDone="true" atterrissageMin="0,7" atterrissageMin0="1" atterrissageMinR="5" futurh="90" horizonCut="false" futur="7;14;90;182;365;730;1827" futurR="7;14;90;182;365;730;1827" futura="0" limitMoy="28" limitMoyR="35" limitDelta="14" limitDeltaR="28" horizonFull="7" horizonFullR="7" tolerance="4" toleranceR="4" nbTolerance="4" nbToleranceR="4" toleranceNegative="false" collisionDuree="15">
 		<album enabled="once" noHorizon="true" recheck="false" oldMode="false" histoMode="read" name="1 L'archipel pré-chrétien|2 La résistance au christianisme|3 L'Autre Grand Siècle, les Libertins Baroques|4 Les ultras des lumières|5 L'Eudémonisme social|6 Le siècle du Moi|7 La construction du surhomme|CONTRE-HISTOIRE DE LA PHILOSOPHIE" erasedDone="false" intervalle="7" intervalleR="14" extDelta="1095" extPente="-365,25" noCollision="true" elastique="1" elastique2="1" coeffRab="0" rapportDuree="0" rapportDureeR="0" />
 		<album enabled="once" noHorizon="true" recheck="false" oldMode="false" histoMode="read" name="Rendez-vous avec X" erasedDone="false" intervalle="7" intervalleR="14" intervalleMin="1" intervalleMinR="7" extDelta="1095" extPente="-365,25" noCollision="true" elastique="1" elastique2="1" coeffRab="0" />
 		<album enabled="once" noHorizon="true" recheck="false" oldMode="false" histoMode="read" name="2000 ANS D'HISTOIRE" erasedDone="false" intervalle="7" intervalleR="14" intervalleMin="1" intervalleMinR="7" extDelta="1095" extPente="-365,25" noCollision="true" elastique="1" elastique2="1" coeffRab="0" />
@@ -466,51 +466,8 @@
 	<!--maxdate="8,82638889" fd="355,88333333" nb="11" 
 		maxdate="18,25555556" fd="721,96666667" nb="13" 
 	-->
-	<dir name="POD" ld="120000" auto="Histo32" lnb="300" lfd="12000" d="2000000" maxdate="187,55555556" fd="4047,78333333" nb="82" nbp="81" cascading="false" transmit="true">
-		<auto name="Histo32" selectFix="true" selectAbs="true" pertinentuniqueAlbum="true" pertinentExclu="false" stopAll="true" forfaitNegatif="0,001" forfaitNegatifOffset="500">
-		
-			<target>26000</target>
-			<delta>1</delta>
-			<write>1</write> 
-			<cloop>20</cloop> 
-			<verif>4</verif>
-			<levels> 
-				<level d="60" inf="0,3" sup="0,3" />			
-				<level d="-50" inf="0,1" sup="0,1" />
-			</levels>
-			<items>
-				<!--<item type="d" min="0" pente="1500" coeff="1" />-->
-				<item type="fd" min="0" pente="150" coeff="1" />
-				<item type="nb" min="0" pente="5" coeff="1" />
-				<item type="nbp" min="0" pente="3" coeff="1" />
-				<item type="maxdate" min="0" pente="7" coeff="1" />
-				
-			</items>					
-		</auto>
-		
-		<dir name="POD16" ld="120000" auto="Histo16" lnb="300" lfd="12000" d="2000000" maxdate="2680,37291667" fd="1596,2" nb="44" nbp="52" nbMax="1000" nbpMax="1000" cascading="false" transmit="true" playlist="auto16\POD\_auto">
-			<auto name="Histo16" selectFix="true" selectAbs="true" pertinentuniqueAlbum="true" pertinentExclu="false" stopAll="true" forfaitNegatif="0,001" forfaitNegatifOffset="500">
-				<target>12200</target>
-				<delta>1</delta>
-				<write>1</write> 
-				<cloop>20</cloop> 
-				<verif>4</verif>
-				<levels> 
-					<level d="60" inf="0,3" sup="0,3" />			
-					<level d="-50" inf="0,1" sup="0,1" />
-				</levels>
-				<items>
-					<!--<item type="d" min="0" pente="1500" coeff="1" />-->
-					<item type="fd" min="0" pente="150" coeff="1" />
-					<item type="nb" min="0" pente="5" coeff="1" />
-					<item type="nbp" min="0" pente="7" coeff="1" />
-					<item type="maxdate" min="0" pente="7" coeff="1" />
-					
-				</items>					
-			</auto>
-			
-				<dir name="POD8" ld="120000" auto="Histo8" lnb="300" lfd="12000" d="2000000" maxdate="163,99166667" fd="1807,35" nb="62" nbp="62" nbMax="1000" nbpMax="1000" cascading="false" transmit="true" playlist="auto\POD\_auto">
-				<auto name="Histo8" selectFix="true" selectAbs="true" pertinentuniqueAlbum="true" pertinentExclu="false" stopAll="true" forfaitNegatif="0,001" forfaitNegatifOffset="500">
+	<dir name="POD" ld="120000" auto="Histo" lnb="300" lfd="12000" d="2000000" maxdate="55,63055556" fd="1223,7" nb="32" nbp="40" nbMax="1000" nbpMax="1000" cascading="false" transmit="true">
+		<auto name="Histo" selectFix="true" selectAbs="true" pertinentuniqueAlbum="true" pertinentExclu="false" stopAll="true" forfaitNegatif="0,001" forfaitNegatifOffset="500">
 					<target>8380</target>
 					<delta>1</delta>
 					<write>1</write> 
@@ -529,15 +486,9 @@
 						
 					</items>					
 				</auto>
-					<dir name="Histo" auto="Histo8">
+		<dir name="Histo" auto="Histo">
 					
-						<dir name="petitr" serial="true" order="note" histo="false" date="01/01/2010" maxdate="1c0" resetAfter="false">
 							
-							<list l="0">
-							
-							</list>
-							<list l="1" nb="0" nbp="0" />
-						</dir>
 						
 						<dir name="RFI - La bande passante" nbpMax="3" order="note" histo="false" uniqueAlbum="true" serial="true" date="25/12/2013 17:02:00" maxdate="1c">
 							<list l="0" nbpMax="3" />
@@ -545,119 +496,105 @@
 						</dir>	
 						
 						
+				<!--
 						
-						
-						<dir name="petit" serial="true" order="note" date="01/01/2010" resetAfter="false">
-							
-							<list l="0">
-								
-							</list>
+				<dir name="La tête au carré" histo="true" uniqueAlbum="true" serial="true" maxdate="0">
+				<list l="0" />
 							<list l="1" nb="0" nbp="0" />
 						</dir>
-						
-						
-						<list l="0" date="0">	
-							<td />	
-							
-						</list>
+			<dir name="Rendez-vous avec X" histo="true" uniqueAlbum="true" serial="true" maxdate="0">
+				<list l="0" />
 						<list l="1" nb="0" nbp="0" />
-						
-					</dir>
-						
-						
-					<dir name="last" Histo="false" c="500" fd="60" nbMax="1" nbpMax="1" cascading="false" transmit="true" maxdate=" " date="-30">		
-						<list l="0" nb="1" fd="60" date="0" />	
-						<list l="1" nb="0" nbp="0" />	
-						<dir name="info" c="500">
-							<list l="0" c="300" nb="2" nbMax="1" nbpMax="1" fd="60" date="0" tdmax="18" />	
-							<list l="1" nb="0" nbp="0" />	
-						</dir>
-						
-					</dir>
-						
-						
 			</dir>
 			
+			-->
 			
-			<dir name="Histo16" auto="Histo16">
 			
-				<dir name="petitr16" serial="true" order="note" histo="false" date="01/01/2010" maxdate="1c0" resetAfter="false">
-					
+			<!-- <dir name="RFI - Une semaine d'actualité" order="note" histo="false" uniqueAlbum="true" serial="true" date="25/12/1013 17:02:00" maxdate="1c"> -->
+				<!-- <list l="0" />			 -->
+				<!-- <list l="1" nb="0" nbp="0" /> -->
+			<!-- </dir>			 -->
+			<!-- <dir name="DIVERS ASPECTS DE LA PENSEE CONTEMPORAINE" order="note" histo="false" uniqueAlbum="true" serial="true" date="25/12/1013 17:02:00" maxdate="1c"> -->
+				<!-- <list l="0" nb2="3"> -->
+					<!-- <td nb2="3" nb="3" nbp="3" overwriteConf="true" /> -->
+				<!-- </list>				 -->
+				<!-- <list l="1" nb="0" nbp="0" /> -->
+			<!-- </dir> -->
+			
+			
+			<dir name="petit" serial="true" petit="true" date="01/01/2010" maxdate="0" resetAfter="false">			
 					<list l="0">
-						
+					</list>
+					<list l="1" nb="0" nbp="0" />
+			</dir>
+			
+			<!--
+			<dir name="petit" serial="true" order="note" date="01/01/2010" maxdate="0c0" resetAfter="true" nbp="5">			
+					<list l="0">
 					</list>
 					<list l="1" nb="0" nbp="0" />
 				</dir>
 				
-				<dir name="RFI - La bande passante" nbpMax="3" order="note" histo="false" uniqueAlbum="true" serial="true" date="25/12/2013 17:02:00" maxdate="1c">
-					<list l="0" nbpMax="3" />
+			<dir name="petitr" serial="true" order="note" histo="false" date="01/01/2010" maxdate="1c0" resetAfter="true" nbp="5">				
+					<list l="0" nb2="5">
+				</list>
 					<list l="1" nb="0" nbp="0" />
 				</dir>	
 				
-				
-				
-				<dir name="petit16" serial="true" order="note" date="01/01/2010" resetAfter="false">
-					
+			<dir name="petit2" serial="true" petit="true" date="0c0" resetAfter="false" maxdate="0">			
 					<list l="0">
-						
 					</list>
 					<list l="1" nb="0" nbp="0" />
 				</dir>
-				
+				-->
 				
 				<list l="0" date="0">	
 					<td />	
-										
+				<!-- <td tdmin="18" d="120000" nb="20" maxdate2="7" />	  -->
+				<!-- <td tdmin="18" d="120000" fd="300" nb="10" maxdate2="7" />							 -->
 				</list>
 				<list l="1" nb="0" nbp="0" />
-			</dir>
 				
-			<dir name="last16" Histo="false" c="1000" fd="60" nbMax="2" nbpMax="2" cascading="false" transmit="true" maxdate=" " date="-30">		 
-				<list l="0" nb="1" fd="60" date="0" />	 
-				<list l="1" nb="0" nbp="0" />	 
-				<dir name="info" c="500"> 
-					<list l="0" c="300" nb="2" nbMax="2" nbpMax="2" fd="60" date="0" />	 
-					<list l="1" nb="0" nbp="0" />	 
-				</dir> 
-			</dir> 
 				
 				
 		
-		</dir>				
-		<dir name="Histo32" auto="Histo32">
 		
-			<dir name="petitr32" serial="true" order="note" histo="false" date="01/01/2010" maxdate="1c0" resetAfter="false">
 				
-				<list l="0">
 					
+				<!--<dir name="petit" serial="true" date="25/05/2012">
+					<list l="0" tdmax="18" />					
+					<list l="1" nb="0" />	
+					
+					<list l="0" date="0">	
+					<td tdmin="18" />	
+					<td tdmin="18" d="120000" fd="600" nb="20" maxdate2="14" />	
+					<td tdmin="18" d="120000" fd="300" nb="10" maxdate2="7" />							
 				</list>
-				<list l="1" nb="0" nbp="0" />
-			</dir>
+				<list l="1" nb="0" />
 			
-			<dir name="RFI - La bande passante" nbpMax="3" order="note" histo="false" uniqueAlbum="true" serial="true" date="25/12/2013 17:02:00" maxdate="1c">
-				<list l="0" nbpMax="3" />
-				<list l="1" nb="0" nbp="0" />
+				<dir name="petit" serial="true" date="25/05/1012">
+					<list l="0" nb2="5">
+						<td tdmax="25" />
+					</list>
+					<list l="1" nb="0" />	
 			</dir>	
+				</dir>-->
 			
-			<dir name="petit32" serial="true" order="note" date="01/01/2010" resetAfter="false">
 			
-				<list l="0">
-				</list>
-				<list l="1" nb="0" nbp="0" />
 			</dir>
 			
 			
-			<list l="0" date="0">	
-				<td />	
-								
-			</list>
+		<dir name="last" Histo="false" c="500" fd="60" nbMax="1" nbpMax="1" cascading="false" transmit="true" maxdate=" " date="-30">		
+			<list l="0" nb="1" fd="60" date="0" />	
 			<list l="1" nb="0" nbp="0" />
-				
+			<dir name="info" c="500">
+				<list l="0" c="300" nb="2" nbMax="1" nbpMax="1" fd="60" date="0" tdmax="18" />	
+				<list l="1" nb="0" nbp="0" />	
+			</dir>
 			
 		</dir>
 		
 		
 	</dir>		
 	
-		
 </root>
